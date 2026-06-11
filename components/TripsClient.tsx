@@ -12,8 +12,8 @@ interface TripsClientProps {
 
 const stateCategories = [
   { name: "All", image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80" },
-  { name: "Telangana", image: "https://images.unsplash.com/photo-1626139575290-4b1ded4a8a24?auto=format&fit=crop&w=800&q=80" },
-  { name: "Andhra Pradesh", image: "https://images.unsplash.com/photo-1621427637148-d088eaf069a3?auto=format&fit=crop&w=800&q=80" },
+  { name: "Telangana", image: "/images/telangana.jpg" },
+  { name: "Andhra Pradesh", image: "/images/andhrapradesh.jpg" },
   { name: "Karnataka", image: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=800&q=80" },
   { name: "Tamil Nadu", image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80" },
   { name: "Kerala", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80" }

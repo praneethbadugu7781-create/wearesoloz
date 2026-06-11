@@ -139,8 +139,8 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
           <div>
             <form onSubmit={submit} data-testid="trip-join-form" className="glass rounded-2xl p-6 bg-stone-50 border border-stone-200 sticky top-28 space-y-3">
               <div className="text-xs uppercase tracking-widest text-soloz-primary font-semibold">Join this Trip</div>
-              <div className="font-display text-3xl font-light text-stone-900">
-                {typeof trip.price === "number" ? `₹${trip.price.toLocaleString()}` : trip.price}
+              <div className="font-display text-2xl font-light text-stone-900">
+                Contact for Price
               </div>
               <Input
                 required

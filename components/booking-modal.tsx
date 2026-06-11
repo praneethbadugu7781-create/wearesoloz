@@ -180,7 +180,7 @@ export function BookingModal() {
                   <option value="">Choose a Tour</option>
                   {defaultTrips.map((t) => (
                     <option key={t.destination} value={t.destination}>
-                      {t.destination} ({t.price})
+                      {t.destination}
                     </option>
                   ))}
                 </select>
