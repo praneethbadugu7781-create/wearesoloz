@@ -54,7 +54,7 @@ export const destinations = [
     title: "Araku Valley",
     location: "Andhra Pradesh",
     description: "Scenic hill station with coffee plantations, tribal culture, and cascading waterfalls.",
-    image: "https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?auto=format&fit=crop&w=1200&q=80"
+    image: "https://drive.google.com/uc?export=view&id=1MlRxGUkxC-ulrFHYYBCUaF95sxSsiqqA"
   },
   {
     title: "Gokarna",
@@ -66,7 +66,7 @@ export const destinations = [
     title: "Ooty",
     location: "Tamil Nadu",
     description: "Queen of Hill Stations, known for its tea gardens, lakes, and heritage train rides.",
-    image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80"
+    image: "https://drive.google.com/uc?export=view&id=1mNhwkzJgU6B9eWyXpaaT-o-aRONhmSsJ"
   },
   {
     title: "Coorg",
@@ -79,8 +79,8 @@ export const destinations = [
 export const trips = [
   { destination: "Munnar & Kodaikanal", state: "Kerala", category: "Treks", date: "2026-09-18", duration: "4 Days", price: "₹12,499", seats: 12, image: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80" },
   { destination: "Hampi Weekend", state: "Karnataka", category: "Adventure", date: "2026-10-03", duration: "2 Days", price: "₹6,499", seats: 15, image: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=1200&q=80" },
-  { destination: "Araku Valley", state: "Andhra Pradesh", category: "Adventure", date: "2026-10-17", duration: "2 Days", price: "₹5,999", seats: 14, image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=80" },
-  { destination: "Srisailam Spiritual Trail", state: "Andhra Pradesh", category: "Temples", date: "2026-11-07", duration: "2 Days", price: "₹4,999", seats: 18, image: "https://images.unsplash.com/photo-1561361058-c24cecae35ca?auto=format&fit=crop&w=1200&q=80" },
+  { destination: "Araku Valley", state: "Andhra Pradesh", category: "Adventure", date: "2026-10-17", duration: "2 Days", price: "₹5,999", seats: 14, image: "https://drive.google.com/uc?export=view&id=1MlRxGUkxC-ulrFHYYBCUaF95sxSsiqqA" },
+  { destination: "Srisailam Spiritual Trail", state: "Andhra Pradesh", category: "Temples", date: "2026-11-07", duration: "2 Days", price: "₹4,999", seats: 18, image: "https://drive.google.com/uc?export=view&id=1HsRTd9a4jczhuBAEAyI2nvOWJ4XBGGty" },
   { destination: "Gokarna Beach Trek", state: "Karnataka", category: "Treks", date: "2026-11-20", duration: "3 Days", price: "₹8,999", seats: 12, image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80" },
   { destination: "Coorg & Chikmagalur", state: "Karnataka", category: "Adventure", date: "2026-12-05", duration: "3 Days", price: "₹9,499", seats: 15, image: "https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=1200&q=80" }
 ];
