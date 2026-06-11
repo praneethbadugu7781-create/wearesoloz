@@ -1,0 +1,200 @@
+"use client";
+
+import React, { useState } from "react";
+import { toast } from "sonner";
+import { Calendar, Clock, Users, MapPin, ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import Reveal, { SectionLabel } from "@/components/Reveal";
+
+interface TripDetailClientProps {
+  trip: any;
+}
+
+export default function TripDetailClient({ trip }: TripDetailClientProps) {
+  const [form, setForm] = useState({ full_name: "", mobile: "", email: "", travelers: 1, message: "" });
+  const [submitting, setSubmitting] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/contacts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: form.full_name,
+          mobile: form.mobile,
+          email: form.email,
+          destination: trip.destination,
+          message: `Trip booking request for: "${trip.title}" (${trip.duration}). Travelers: ${form.travelers}. Additional Message: ${form.message}`
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error("API error");
+      }
+
+      toast.success("Request sent. Akhil will reach out shortly.");
+      setForm({ full_name: "", mobile: "", email: "", travelers: 1, message: "" });
+    } catch (e) {
+      toast.error("Couldn't send. Please try again.");
+    }
+    setSubmitting(false);
+  };
+
+  const formattedDate = trip.date
+    ? new Date(trip.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : "TBA";
+
+  const seatsVal = trip.seats ?? trip.seats_available ?? "—";
+
+  return (
+    <div data-testid="trip-detail-page" className="bg-white min-h-screen text-[#1c1917] pt-20">
+      <section className="relative h-[60vh] min-h-[480px] overflow-hidden">
+        <img
+          src={trip.image || "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=2400&q=85"}
+          alt={trip.title}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/15 to-transparent" />
+        <div className="absolute bottom-12 left-0 right-0 max-w-7xl mx-auto px-6 md:px-10">
+          <SectionLabel>{trip.destination}</SectionLabel>
+          <h1 className="font-display text-5xl md:text-7xl font-light tracking-tighter mt-3 max-w-3xl text-stone-900">
+            {trip.title || `${trip.destination} Group Tour`}
+          </h1>
+        </div>
+      </section>
+
+      <section className="px-6 md:px-10 py-20">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-12">
+          <div className="md:col-span-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+              {[
+                { icon: Calendar, label: "Start Date", value: formattedDate },
+                { icon: Clock, label: "Duration", value: trip.duration || "—" },
+                { icon: Users, label: "Seats Left", value: seatsVal },
+                { icon: MapPin, label: "Region", value: trip.destination },
+              ].map((s) => (
+                <div key={s.label} className="glass rounded-xl p-4 border border-stone-200">
+                  <s.icon className="w-4 h-4 text-soloz-primary mb-2" />
+                  <div className="text-[10px] uppercase tracking-widest text-soloz-textMuted">{s.label}</div>
+                  <div className="font-display text-lg mt-1 text-stone-900">{s.value}</div>
+                </div>
+              ))}
+            </div>
+            <div className="prose prose-stone max-w-none">
+              <h3 className="font-display text-2xl mb-4 text-stone-900">About this trip</h3>
+              <p className="text-soloz-textSecondary leading-relaxed whitespace-pre-line font-body">{trip.description}</p>
+            </div>
+            {trip.highlights && trip.highlights.length > 0 && (
+              <div className="mt-10">
+                <h3 className="font-display text-2xl mb-4 text-stone-900">Highlights</h3>
+                <ul className="grid md:grid-cols-2 gap-3">
+                  {trip.highlights.map((h: string, i: number) => (
+                    <li key={i} className="glass rounded-lg px-4 py-3 text-sm text-soloz-textSecondary font-body border border-stone-200">
+                      {h}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {/* If itinerary exists, let's render it */}
+            {trip.itinerary && trip.itinerary.length > 0 && (
+              <div className="mt-12 space-y-6">
+                <h3 className="font-display text-2xl mb-4 text-stone-900">Detailed Itinerary</h3>
+                <div className="space-y-4">
+                  {trip.itinerary.map((item: any, i: number) => (
+                    <div key={i} className="glass rounded-2xl p-6 border border-stone-200">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-semibold text-soloz-primary uppercase tracking-wider">
+                          {item.day || `Day ${i + 1}`}
+                        </span>
+                        <h4 className="font-display text-lg font-medium text-stone-900">{item.title}</h4>
+                      </div>
+                      <p className="text-sm text-soloz-textSecondary mt-2 leading-relaxed font-body">
+                        {item.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* If inclusions exist, let's render them */}
+            {trip.inclusions && trip.inclusions.length > 0 && (
+              <div className="mt-12">
+                <h3 className="font-display text-2xl mb-4 text-stone-900">What's Included</h3>
+                <ul className="grid sm:grid-cols-2 gap-3">
+                  {trip.inclusions.map((inc: string, i: number) => (
+                    <li key={i} className="flex gap-2.5 items-start text-sm text-soloz-textSecondary font-body">
+                      <span className="w-1.5 h-1.5 rounded-full bg-soloz-primary mt-2 shrink-0" />
+                      {inc}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+          <div>
+            <form onSubmit={submit} data-testid="trip-join-form" className="glass rounded-2xl p-6 bg-stone-50 border border-stone-200 sticky top-28 space-y-3">
+              <div className="text-xs uppercase tracking-widest text-soloz-primary font-semibold">Join this Trip</div>
+              <div className="font-display text-3xl font-light text-stone-900">
+                {typeof trip.price === "number" ? `₹${trip.price.toLocaleString()}` : trip.price}
+              </div>
+              <Input
+                required
+                value={form.full_name}
+                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                placeholder="Full Name"
+                data-testid="join-name"
+                className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
+              />
+              <Input
+                required
+                value={form.mobile}
+                onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+                placeholder="Mobile"
+                data-testid="join-mobile"
+                className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
+              />
+              <Input
+                required
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="Email"
+                data-testid="join-email"
+                className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
+              />
+              <Input
+                type="number"
+                min="1"
+                value={form.travelers}
+                onChange={(e) => setForm({ ...form, travelers: parseInt(e.target.value) || 1 })}
+                placeholder="Travelers"
+                data-testid="join-travelers"
+                className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
+              />
+              <Textarea
+                value={form.message}
+                onChange={(e) => setForm({ ...form, message: e.target.value })}
+                placeholder="Any message for Akhil?"
+                data-testid="join-message"
+                className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
+              />
+              <Button
+                type="submit"
+                disabled={submitting}
+                data-testid="join-submit"
+                className="w-full gradient-orange text-white hover:opacity-95 rounded-full h-12 font-medium"
+              >
+                {submitting ? "Sending…" : "Request to Join"} <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
