@@ -1,4 +1,6 @@
 "use client";
+import { getAuthHeaders } from "@/lib/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 import { useEffect, useState } from "react";
 import { Settings, Check, Loader2, Sparkles, AlertCircle, Lock } from "lucide-react";
@@ -54,9 +56,9 @@ export default function AdminSettingsPage() {
     setPasswordSaving(true);
 
     try {
-      const res = await fetch("/api/admin/change-password", {
+      const res = await fetch(`${API_URL}/auth/change-password`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({ currentPassword, newPassword })
       });
 
@@ -96,7 +98,7 @@ export default function AdminSettingsPage() {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/site_settings");
+      const res = await fetch(`${API_URL}/admin/site_settings`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to load settings");
       const data: DBSetting[] = await res.json();
 
@@ -127,16 +129,16 @@ export default function AdminSettingsPage() {
     try {
       // 1. Update Homepage settings
       if (homepageId) {
-        const res = await fetch(`/api/admin/site_settings/${homepageId}`, {
+        const res = await fetch(`${API_URL}/admin/site_settings/${homepageId}`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify({ key: "homepage", value: homepage })
         });
         if (!res.ok) throw new Error("Failed to update homepage settings");
       } else {
-        const res = await fetch("/api/admin/site_settings", {
+        const res = await fetch(`${API_URL}/admin/site_settings`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify({ key: "homepage", value: homepage })
         });
         if (!res.ok) throw new Error("Failed to create homepage settings");
@@ -146,16 +148,16 @@ export default function AdminSettingsPage() {
 
       // 2. Update Contact settings
       if (contactId) {
-        const res = await fetch(`/api/admin/site_settings/${contactId}`, {
+        const res = await fetch(`${API_URL}/admin/site_settings/${contactId}`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify({ key: "contact", value: contact })
         });
         if (!res.ok) throw new Error("Failed to update contact settings");
       } else {
-        const res = await fetch("/api/admin/site_settings", {
+        const res = await fetch(`${API_URL}/admin/site_settings`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify({ key: "contact", value: contact })
         });
         if (!res.ok) throw new Error("Failed to create contact settings");

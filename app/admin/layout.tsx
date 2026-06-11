@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
+import { clearAuthToken, isAuthenticated } from "@/lib/api";
 import {
   LayoutDashboard,
   Compass,
@@ -17,7 +17,7 @@ import {
   Menu,
   X
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -34,19 +34,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Skip admin navigation if on login page
   if (pathname === "/admin/login") {
     return <>{children}</>;
   }
 
-  const handleLogout = async () => {
-    if (confirm("Are you sure you want to log out?")) {
-      await signOut({ redirect: false });
+  // Client-side auth check
+  useEffect(() => {
+    if (!isAuthenticated()) {
       router.push("/admin/login");
-      router.refresh();
+    } else {
+      setAuthChecked(true);
+    }
+  }, [pathname, router]);
+
+  const handleLogout = () => {
+    if (confirm("Are you sure you want to log out?")) {
+      clearAuthToken();
+      router.push("/admin/login");
     }
   };
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-stone-900"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col md:flex-row admin-console">

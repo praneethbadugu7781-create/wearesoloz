@@ -1,4 +1,6 @@
 "use client";
+import { getAuthHeaders } from "@/lib/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 import { useEffect, useState } from "react";
 import { MessageSquareQuote, Plus, Edit2, Trash2, Check, Loader2, Star } from "lucide-react";
@@ -37,7 +39,7 @@ export default function AdminTestimonialsPage() {
   const fetchTestimonials = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/testimonials");
+      const res = await fetch(`${API_URL}/admin/testimonials`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to load reviews");
       const data = await res.json();
       setTestimonials(data);
@@ -59,7 +61,7 @@ export default function AdminTestimonialsPage() {
     if (!confirm("Are you sure you want to delete this testimonial? This action is permanent.")) return;
 
     try {
-      const res = await fetch(`/api/admin/testimonials/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_URL}/admin/testimonials/${id}`, { method: "DELETE", headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to delete review");
       setTestimonials(testimonials.filter((t) => t._id !== id));
     } catch (err: any) {
@@ -72,12 +74,12 @@ export default function AdminTestimonialsPage() {
     setSaving(true);
 
     try {
-      const url = editId ? `/api/admin/testimonials/${editId}` : "/api/admin/testimonials";
+      const url = editId ? `${API_URL}/admin/testimonials/${editId}` : `${API_URL}/admin/testimonials`;
       const method = editId ? "PATCH" : "POST";
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify(formData)
       });
 

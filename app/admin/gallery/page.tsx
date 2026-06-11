@@ -1,4 +1,6 @@
 "use client";
+import { getAuthHeaders } from "@/lib/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 import { useEffect, useState } from "react";
 import { Image as ImageIcon, Plus, Edit2, Trash2, Check, Loader2 } from "lucide-react";
@@ -37,7 +39,7 @@ export default function AdminGalleryPage() {
   const fetchGallery = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/gallery");
+      const res = await fetch(`${API_URL}/admin/gallery`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to load gallery");
       const data = await res.json();
       setGallery(data);
@@ -59,7 +61,7 @@ export default function AdminGalleryPage() {
     if (!confirm("Are you sure you want to delete this gallery item? This action is permanent.")) return;
 
     try {
-      const res = await fetch(`/api/admin/gallery/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_URL}/admin/gallery/${id}`, { method: "DELETE", headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to delete item");
       setGallery(gallery.filter((g) => g._id !== id));
     } catch (err: any) {
@@ -76,12 +78,12 @@ export default function AdminGalleryPage() {
 
     setSaving(true);
     try {
-      const url = editId ? `/api/admin/gallery/${editId}` : "/api/admin/gallery";
+      const url = editId ? `${API_URL}/admin/gallery/${editId}` : `${API_URL}/admin/gallery`;
       const method = editId ? "PATCH" : "POST";
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify(formData)
       });
 

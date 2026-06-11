@@ -23,8 +23,13 @@ export function CloudinaryUpload({ value, onChange, label = "Upload Image" }: Cl
     setProgress(0);
 
     try {
-      // 1. Get signed configuration from our Next.js API
-      const sigRes = await fetch("/api/cloudinary/signature", { method: "POST" });
+      // 1. Get signed configuration from our backend API
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+      const sigRes = await fetch(`${API_URL}/admin/upload/signature`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       if (!sigRes.ok) {
         throw new Error("Failed to get upload signature. Make sure you are logged in.");
       }

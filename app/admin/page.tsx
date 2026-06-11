@@ -1,53 +1,60 @@
-import { connectDB } from "@/lib/db";
-import Trip from "@/models/Trip";
-import Destination from "@/models/Destination";
-import Blog from "@/models/Blog";
-import Gallery from "@/models/Gallery";
-import Testimonial from "@/models/Testimonial";
-import Contact from "@/models/Contact";
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Compass, MapPin, BookOpen, Image as ImageIcon, MessageSquareQuote, MailQuestion, Check, AlertCircle } from "lucide-react";
-import { SeedButton } from "@/components/seed-button";
+import { Compass, MapPin, BookOpen, Image as ImageIcon, MessageSquareQuote, MailQuestion, AlertCircle, Loader2 } from "lucide-react";
+import { getAuthHeaders } from "@/lib/api";
 
-async function getAnalytics() {
-  try {
-    await connectDB();
-    const tripsCount = await Trip.countDocuments();
-    const destsCount = await Destination.countDocuments();
-    const blogsCount = await Blog.countDocuments();
-    const galleryCount = await Gallery.countDocuments();
-    const testimonialsCount = await Testimonial.countDocuments();
-    const enquiriesCount = await Contact.countDocuments();
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
-    const recentEnquiries = await Contact.find()
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .lean();
+export default function AdminDashboardPage() {
+  const [stats, setStats] = useState<any[]>([]);
+  const [recentEnquiries, setRecentEnquiries] = useState<any[]>([]);
+  const [isEmpty, setIsEmpty] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-    return {
-      stats: [
-        { label: "Trips", value: tripsCount, icon: Compass, color: "text-soloz-ember bg-soloz-ember/15 border-soloz-ember/20" },
-        { label: "Destinations", value: destsCount, icon: MapPin, color: "text-soloz-amber bg-soloz-amber/15 border-soloz-amber/20" },
-        { label: "Stories (Blogs)", value: blogsCount, icon: BookOpen, color: "text-soloz-gold bg-soloz-gold/15 border-soloz-gold/20" },
-        { label: "Gallery", value: galleryCount, icon: ImageIcon, color: "text-emerald-400 bg-emerald-500/15 border-emerald-500/20" },
-        { label: "Testimonials", value: testimonialsCount, icon: MessageSquareQuote, color: "text-sky-400 bg-sky-500/15 border-sky-500/20" },
-        { label: "Enquiries", value: enquiriesCount, icon: MailQuestion, color: "text-violet-400 bg-violet-500/15 border-violet-500/20" }
-      ],
-      recentEnquiries: JSON.parse(JSON.stringify(recentEnquiries)),
-      isEmpty: tripsCount === 0 && destsCount === 0 && blogsCount === 0
-    };
-  } catch (error) {
-    console.error("Failed to gather analytics:", error);
-    return {
-      stats: [],
-      recentEnquiries: [],
-      isEmpty: true
-    };
+  useEffect(() => {
+    async function loadDashboard() {
+      try {
+        const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
+
+        const [trips, dests, blogs, gallery, testimonials, contacts] = await Promise.all([
+          fetch(`${API_URL}/admin/trips`, { headers }).then(r => r.ok ? r.json() : []),
+          fetch(`${API_URL}/admin/destinations`, { headers }).then(r => r.ok ? r.json() : []),
+          fetch(`${API_URL}/admin/blogs`, { headers }).then(r => r.ok ? r.json() : []),
+          fetch(`${API_URL}/admin/gallery`, { headers }).then(r => r.ok ? r.json() : []),
+          fetch(`${API_URL}/admin/testimonials`, { headers }).then(r => r.ok ? r.json() : []),
+          fetch(`${API_URL}/admin/contacts`, { headers }).then(r => r.ok ? r.json() : []),
+        ]);
+
+        setStats([
+          { label: "Trips", value: trips.length, icon: Compass, color: "text-soloz-ember bg-soloz-ember/15 border-soloz-ember/20" },
+          { label: "Destinations", value: dests.length, icon: MapPin, color: "text-soloz-amber bg-soloz-amber/15 border-soloz-amber/20" },
+          { label: "Stories (Blogs)", value: blogs.length, icon: BookOpen, color: "text-soloz-gold bg-soloz-gold/15 border-soloz-gold/20" },
+          { label: "Gallery", value: gallery.length, icon: ImageIcon, color: "text-emerald-400 bg-emerald-500/15 border-emerald-500/20" },
+          { label: "Testimonials", value: testimonials.length, icon: MessageSquareQuote, color: "text-sky-400 bg-sky-500/15 border-sky-500/20" },
+          { label: "Enquiries", value: contacts.length, icon: MailQuestion, color: "text-violet-400 bg-violet-500/15 border-violet-500/20" },
+        ]);
+
+        setRecentEnquiries(contacts.slice(0, 5));
+        setIsEmpty(trips.length === 0 && dests.length === 0 && blogs.length === 0);
+      } catch (error) {
+        console.error("Failed to load dashboard:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadDashboard();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="animate-spin text-stone-400" size={32} />
+      </main>
+    );
   }
-}
-
-export default async function AdminDashboardPage() {
-  const { stats, recentEnquiries, isEmpty } = await getAnalytics();
 
   return (
     <main className="space-y-10">
@@ -58,14 +65,11 @@ export default async function AdminDashboardPage() {
           <p className="text-xs text-soloz-ash/70 mt-1">Real-time statistics and administrative health.</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          {isEmpty && (
-            <div className="flex items-center gap-2 rounded-lg bg-orange-500/10 border border-orange-500/20 px-3.5 py-1.5 text-xs text-soloz-amber">
-              <AlertCircle size={14} /> Database is empty. Use Seeder:
-            </div>
-          )}
-          <SeedButton />
-        </div>
+        {isEmpty && (
+          <div className="flex items-center gap-2 rounded-lg bg-orange-500/10 border border-orange-500/20 px-3.5 py-1.5 text-xs text-soloz-amber">
+            <AlertCircle size={14} /> Database is empty.
+          </div>
+        )}
       </div>
 
       {/* Cards Grid */}

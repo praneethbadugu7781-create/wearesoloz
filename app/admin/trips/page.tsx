@@ -1,4 +1,6 @@
 "use client";
+import { getAuthHeaders } from "@/lib/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 import { useEffect, useState } from "react";
 import { Compass, Plus, Edit2, Trash2, Check, Loader2, Calendar, Users, Sparkles, X } from "lucide-react";
@@ -59,7 +61,7 @@ export default function AdminTripsPage() {
   const fetchTrips = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/trips");
+      const res = await fetch(`${API_URL}/admin/trips`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to load trips");
       const data = await res.json();
       setTrips(data);
@@ -86,7 +88,7 @@ export default function AdminTripsPage() {
     if (!confirm("Are you sure you want to delete this trip? This action is permanent.")) return;
 
     try {
-      const res = await fetch(`/api/admin/trips/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_URL}/admin/trips/${id}`, { method: "DELETE", headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to delete trip");
       setTrips(trips.filter((t) => t._id !== id));
     } catch (err: any) {
@@ -103,12 +105,12 @@ export default function AdminTripsPage() {
 
     setSaving(true);
     try {
-      const url = editId ? `/api/admin/trips/${editId}` : "/api/admin/trips";
+      const url = editId ? `${API_URL}/admin/trips/${editId}` : `${API_URL}/admin/trips`;
       const method = editId ? "PATCH" : "POST";
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify(formData)
       });
 

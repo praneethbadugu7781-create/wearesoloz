@@ -1,4 +1,6 @@
 "use client";
+import { getAuthHeaders } from "@/lib/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 import { useEffect, useState } from "react";
 import { BookOpen, Plus, Edit2, Trash2, Check, Loader2, Clock } from "lucide-react";
@@ -48,7 +50,7 @@ export default function AdminBlogsPage() {
   const fetchBlogs = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/blogs");
+      const res = await fetch(`${API_URL}/admin/blogs`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to load travel stories");
       const data = await res.json();
       setBlogs(data);
@@ -71,7 +73,7 @@ export default function AdminBlogsPage() {
     if (!confirm("Are you sure you want to delete this story? This action is permanent.")) return;
 
     try {
-      const res = await fetch(`/api/admin/blogs/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_URL}/admin/blogs/${id}`, { method: "DELETE", headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to delete story");
       setBlogs(blogs.filter((b) => b._id !== id));
     } catch (err: any) {
@@ -88,12 +90,12 @@ export default function AdminBlogsPage() {
 
     setSaving(true);
     try {
-      const url = editId ? `/api/admin/blogs/${editId}` : "/api/admin/blogs";
+      const url = editId ? `${API_URL}/admin/blogs/${editId}` : `${API_URL}/admin/blogs`;
       const method = editId ? "PATCH" : "POST";
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify(formData)
       });
 

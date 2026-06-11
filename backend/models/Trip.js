@@ -1,6 +1,6 @@
-import { Schema, models, model } from "mongoose";
+const mongoose = require("mongoose");
 
-const tripSchema = new Schema(
+const tripSchema = new mongoose.Schema(
   {
     destination: { type: String, required: true },
     slug: { type: String, required: true, unique: true },
@@ -13,9 +13,9 @@ const tripSchema = new Schema(
     inclusions: [String],
     image: { type: String, required: true },
     featured: { type: Boolean, default: false },
-    status: { type: String, enum: ["draft", "published"], default: "published" }
+    status: { type: String, enum: ["draft", "published"], default: "published" },
   },
   { timestamps: true }
 );
 
-export default models.Trip || model("Trip", tripSchema);
+module.exports = mongoose.models.Trip || mongoose.model("Trip", tripSchema);

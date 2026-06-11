@@ -1,6 +1,6 @@
-import { Schema, models, model } from "mongoose";
+const mongoose = require("mongoose");
 
-const blogSchema = new Schema(
+const blogSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     slug: { type: String, required: true, unique: true },
@@ -10,9 +10,9 @@ const blogSchema = new Schema(
     image: { type: String, required: true },
     readTime: { type: String, default: "5 min" },
     featured: { type: Boolean, default: false },
-    status: { type: String, enum: ["draft", "published"], default: "published" }
+    status: { type: String, enum: ["draft", "published"], default: "published" },
   },
   { timestamps: true }
 );
 
-export default models.Blog || model("Blog", blogSchema);
+module.exports = mongoose.models.Blog || mongoose.model("Blog", blogSchema);

@@ -1,9 +1,9 @@
-import { connectDB } from "@/lib/db";
-import Trip from "@/models/Trip";
 import TripDetailClient from "@/components/TripDetailClient";
 import { trips as defaultTrips } from "@/lib/data";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -11,13 +11,12 @@ interface PageProps {
 
 async function getTrip(slug: string) {
   try {
-    await connectDB();
-    const dbTrip = await Trip.findOne({ slug, status: "published" }).lean();
-    if (dbTrip) {
-      return JSON.parse(JSON.stringify(dbTrip));
+    const res = await fetch(`${API_URL}/trips/${slug}`, { cache: "no-store" });
+    if (res.ok) {
+      return await res.json();
     }
   } catch (error) {
-    console.error("DB error fetching single trip:", error);
+    console.error("API error fetching single trip:", error);
   }
 
   // Fallback check in static data
@@ -74,4 +73,3 @@ export default async function TripDetailPage({ params }: PageProps) {
 
   return <TripDetailClient trip={trip} />;
 }
-

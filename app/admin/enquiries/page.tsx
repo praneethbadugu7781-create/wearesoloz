@@ -1,4 +1,6 @@
 "use client";
+import { getAuthHeaders } from "@/lib/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 import { useEffect, useState } from "react";
 import { MailQuestion, Trash2, CheckCircle, Clock, Loader2, Check, ExternalLink, Search } from "lucide-react";
@@ -28,7 +30,7 @@ export default function AdminEnquiriesPage() {
   const fetchEnquiries = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/contacts");
+      const res = await fetch(`${API_URL}/admin/contacts`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to load enquiries");
       const data = await res.json();
       setEnquiries(data);
@@ -42,9 +44,9 @@ export default function AdminEnquiriesPage() {
 
   const handleStatusChange = async (id: string, newStatus: "new" | "contacted" | "closed") => {
     try {
-      const res = await fetch(`/api/admin/contacts/${id}`, {
+      const res = await fetch(`${API_URL}/admin/contacts/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({ status: newStatus })
       });
       if (!res.ok) throw new Error("Failed to update status");
@@ -61,7 +63,7 @@ export default function AdminEnquiriesPage() {
     if (!confirm("Are you sure you want to delete this enquiry? This action is permanent.")) return;
 
     try {
-      const res = await fetch(`/api/admin/contacts/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_URL}/admin/contacts/${id}`, { method: "DELETE", headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to delete enquiry");
 
       setEnquiries(enquiries.filter((e) => e._id !== id));

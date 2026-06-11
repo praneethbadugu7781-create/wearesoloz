@@ -1,10 +1,10 @@
-import { connectDB } from "@/lib/db";
-import Blog from "@/models/Blog";
 import { stories as defaultStories } from "@/lib/data";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/Reveal";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -12,13 +12,12 @@ interface PageProps {
 
 async function getBlogData(slug: string) {
   try {
-    await connectDB();
-    const blog = await Blog.findOne({ slug, status: "published" }).lean();
-    if (blog) {
-      return JSON.parse(JSON.stringify(blog));
+    const res = await fetch(`${API_URL}/blogs/${slug}`, { cache: "no-store" });
+    if (res.ok) {
+      return await res.json();
     }
   } catch (error) {
-    console.error("DB error fetching story details:", error);
+    console.error("API error fetching story details:", error);
   }
 
   // Fallback
@@ -103,4 +102,3 @@ export default async function TravelStoryDetailPage({ params }: PageProps) {
     </div>
   );
 }
-

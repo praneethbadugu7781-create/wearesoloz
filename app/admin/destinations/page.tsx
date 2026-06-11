@@ -1,4 +1,6 @@
 "use client";
+import { getAuthHeaders } from "@/lib/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 import { useEffect, useState } from "react";
 import { MapPin, Plus, Edit2, Trash2, Check, Loader2 } from "lucide-react";
@@ -39,7 +41,7 @@ export default function AdminDestinationsPage() {
   const fetchDestinations = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/destinations");
+      const res = await fetch(`${API_URL}/admin/destinations`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to load destinations");
       const data = await res.json();
       setDestinations(data);
@@ -61,7 +63,7 @@ export default function AdminDestinationsPage() {
     if (!confirm("Are you sure you want to delete this destination? This action is permanent.")) return;
 
     try {
-      const res = await fetch(`/api/admin/destinations/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_URL}/admin/destinations/${id}`, { method: "DELETE", headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to delete destination");
       setDestinations(destinations.filter((d) => d._id !== id));
     } catch (err: any) {
@@ -78,12 +80,12 @@ export default function AdminDestinationsPage() {
 
     setSaving(true);
     try {
-      const url = editId ? `/api/admin/destinations/${editId}` : "/api/admin/destinations";
+      const url = editId ? `${API_URL}/admin/destinations/${editId}` : `${API_URL}/admin/destinations`;
       const method = editId ? "PATCH" : "POST";
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify(formData)
       });
 
