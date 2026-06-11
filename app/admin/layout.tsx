@@ -35,20 +35,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const isLoginPage = pathname === "/admin/login";
 
-  // Skip admin navigation if on login page
-  if (pathname === "/admin/login") {
-    return <>{children}</>;
-  }
-
-  // Client-side auth check
+  // Client-side auth check — hooks must run unconditionally
   useEffect(() => {
+    if (isLoginPage) return;
     if (!isAuthenticated()) {
       router.push("/admin/login");
     } else {
       setAuthChecked(true);
     }
-  }, [pathname, router]);
+  }, [pathname, router, isLoginPage]);
 
   const handleLogout = () => {
     if (confirm("Are you sure you want to log out?")) {
@@ -56,6 +53,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       router.push("/admin/login");
     }
   };
+
+  // Skip admin navigation if on login page
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   if (!authChecked) {
     return (
