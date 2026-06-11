@@ -77,10 +77,10 @@ export const destinations = [
 ];
 
 export const trips = [
-  { destination: "Kedarnath Community Yatra", date: "2026-09-18", duration: "6D / 5N", price: "₹18,999", seats: 14, image: destinations[0].image },
-  { destination: "Valley of Flowers Trek", date: "2026-08-09", duration: "7D / 6N", price: "₹21,499", seats: 10, image: destinations[3].image },
-  { destination: "Goa Soloz Escape", date: "2026-11-21", duration: "4D / 3N", price: "₹13,999", seats: 18, image: destinations[5].image },
-  { destination: "Hampta Pass Expedition", date: "2026-07-26", duration: "5D / 4N", price: "₹16,999", seats: 8, image: destinations[4].image }
+  { destination: "Kedarnath Community Yatra", state: "Uttarakhand", date: "2026-09-18", duration: "6D / 5N", price: "₹18,999", seats: 14, image: destinations[0].image },
+  { destination: "Valley of Flowers Trek", state: "Uttarakhand", date: "2026-08-09", duration: "7D / 6N", price: "₹21,499", seats: 10, image: destinations[3].image },
+  { destination: "Goa Soloz Escape", state: "Goa", date: "2026-11-21", duration: "4D / 3N", price: "₹13,999", seats: 18, image: destinations[5].image },
+  { destination: "Hampta Pass Expedition", state: "Himachal Pradesh", date: "2026-07-26", duration: "5D / 4N", price: "₹16,999", seats: 8, image: destinations[4].image }
 ];
 
 export const whyUs = [

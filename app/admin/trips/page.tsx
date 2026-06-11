@@ -16,6 +16,7 @@ interface ItineraryItem {
 interface TripData {
   _id?: string;
   destination: string;
+  state: string;
   slug: string;
   date: string;
   duration: string;
@@ -31,6 +32,7 @@ interface TripData {
 
 const emptyForm: TripData = {
   destination: "",
+  state: "Uttarakhand",
   slug: "",
   date: "",
   duration: "",
@@ -228,13 +230,18 @@ export default function AdminTripsPage() {
                 <div>
                   <div className="relative aspect-video w-full">
                     <img src={trip.image} alt={trip.destination} className="h-full w-full object-cover" />
-                    <span
-                      className={`absolute right-3 top-3 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                        trip.status === "published" ? "bg-emerald-500/80 text-white" : "bg-white/20 text-white"
-                      }`}
-                    >
-                      {trip.status}
-                    </span>
+                    <div className="absolute right-3 top-3 flex gap-2">
+                      <span className="bg-orange-500/90 text-white rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                        {trip.state || "Uttarakhand"}
+                      </span>
+                      <span
+                        className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                          trip.status === "published" ? "bg-emerald-500/80 text-white" : "bg-white/20 text-white"
+                        }`}
+                      >
+                        {trip.status}
+                      </span>
+                    </div>
                   </div>
                   <div className="p-5 space-y-3">
                     <h3 className="font-display text-lg font-bold text-white leading-tight">{trip.destination}</h3>
@@ -279,7 +286,7 @@ export default function AdminTripsPage() {
             {editId ? "Edit Trip Details" : "Create New Group Tour"}
           </h3>
 
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-3">
             <div>
               <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Destination Name</label>
               <input
@@ -290,6 +297,23 @@ export default function AdminTripsPage() {
                 onChange={handleDestinationChange}
                 className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
               />
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">State / Region</label>
+              <select
+                value={formData.state || "Uttarakhand"}
+                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                className="h-10 w-full rounded-lg border border-white/10 bg-[#14110d] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+              >
+                <option value="Uttarakhand">Uttarakhand</option>
+                <option value="Himachal Pradesh">Himachal Pradesh</option>
+                <option value="Goa">Goa</option>
+                <option value="Kerala">Kerala</option>
+                <option value="Meghalaya">Meghalaya</option>
+                <option value="Jammu & Kashmir">Jammu & Kashmir</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Tamil Nadu">Tamil Nadu</option>
+              </select>
             </div>
             <div>
               <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">URL Slug</label>

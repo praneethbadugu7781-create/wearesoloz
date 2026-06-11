@@ -18,6 +18,7 @@ async function getTrips() {
     ...t,
     id: t.destination.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
     slug: t.destination.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    state: t.state || "Uttarakhand",
     description: `Join us for an unforgettable group trip to ${t.destination}. Explore scenic locations, local food, and enjoy travel with a curated group.`,
     inclusions: [],
     itinerary: [],
