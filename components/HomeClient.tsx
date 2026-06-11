@@ -8,13 +8,13 @@ import Reveal, { stagger, item, SectionLabel } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
 
 const DEFAULT_DESTS = [
-  { name: "Kedarnath", location: "Uttarakhand", image: "https://images.unsplash.com/photo-1519719498756-2f0d81cdf13b?auto=format&fit=crop&w=1600&q=80", description: "Sacred Himalayan shrine wrapped in mist and devotion.", span: "wide" },
-  { name: "Badrinath", location: "Uttarakhand", image: "https://images.unsplash.com/photo-1626621331169-3526949dc1ec?auto=format&fit=crop&w=1200&q=80", description: "Spiritual heart of the upper Himalayas.", span: "default" },
-  { name: "Mana Village", location: "India-Tibet Border", image: "https://images.unsplash.com/photo-1699972551272-e0eaee1916b2?auto=format&fit=crop&w=1200&q=80", description: "India's last village. Where myth meets mountain.", span: "default" },
-  { name: "Valley of Flowers", location: "Uttarakhand", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80", description: "A UNESCO meadow that blooms once a year.", span: "tall" },
-  { name: "Hampta Pass", location: "Himachal Pradesh", image: "https://images.unsplash.com/photo-1644902560705-740850bc47b8?auto=format&fit=crop&w=1200&q=80", description: "Cross from lush green valleys to arid deserts.", span: "default" },
-  { name: "Goa", location: "West Coast", image: "https://images.unsplash.com/photo-1695453462627-32818199e4f6?auto=format&fit=crop&w=1200&q=80", description: "Sunset bikes, beach bonfires, slow mornings.", span: "default" },
-  { name: "Kerala", location: "South India", image: "https://images.unsplash.com/photo-1599325601183-042bed55081c?auto=format&fit=crop&w=1600&q=80", description: "Backwaters, hill stations and forest trails.", span: "wide" },
+  { name: "Munnar", location: "Kerala", image: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1600&q=80", description: "Lush tea gardens, misty hills, and cool mountain air.", span: "wide" },
+  { name: "Hampi", location: "Karnataka", image: "https://images.unsplash.com/photo-1600100397608-f010e45fa674?auto=format&fit=crop&w=1200&q=80", description: "Explore the ancient ruins and boulder-strewn landscapes.", span: "default" },
+  { name: "Gandikota", location: "Andhra Pradesh", image: "https://images.unsplash.com/photo-1616038242814-a6eac7845d88?auto=format&fit=crop&w=1200&q=80", description: "The stunning Grand Canyon of India gorge.", span: "default" },
+  { name: "Araku Valley", location: "Andhra Pradesh", image: "https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?auto=format&fit=crop&w=1200&q=80", description: "Cascading waterfalls and lush coffee plantations.", span: "tall" },
+  { name: "Gokarna", location: "Karnataka", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80", description: "Trek along pristine beaches and rocky cliffs.", span: "default" },
+  { name: "Ooty", location: "Tamil Nadu", image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80", description: "Misty pine forests and beautiful botanical gardens.", span: "default" },
+  { name: "Coorg", location: "Karnataka", image: "https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=1600&q=80", description: "Scenic coffee estates and peaceful waterfalls.", span: "wide" },
 ];
 
 const WHY = [

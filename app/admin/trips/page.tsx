@@ -32,7 +32,7 @@ interface TripData {
 
 const emptyForm: TripData = {
   destination: "",
-  state: "Uttarakhand",
+  state: "Telangana",
   slug: "",
   date: "",
   duration: "",
@@ -232,7 +232,7 @@ export default function AdminTripsPage() {
                     <img src={trip.image} alt={trip.destination} className="h-full w-full object-cover" />
                     <div className="absolute right-3 top-3 flex gap-2">
                       <span className="bg-orange-500/90 text-white rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-                        {trip.state || "Uttarakhand"}
+                        {trip.state || "Andhra Pradesh"}
                       </span>
                       <span
                         className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
@@ -301,18 +301,15 @@ export default function AdminTripsPage() {
             <div>
               <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">State / Region</label>
               <select
-                value={formData.state || "Uttarakhand"}
+                value={formData.state || "Telangana"}
                 onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                 className="h-10 w-full rounded-lg border border-white/10 bg-[#14110d] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
               >
-                <option value="Uttarakhand">Uttarakhand</option>
-                <option value="Himachal Pradesh">Himachal Pradesh</option>
-                <option value="Goa">Goa</option>
-                <option value="Kerala">Kerala</option>
-                <option value="Meghalaya">Meghalaya</option>
-                <option value="Jammu & Kashmir">Jammu & Kashmir</option>
+                <option value="Telangana">Telangana</option>
+                <option value="Andhra Pradesh">Andhra Pradesh</option>
                 <option value="Karnataka">Karnataka</option>
                 <option value="Tamil Nadu">Tamil Nadu</option>
+                <option value="Kerala">Kerala</option>
               </select>
             </div>
             <div>

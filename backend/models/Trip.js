@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const tripSchema = new mongoose.Schema(
   {
     destination: { type: String, required: true },
-    state: { type: String, default: "Uttarakhand" },
+    state: { type: String, default: "Telangana" },
     slug: { type: String, required: true, unique: true },
     date: { type: Date, required: true },
     duration: { type: String, required: true },

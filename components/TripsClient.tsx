@@ -12,14 +12,11 @@ interface TripsClientProps {
 
 const stateCategories = [
   { name: "All", image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80" },
-  { name: "Uttarakhand", image: "https://images.unsplash.com/photo-1626621331169-5f34be280ed9?auto=format&fit=crop&w=800&q=80" },
-  { name: "Himachal Pradesh", image: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=800&q=80" },
-  { name: "Goa", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80" },
-  { name: "Kerala", image: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80" },
-  { name: "Meghalaya", image: "https://images.unsplash.com/photo-1548252646-522f87a8e185?auto=format&fit=crop&w=800&q=80" },
-  { name: "Jammu & Kashmir", image: "https://images.unsplash.com/photo-1566228015668-4c45dbc4e2f5?auto=format&fit=crop&w=800&q=80" },
+  { name: "Telangana", image: "https://images.unsplash.com/photo-1626139575290-4b1ded4a8a24?auto=format&fit=crop&w=800&q=80" },
+  { name: "Andhra Pradesh", image: "https://images.unsplash.com/photo-1616038242814-a6eac7845d88?auto=format&fit=crop&w=800&q=80" },
   { name: "Karnataka", image: "https://images.unsplash.com/photo-1600100397608-f010e45fa674?auto=format&fit=crop&w=800&q=80" },
-  { name: "Tamil Nadu", image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80" }
+  { name: "Tamil Nadu", image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80" },
+  { name: "Kerala", image: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80" }
 ];
 
 export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
@@ -28,13 +25,13 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
 
   const countTrips = (stateName: string) => {
     if (stateName === "All") return initialTrips.length;
-    return initialTrips.filter(t => (t.state || "Uttarakhand").toLowerCase() === stateName.toLowerCase()).length;
+    return initialTrips.filter(t => (t.state || "Andhra Pradesh").toLowerCase() === stateName.toLowerCase()).length;
   };
 
   const filteredTrips = initialTrips.filter((t) => {
     const searchStr = `${t.destination || ""} ${t.title || ""} ${t.state || ""}`.toLowerCase();
     const matchesQuery = searchStr.includes(q.toLowerCase());
-    const matchesState = selectedState === "All" || (t.state || "Uttarakhand").toLowerCase() === selectedState.toLowerCase();
+    const matchesState = selectedState === "All" || (t.state || "Andhra Pradesh").toLowerCase() === selectedState.toLowerCase();
     return matchesQuery && matchesState;
   });
 
@@ -91,7 +88,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
           </Reveal>
 
           {/* Grid of state cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {stateCategories.map((state) => {
               const count = countTrips(state.name);
               const isActive = selectedState.toLowerCase() === state.name.toLowerCase();

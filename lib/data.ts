@@ -33,54 +33,56 @@ export const heroImage =
 
 export const destinations = [
   {
-    title: "Kedarnath",
-    location: "Uttarakhand",
-    description: "A soul-stirring Himalayan pilgrimage wrapped in snow peaks, stories, and sunrise trails.",
-    image: "https://images.unsplash.com/photo-1626621331169-5f34be280ed9?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    title: "Badrinath",
-    location: "Uttarakhand",
-    description: "Sacred valleys, ancient temples, warm community energy, and the calm of the Alaknanda.",
-    image: "https://images.unsplash.com/photo-1609947017136-9daf32a5eb16?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    title: "Mana Village",
-    location: "India's First Village",
-    description: "Stone lanes, mythic routes, mountain tea, and the quiet thrill of the last road north.",
-    image: "https://images.unsplash.com/photo-1626621331295-7ba5937f212e?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    title: "Valley of Flowers",
-    location: "Uttarakhand",
-    description: "A monsoon wonderland of alpine blooms, glacial streams, and camera-ready trekking days.",
-    image: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    title: "Hampta Pass",
-    location: "Himachal Pradesh",
-    description: "High-altitude drama from green Kullu valleys to the stark beauty of Lahaul.",
-    image: "https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    title: "Goa",
-    location: "Western Coast",
-    description: "Slow mornings, music-filled evenings, road trips, beaches, and easy community energy.",
-    image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    title: "Kerala",
-    location: "God's Own Country",
-    description: "Backwaters, forest roads, spice gardens, beaches, and gentle southern hospitality.",
+    title: "Munnar",
+    location: "Kerala",
+    description: "Lush tea gardens, misty hills, and cool mountain air in the Western Ghats.",
     image: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    title: "Hampi",
+    location: "Karnataka",
+    description: "An open-air museum of ruins, boulder hills, and ancient monuments along the river.",
+    image: "https://images.unsplash.com/photo-1600100397608-f010e45fa674?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    title: "Gandikota",
+    location: "Andhra Pradesh",
+    description: "The Grand Canyon of India, featuring spectacular red stone gorges and a historic fort.",
+    image: "https://images.unsplash.com/photo-1616038242814-a6eac7845d88?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    title: "Araku Valley",
+    location: "Andhra Pradesh",
+    description: "Scenic hill station with coffee plantations, tribal culture, and cascading waterfalls.",
+    image: "https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    title: "Gokarna",
+    location: "Karnataka",
+    description: "Pristine beaches, beach treks, cliff sunsets, and a relaxed, laid-back vibe.",
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    title: "Ooty",
+    location: "Tamil Nadu",
+    description: "Queen of Hill Stations, known for its tea gardens, lakes, and heritage train rides.",
+    image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    title: "Coorg",
+    location: "Karnataka",
+    description: "The Scotland of India, rich in coffee plantations, spice gardens, and waterfalls.",
+    image: "https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=1200&q=80"
   }
 ];
 
 export const trips = [
-  { destination: "Kedarnath Community Yatra", state: "Uttarakhand", date: "2026-09-18", duration: "6D / 5N", price: "₹18,999", seats: 14, image: destinations[0].image },
-  { destination: "Valley of Flowers Trek", state: "Uttarakhand", date: "2026-08-09", duration: "7D / 6N", price: "₹21,499", seats: 10, image: destinations[3].image },
-  { destination: "Goa Soloz Escape", state: "Goa", date: "2026-11-21", duration: "4D / 3N", price: "₹13,999", seats: 18, image: destinations[5].image },
-  { destination: "Hampta Pass Expedition", state: "Himachal Pradesh", date: "2026-07-26", duration: "5D / 4N", price: "₹16,999", seats: 8, image: destinations[4].image }
+  { destination: "Munnar & Kodaikanal", state: "Kerala", date: "2026-09-18", duration: "4 Days", price: "₹12,499", seats: 12, image: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80" },
+  { destination: "Hampi Weekend", state: "Karnataka", date: "2026-10-03", duration: "2 Days", price: "₹6,499", seats: 15, image: "https://images.unsplash.com/photo-1600100397608-f010e45fa674?auto=format&fit=crop&w=1200&q=80" },
+  { destination: "Araku Valley", state: "Andhra Pradesh", date: "2026-10-17", duration: "2 Days", price: "₹5,999", seats: 14, image: "https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?auto=format&fit=crop&w=1200&q=80" },
+  { destination: "Srisailam Spiritual Trail", state: "Andhra Pradesh", date: "2026-11-07", duration: "2 Days", price: "₹4,999", seats: 18, image: "https://images.unsplash.com/photo-1616038242814-a6eac7845d88?auto=format&fit=crop&w=1200&q=80" },
+  { destination: "Gokarna Beach Trek", state: "Karnataka", date: "2026-11-20", duration: "3 Days", price: "₹8,999", seats: 12, image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80" },
+  { destination: "Coorg & Chikmagalur", state: "Karnataka", date: "2026-12-05", duration: "3 Days", price: "₹9,499", seats: 15, image: "https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=1200&q=80" }
 ];
 
 export const whyUs = [
@@ -93,9 +95,9 @@ export const whyUs = [
 ];
 
 export const stories = [
-  { title: "My Kedarnath Journey", category: "Spiritual Travel", readTime: "6 min", image: destinations[0].image },
-  { title: "Exploring Mana Village", category: "Hidden Destinations", readTime: "4 min", image: destinations[2].image },
-  { title: "Valley of Flowers Trek", category: "Treks", readTime: "7 min", image: destinations[3].image },
+  { title: "Exploring Hampi Ruins", category: "Hidden Destinations", readTime: "6 min", image: "https://images.unsplash.com/photo-1600100397608-f010e45fa674?auto=format&fit=crop&w=1200&q=80" },
+  { title: "Munnar Tea Hills Hike", category: "Treks", readTime: "4 min", image: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80" },
+  { title: "Gandikota Camping Adventure", category: "Adventure", readTime: "7 min", image: "https://images.unsplash.com/photo-1616038242814-a6eac7845d88?auto=format&fit=crop&w=1200&q=80" },
   { title: "Solo Travel Lessons", category: "Community", readTime: "5 min", image: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1200&q=80" }
 ];
 
@@ -106,12 +108,12 @@ export const testimonials = [
 ];
 
 export const gallery = [
-  { src: destinations[0].image, category: "Spiritual Tours", title: "Kedarnath Dawn" },
-  { src: destinations[3].image, category: "Treks", title: "Valley Bloom Trail" },
-  { src: destinations[5].image, category: "Road Trips", title: "Goa Coast Drive" },
+  { src: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80", category: "Nature", title: "Munnar Morning" },
+  { src: "https://images.unsplash.com/photo-1600100397608-f010e45fa674?auto=format&fit=crop&w=1200&q=80", category: "Heritage", title: "Hampi Sunset" },
+  { src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80", category: "Adventure", title: "Gokarna Cliffs" },
   { src: "https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&w=1200&q=80", category: "Community Events", title: "Campfire Circle" },
-  { src: destinations[6].image, category: "Hidden Destinations", title: "Kerala Slow Roads" },
-  { src: destinations[4].image, category: "Treks", title: "Hampta Ridge" }
+  { src: "https://images.unsplash.com/photo-1616038242814-a6eac7845d88?auto=format&fit=crop&w=1200&q=80", category: "Adventure", title: "Gandikota Gorge" },
+  { src: "https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=1200&q=80", category: "Nature", title: "Coorg Trails" }
 ];
 
 export const adminModules = [
