@@ -482,7 +482,10 @@ export function TripCard({ trip }: { trip: any }) {
           )}
         </div>
         <div className="p-6">
-          <div className="text-[10px] uppercase tracking-[0.3em] text-soloz-primary">{trip.destination}</div>
+          <div className="flex items-center justify-between gap-2 text-[10px] uppercase font-semibold">
+            <span className="tracking-[0.2em] text-[#ea580c]">{trip.destination}</span>
+            <span className="tracking-wider text-stone-500 bg-stone-100/80 rounded-md px-1.5 py-0.5">{trip.category || "Adventure"}</span>
+          </div>
           <div className="font-display text-xl font-medium mt-2 text-stone-900 truncate">{trip.title || `${trip.destination} Group Tour`}</div>
           <div className="flex items-center gap-4 mt-4 text-xs text-soloz-textSecondary">
             {trip.duration && <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3 text-stone-500" /> {trip.duration}</span>}

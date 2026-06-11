@@ -22,17 +22,29 @@ const stateCategories = [
 export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
   const [q, setQ] = useState("");
   const [selectedState, setSelectedState] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const categoriesList = ["All", "Temples", "Treks", "Adventure"];
 
   const countTrips = (stateName: string) => {
     if (stateName === "All") return initialTrips.length;
     return initialTrips.filter(t => (t.state || "Andhra Pradesh").toLowerCase() === stateName.toLowerCase()).length;
   };
 
+  const countCategoryTrips = (categoryName: string) => {
+    return initialTrips.filter(t => {
+      const matchesState = selectedState === "All" || (t.state || "Andhra Pradesh").toLowerCase() === selectedState.toLowerCase();
+      const matchesCategory = categoryName === "All" || (t.category || "Adventure").toLowerCase() === categoryName.toLowerCase();
+      return matchesState && matchesCategory;
+    }).length;
+  };
+
   const filteredTrips = initialTrips.filter((t) => {
-    const searchStr = `${t.destination || ""} ${t.title || ""} ${t.state || ""}`.toLowerCase();
+    const searchStr = `${t.destination || ""} ${t.title || ""} ${t.state || ""} ${t.category || ""}`.toLowerCase();
     const matchesQuery = searchStr.includes(q.toLowerCase());
     const matchesState = selectedState === "All" || (t.state || "Andhra Pradesh").toLowerCase() === selectedState.toLowerCase();
-    return matchesQuery && matchesState;
+    const matchesCategory = selectedCategory === "All" || (t.category || "Adventure").toLowerCase() === selectedCategory.toLowerCase();
+    return matchesQuery && matchesState && matchesCategory;
   });
 
   return (
@@ -76,9 +88,12 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                   Select a State to <span className="gradient-text font-medium">filter trips</span>
                 </h2>
               </div>
-              {selectedState !== "All" && (
+              {(selectedState !== "All" || selectedCategory !== "All") && (
                 <button
-                  onClick={() => setSelectedState("All")}
+                  onClick={() => {
+                    setSelectedState("All");
+                    setSelectedCategory("All");
+                  }}
                   className="text-xs font-semibold text-[#ea580c] hover:underline transition-colors"
                 >
                   Clear Filters
@@ -95,7 +110,10 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
               return (
                 <Reveal key={state.name}>
                   <button
-                    onClick={() => setSelectedState(state.name)}
+                    onClick={() => {
+                      setSelectedState(state.name);
+                      setSelectedCategory("All");
+                    }}
                     className={`relative w-full aspect-[4/3] rounded-2xl overflow-hidden border group transition-all duration-300 ${
                       isActive
                         ? "border-[#ea580c] ring-2 ring-orange-500/20 scale-[1.02]"
@@ -133,6 +151,43 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
       {/* Trips Grid */}
       <section className="py-20 px-6 md:px-10">
         <div className="max-w-7xl mx-auto">
+          {/* Category Tabs */}
+          <div className="flex flex-wrap items-center justify-between border-b border-stone-100 pb-8 mb-12 gap-4">
+            <div>
+              <h3 className="font-display text-xl md:text-2xl font-light text-stone-900">
+                Filter by <span className="gradient-text font-medium">Experience</span>
+              </h3>
+              <p className="text-xs text-stone-400 mt-1">
+                Showing {filteredTrips.length} {filteredTrips.length === 1 ? "trip" : "trips"} for {selectedState === "All" ? "all regions" : selectedState}
+              </p>
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+              {categoriesList.map((cat) => {
+                const isActive = selectedCategory.toLowerCase() === cat.toLowerCase();
+                const count = countCategoryTrips(cat);
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide border transition-all duration-300 flex items-center gap-2 ${
+                      isActive
+                        ? "bg-stone-900 text-white border-stone-900 shadow-md shadow-stone-900/10 scale-105"
+                        : "bg-white text-stone-600 border-stone-200 hover:border-stone-400 hover:text-stone-900"
+                    }`}
+                  >
+                    <span>{cat}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                      isActive ? "bg-white/20 text-white" : "bg-stone-100 text-stone-500"
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {filteredTrips.length === 0 ? (
             <div className="text-center glass rounded-3xl py-20 text-stone-500 border border-stone-200">
               No trips published yet for this selection. Visit the community to be notified first.

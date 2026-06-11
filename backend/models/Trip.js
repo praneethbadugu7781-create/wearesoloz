@@ -4,6 +4,7 @@ const tripSchema = new mongoose.Schema(
   {
     destination: { type: String, required: true },
     state: { type: String, default: "Telangana" },
+    category: { type: String, enum: ["Temples", "Treks", "Adventure"], default: "Adventure" },
     slug: { type: String, required: true, unique: true },
     date: { type: Date, required: true },
     duration: { type: String, required: true },

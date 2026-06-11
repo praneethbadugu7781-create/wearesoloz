@@ -17,6 +17,7 @@ interface TripData {
   _id?: string;
   destination: string;
   state: string;
+  category?: string;
   slug: string;
   date: string;
   duration: string;
@@ -33,6 +34,7 @@ interface TripData {
 const emptyForm: TripData = {
   destination: "",
   state: "Telangana",
+  category: "Adventure",
   slug: "",
   date: "",
   duration: "",
@@ -286,7 +288,7 @@ export default function AdminTripsPage() {
             {editId ? "Edit Trip Details" : "Create New Group Tour"}
           </h3>
 
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-4">
             <div>
               <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Destination Name</label>
               <input
@@ -310,6 +312,18 @@ export default function AdminTripsPage() {
                 <option value="Karnataka">Karnataka</option>
                 <option value="Tamil Nadu">Tamil Nadu</option>
                 <option value="Kerala">Kerala</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Category</label>
+              <select
+                value={formData.category || "Adventure"}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="h-10 w-full rounded-lg border border-white/10 bg-[#14110d] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+              >
+                <option value="Temples">Temples</option>
+                <option value="Treks">Treks</option>
+                <option value="Adventure">Adventure</option>
               </select>
             </div>
             <div>
