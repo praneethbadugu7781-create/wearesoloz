@@ -13,10 +13,10 @@ interface TripsClientProps {
 const stateCategories = [
   { name: "All", image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80" },
   { name: "Telangana", image: "https://images.unsplash.com/photo-1626139575290-4b1ded4a8a24?auto=format&fit=crop&w=800&q=80" },
-  { name: "Andhra Pradesh", image: "https://images.unsplash.com/photo-1616038242814-a6eac7845d88?auto=format&fit=crop&w=800&q=80" },
-  { name: "Karnataka", image: "https://images.unsplash.com/photo-1600100397608-f010e45fa674?auto=format&fit=crop&w=800&q=80" },
+  { name: "Andhra Pradesh", image: "https://images.unsplash.com/photo-1621427637148-d088eaf069a3?auto=format&fit=crop&w=800&q=80" },
+  { name: "Karnataka", image: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=800&q=80" },
   { name: "Tamil Nadu", image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80" },
-  { name: "Kerala", image: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80" }
+  { name: "Kerala", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80" }
 ];
 
 export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
@@ -191,6 +191,40 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
           {filteredTrips.length === 0 ? (
             <div className="text-center glass rounded-3xl py-20 text-stone-500 border border-stone-200">
               No trips published yet for this selection. Visit the community to be notified first.
+            </div>
+          ) : selectedState !== "All" && selectedCategory === "All" ? (
+            /* ── Grouped by Category within a State ── */
+            <div className="space-y-16">
+              {(["Temples", "Treks", "Adventure"] as const).map((cat) => {
+                const catIcon = cat === "Temples" ? "🛕" : cat === "Treks" ? "🏔️" : "🌊";
+                const catTrips = filteredTrips.filter(
+                  (t) => (t.category || "Adventure").toLowerCase() === cat.toLowerCase()
+                );
+                if (catTrips.length === 0) return null;
+                return (
+                  <div key={cat}>
+                    {/* Category Section Header */}
+                    <div className="flex items-center gap-3 mb-6">
+                      <span className="text-2xl">{catIcon}</span>
+                      <div>
+                        <h3 className="font-display text-xl md:text-2xl font-semibold text-stone-900">
+                          {cat}
+                        </h3>
+                        <p className="text-xs text-stone-400 mt-0.5">
+                          {catTrips.length} {catTrips.length === 1 ? "trip" : "trips"} in {selectedState}
+                        </p>
+                      </div>
+                      <div className="flex-1 h-px bg-gradient-to-r from-stone-200 to-transparent ml-4" />
+                    </div>
+                    {/* Category Trip Cards */}
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                      {catTrips.map((t) => (
+                        <TripCard key={t.id || t._id} trip={t} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
