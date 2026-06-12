@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, ArrowUpRight, MapPin, Calendar, Clock, Users, Sparkles, Shield, Heart, Star, Quote, Instagram, Phone } from "lucide-react";
 import Reveal, { stagger, item, SectionLabel } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
+import { HomeHero } from "@/components/home-hero";
 
 const DEFAULT_DESTS = [
   { name: "Munnar", location: "Kerala", image: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1600&q=80", description: "Lush tea gardens, misty hills, and cool mountain air.", span: "wide" },
@@ -43,82 +44,37 @@ export default function HomeClient({
   testimonials = [],
   gallery = [],
 }: HomeClientProps) {
-  const destList = destinations.length ? destinations : DEFAULT_DESTS;
+  // Pad destinations to exactly 7 items to prevent gaps in the bento grid
+  const getBentoDests = () => {
+    const list = [...destinations];
+    for (const def of DEFAULT_DESTS) {
+      if (list.length >= 7) break;
+      if (!list.some(d => (d.name || d.title || "").toLowerCase() === def.name.toLowerCase())) {
+        list.push(def);
+      }
+    }
+    return list.slice(0, 7);
+  };
+  const destList = getBentoDests();
+
+  // Map trips to the shape expected by the HomeHero preview slider
+  const heroTrips = trips.slice(0, 5).map((t) => ({
+    destination: t.destination,
+    slug: t.slug || t.destination?.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    duration: t.duration || "",
+    price: "Contact for Price", // Must be "Contact for Price" per client requirement
+    image: t.image || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80"
+  }));
 
   return (
     <div data-testid="home-page" className="bg-white min-h-screen text-[#1c1917] pt-20">
       {/* SECTION 1 — HERO */}
-      <section data-testid="hero-section" className="relative min-h-[calc(100vh-80px)] flex items-end overflow-hidden bg-white">
-        <div className="absolute inset-0 bg-white">
-          <img
-            src={settings.hero_image || "https://images.unsplash.com/photo-1692452376160-14194abefba8?auto=format&fit=crop&w=2400&q=85"}
-            alt="Hero"
-            className="w-full h-full object-cover opacity-55"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/15 to-white" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent" />
-        </div>
-
-
-        <div className="relative max-w-7xl mx-auto px-4 md:px-10 pb-16 md:pb-32 pt-24 w-full">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <SectionLabel>WeAreSoloz · Est. 2017</SectionLabel>
-            <h1 className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-light leading-[0.95] tracking-tighter mt-6 max-w-4xl text-white">
-              Start Solo. <br />
-              <span className="gradient-text font-medium">Travel Together.</span>
-            </h1>
-            <p className="text-sm sm:text-base md:text-lg text-white/85 mt-6 sm:mt-8 max-w-xl leading-relaxed font-body">
-              {settings.hero_subheading || "Join solo travelers, explore new destinations, meet incredible people and create unforgettable memories together."}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 mt-8 sm:mt-10">
-              <Link
-                href="/upcoming-trips"
-                data-testid="hero-explore-trips"
-                className="inline-flex items-center justify-center gap-2 gradient-orange text-white px-7 py-4 rounded-full font-medium hover:scale-[1.02] transition-transform"
-              >
-                Explore Trips <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="/soloz-community"
-                data-testid="hero-join-community"
-                className="inline-flex items-center justify-center gap-2 glass text-white px-7 py-4 rounded-full font-medium hover:bg-white/10 transition-colors"
-              >
-                Join Community
-              </Link>
-            </div>
-          </motion.div>
-
-          {/* Floating stats card */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.9 }}
-            className="hidden md:flex absolute right-10 bottom-32 glass rounded-2xl p-6 w-72 flex-col gap-4"
-          >
-            <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-soloz-primary">
-              <span className="w-2 h-2 rounded-full bg-soloz-primary animate-pulse" /> Live community
-            </div>
-            <div>
-              <div className="font-display text-4xl font-light text-stone-900">100+</div>
-              <div className="text-xs text-stone-600 mt-1">Destinations explored across India</div>
-            </div>
-            <div className="h-px bg-stone-200" />
-            <div>
-              <div className="font-display text-4xl font-light text-stone-900">7+ yrs</div>
-              <div className="text-xs text-stone-600 mt-1">Of solo travel, stories & friendships</div>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* scroll cue */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-[0.4em] text-stone-500 font-semibold">
-          scroll
-        </div>
-      </section>
+      <HomeHero
+        title={settings.hero_title || settings.heroTitle || "Start Solo. Travel Together."}
+        subheading={settings.hero_subheading || settings.heroSubheading || "Join solo travelers, explore new destinations, meet incredible people and create unforgettable memories together."}
+        heroImage={settings.hero_image || settings.heroImage}
+        trips={heroTrips}
+      />
 
       {/* SECTION 2 — Featured Destinations (Bento) */}
       <section data-testid="destinations-section" className="py-16 md:py-32 px-4 md:px-10 relative">
@@ -154,7 +110,7 @@ export default function HomeClient({
                 <motion.div
                   key={d.id || d._id || d.name}
                   variants={item}
-                  className={`group relative overflow-hidden rounded-2xl ${spans[i] || ""}`}
+                  className={`group relative overflow-hidden rounded-2xl border border-stone-200/10 shadow-sm hover:shadow-lg transition-all duration-500 ${spans[i] || ""}`}
                 >
                   <img
                     src={d.image}
@@ -163,9 +119,9 @@ export default function HomeClient({
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                   <div className="absolute inset-0 p-5 md:p-7 flex flex-col justify-end">
-                    <div className="text-[10px] uppercase tracking-[0.3em] text-soloz-primary mb-2">{d.location}</div>
+                    <div className="text-[10px] uppercase tracking-[0.3em] text-[#ff7a1a] mb-2">{d.location}</div>
                     <div className="font-display text-xl sm:text-2xl md:text-3xl font-medium tracking-tight text-white">{d.name || d.title}</div>
-                    {d.description && i === 0 && <div className="text-sm text-white/70 mt-2 max-w-xs hidden md:block">{d.description}</div>}
+                    {d.description && i === 0 && <div className="text-sm text-white/70 mt-2 max-w-xs hidden md:block font-body">{d.description}</div>}
                   </div>
                   <div className="absolute top-4 right-4 w-9 h-9 rounded-full glass flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <ArrowUpRight className="w-4 h-4 text-white" />
@@ -254,12 +210,12 @@ export default function HomeClient({
           </Reveal>
           <motion.div {...stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {WHY.map((w) => (
-              <motion.div key={w.title} variants={item} className="glass rounded-2xl p-6 md:p-8 hover-lift border border-stone-200">
-                <div className="w-12 h-12 rounded-full bg-soloz-primary/15 border border-soloz-primary/30 flex items-center justify-center mb-5">
+              <motion.div key={w.title} variants={item} className="bg-white/80 border border-stone-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)] backdrop-blur-md rounded-2xl p-6 md:p-8 hover-lift hover:shadow-md hover:border-orange-500/20 transition-all duration-300">
+                <div className="w-12 h-12 rounded-full bg-soloz-primary/10 border border-soloz-primary/20 flex items-center justify-center mb-5">
                   <w.icon className="w-5 h-5 text-soloz-primary" />
                 </div>
-                <div className="font-display text-xl font-medium text-stone-900">{w.title}</div>
-                <div className="text-sm text-soloz-textSecondary mt-2 leading-relaxed">{w.text}</div>
+                <div className="font-display text-xl font-semibold text-stone-900">{w.title}</div>
+                <div className="text-sm text-stone-600 mt-2 leading-relaxed font-body">{w.text}</div>
               </motion.div>
             ))}
           </motion.div>
@@ -297,9 +253,9 @@ export default function HomeClient({
                 { k: "1000s", v: "Memories" },
                 { k: "∞", v: "Friendships" },
               ].map((s) => (
-                <div key={s.v} className="glass rounded-xl p-4 sm:p-5 border border-stone-200">
-                  <div className="font-display text-3xl font-light gradient-text">{s.k}</div>
-                  <div className="text-xs text-soloz-textSecondary mt-1 uppercase tracking-wider">{s.v}</div>
+                <div key={s.v} className="bg-white/80 border border-stone-200/50 shadow-sm backdrop-blur-md rounded-xl p-4 sm:p-5 hover-lift transition-all duration-300">
+                  <div className="font-display text-3xl font-bold gradient-text">{s.k}</div>
+                  <div className="text-xs text-stone-600 mt-1 uppercase tracking-wider font-semibold font-body">{s.v}</div>
                 </div>
               ))}
             </div>

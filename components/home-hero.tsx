@@ -15,9 +15,10 @@ interface HomeHeroProps {
   title: string;
   subheading: string;
   trips: TripItem[];
+  heroImage?: string;
 }
 
-export function HomeHero({ title, subheading, trips }: HomeHeroProps) {
+export function HomeHero({ title, subheading, trips, heroImage }: HomeHeroProps) {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(25); // Starts at 25% or 33.33%
 
@@ -52,41 +53,41 @@ export function HomeHero({ title, subheading, trips }: HomeHeroProps) {
   }, []);
 
   return (
-    <section className="home-hero-section min-h-screen pt-32 pb-16 flex flex-col justify-between z-10 bg-black">
+    <section className="home-hero-section min-h-screen pt-32 pb-16 flex flex-col justify-between z-10 bg-[#faf9f6] relative overflow-hidden">
       {/* Background Image webp layout */}
       <div className="absolute inset-0 z-0">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40 scale-102"
           style={{
-            backgroundImage: `url('https://cdn.prod.website-files.com/68b4aefe0f5b95bfbdc12b0b/68b6a7425c15d1ac23bc168e_Hero%20image%20(1).webp')`
+            backgroundImage: `url('${heroImage || 'https://cdn.prod.website-files.com/68b4aefe0f5b95bfbdc12b0b/68b6a7425c15d1ac23bc168e_Hero%20image%20(1).webp'}')`
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#080705] via-transparent to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#faf9f6] via-[#faf9f6]/40 to-transparent" />
       </div>
 
       {/* Floating ambient glow */}
-      <div className="absolute top-1/4 left-1/4 size-[400px] rounded-full bg-soloz-ember/5 blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 size-[400px] rounded-full bg-[#ff7a1a]/5 blur-[120px] pointer-events-none" />
 
       {/* Hero Typography & CTA */}
       <div className="section-shell relative z-10 w-full text-center my-auto px-4">
         <div className="max-w-4xl mx-auto flex flex-col items-center space-y-6">
           {/* Badge */}
           <div
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.25em] text-soloz-ember backdrop-blur-md"
+            className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/75 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.25em] text-[#ea580c] backdrop-blur-md"
           >
             Start Solo. Travel Together.
           </div>
 
           {/* Heading */}
           <h1
-            className="font-display text-4xl sm:text-6xl md:text-7xl font-extrabold leading-[1.12] tracking-tight text-white max-w-3xl"
+            className="font-display text-4xl sm:text-6xl md:text-7xl font-extrabold leading-[1.12] tracking-tight text-stone-900 max-w-3xl"
           >
-            Your Next Adventure Starts Here
+            {title || "Your Next Adventure Starts Here"}
           </h1>
 
           {/* Subheading */}
           <p
-            className="mx-auto max-w-xl text-sm sm:text-base text-soloz-ash/90 leading-relaxed font-medium"
+            className="mx-auto max-w-xl text-sm sm:text-base text-stone-600 leading-relaxed font-medium font-body"
           >
             {subheading}
           </p>
@@ -94,7 +95,7 @@ export function HomeHero({ title, subheading, trips }: HomeHeroProps) {
           {/* Webflow button-2 (Gooey SVG Filter CTA) */}
           <div className="pt-2">
             <a href="#" onClick={(e) => openBookingModal(e)} className="button-2 w-inline-block">
-              <div className="button-3_content-wrap">
+              <div className="button-3_content-wrap border border-stone-200/50 shadow-sm">
                 <div>Book Your Tour</div>
               </div>
               <div className="button-3_arrow-wrapper">
@@ -117,11 +118,11 @@ export function HomeHero({ title, subheading, trips }: HomeHeroProps) {
       </div>
 
       {/* Bottom Content: Reviews (Left) + Horizontal Slider (Right) */}
-      <div className="relative z-10 mt-auto pt-10 border-t border-white/5 bg-gradient-to-t from-[#080705]/90 to-transparent">
+      <div className="relative z-10 mt-auto pt-10 border-t border-stone-200/40 bg-gradient-to-t from-[#faf9f6]/90 to-transparent">
         <div className="mx-auto max-w-7xl px-4 md:px-8 flex flex-col lg:grid lg:grid-cols-[1fr_1.8fr] gap-8 items-center">
           
           {/* Trust Index Card (Gavisor style review-box) */}
-          <div className="review-box shrink-0 flex flex-col md:flex-row md:items-center justify-between md:max-w-none lg:flex-col lg:items-start lg:justify-start gap-4 w-full bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl p-6">
+          <div className="review-box shrink-0 flex flex-col md:flex-row md:items-center justify-between md:max-w-none lg:flex-col lg:items-start lg:justify-start gap-4 w-full bg-white/80 border border-stone-200/50 shadow-sm backdrop-blur-xl rounded-2xl p-6">
             <div className="flex items-center gap-3">
               <img 
                 src="https://cdn.prod.website-files.com/68b4aefe0f5b95bfbdc12b0b/68b6bed98318d5e10f50a3ea_Govaisor.webp" 
@@ -143,7 +144,7 @@ export function HomeHero({ title, subheading, trips }: HomeHeroProps) {
                   />
                 ))}
               </div>
-              <p className="text-xs text-soloz-ash/60 font-semibold uppercase tracking-wider">Based on 500+ memories</p>
+              <p className="text-xs text-stone-500 font-semibold uppercase tracking-wider">Based on 500+ memories</p>
             </div>
           </div>
 
@@ -158,7 +159,7 @@ export function HomeHero({ title, subheading, trips }: HomeHeroProps) {
               {trips.map((trip) => (
                 <div
                   key={trip.slug}
-                  className="snap-start flex-none w-[270px] sm:w-[310px] bg-white text-[#080705] rounded-3xl p-2 pb-4 flex flex-col justify-between group cursor-pointer border border-white/10 shadow-lg"
+                  className="snap-start flex-none w-[270px] sm:w-[310px] bg-white text-[#080705] rounded-3xl p-2 pb-4 flex flex-col justify-between group cursor-pointer border border-stone-200/50 shadow-sm hover:shadow-md transition-all duration-300"
                   onClick={(e) => openBookingModal(e, trip.destination)}
                 >
                   <div className="packages-overflow relative aspect-[16/11] w-full rounded-2xl overflow-hidden mb-4 bg-stone-100">
@@ -168,7 +169,7 @@ export function HomeHero({ title, subheading, trips }: HomeHeroProps) {
                       className="packages-item-image h-full w-full object-cover transition-transform duration-700 group-hover:scale-103"
                     />
                     <div className="booking-open white-color">
-                      From {trip.price}
+                      {trip.price === "Contact for Price" ? "Contact for Price" : `From ${trip.price}`}
                     </div>
                   </div>
 
@@ -201,7 +202,7 @@ export function HomeHero({ title, subheading, trips }: HomeHeroProps) {
             </div>
 
             {/* Slider Progress Bar synced with scroll */}
-            <div className="booking-underline">
+            <div className="booking-underline !bg-stone-200/50">
               <div 
                 className="booking-line-animation"
                 style={{ width: `${scrollProgress}%` }}
