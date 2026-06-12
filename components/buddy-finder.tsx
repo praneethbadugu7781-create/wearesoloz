@@ -104,7 +104,7 @@ export function BuddyFinder() {
                   <input
                     type="text"
                     required
-                    placeholder="@akhillrockstar"
+                    placeholder="@wearesolozindia"
                     value={formData.instagram}
                     onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
                     className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"

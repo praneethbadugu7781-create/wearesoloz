@@ -99,6 +99,8 @@ router.get("/settings/:key", async (req, res) => {
 });
 
 // --- Contacts (public submit) ---
+const { sendContactEmail } = require("../lib/mailer");
+
 router.post("/contacts", async (req, res) => {
   try {
     const { fullName, mobile, email, destination, message } = req.body;
@@ -109,6 +111,10 @@ router.post("/contacts", async (req, res) => {
 
     await connectDB();
     const contact = await Contact.create({ fullName, mobile, email, destination, message });
+
+    // Send email notification asynchronously
+    sendContactEmail({ fullName, mobile, email, destination, message }).catch(console.error);
+
     res.status(201).json(contact);
   } catch (e) {
     res.status(500).json({ error: e.message });

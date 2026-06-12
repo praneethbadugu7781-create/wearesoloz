@@ -72,7 +72,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 bg-white rounded-full px-5 py-2.5 text-sm font-medium border border-stone-200 hover:border-orange-200 hover:bg-orange-50 hover:text-[#ea580c] transition-all shadow-sm text-stone-700"
               >
-                <Instagram className="w-4 h-4" /> @akhillrockstar
+                <Instagram className="w-4 h-4" /> {instagramLink.includes("akhillrockstar") ? "@akhillrockstar" : "@wearesolozindia"}
               </a>
               <a
                 data-testid="about-phone"

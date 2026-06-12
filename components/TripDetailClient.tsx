@@ -20,7 +20,8 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch("/api/contacts", {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const res = await fetch(`${API_URL}/contacts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -28,7 +29,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
           mobile: form.mobile,
           email: form.email,
           destination: trip.destination,
-          message: `Trip booking request for: "${trip.title}" (${trip.duration}). Travelers: ${form.travelers}. Additional Message: ${form.message}`
+          message: `Trip booking request for: "${trip.title || trip.destination}" (${trip.duration}). Travelers: ${form.travelers}. Additional Message: ${form.message}`
         })
       });
 
@@ -37,6 +38,12 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
       }
 
       toast.success("Request sent. Akhil will reach out shortly.");
+
+      // Open WhatsApp chat prefilled with booking data
+      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${form.full_name}. Mobile: ${form.mobile}. Email: ${form.email}. I want to book a seat for the trip: "${trip.title || trip.destination}" (${trip.duration}). Travelers: ${form.travelers}. Message: ${form.message}`);
+      const waUrl = `https://wa.me/919966085310?text=${waText}`;
+      window.open(waUrl, "_blank");
+
       setForm({ full_name: "", mobile: "", email: "", travelers: 1, message: "" });
     } catch (e) {
       toast.error("Couldn't send. Please try again.");

@@ -18,14 +18,15 @@ export default function ContactClient({ settings = {} }: ContactClientProps) {
 
   const phone = settings.phone || "+91 99660 85310";
   const formattedPhone = phone.replace(/[^0-9+]/g, "");
-  const instagramLink = settings.instagram || "https://www.instagram.com/akhillrockstar";
+  const instagramLink = settings.instagram || "https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==";
   const whatsappLink = settings.whatsapp || "https://wa.me/919966085310";
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
-      const res = await fetch("/api/contacts", {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const res = await fetch(`${API_URL}/contacts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -42,6 +43,12 @@ export default function ContactClient({ settings = {} }: ContactClientProps) {
       }
 
       toast.success("Message sent! Akhil will get back to you soon.");
+
+      // Open WhatsApp chat prefilled with form data
+      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${form.full_name}. Mobile: ${form.mobile}. Email: ${form.email}. Interested in: ${form.destination || "General Inquiry"}. Message: ${form.message}`);
+      const waUrl = `https://wa.me/919966085310?text=${waText}`;
+      window.open(waUrl, "_blank");
+
       setForm({ full_name: "", mobile: "", email: "", destination: "", message: "" });
     } catch {
       toast.error("Couldn't send. Try again.");
@@ -87,7 +94,9 @@ export default function ContactClient({ settings = {} }: ContactClientProps) {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-widest text-soloz-textMuted">Instagram</div>
-                  <div className="text-stone-900 font-semibold">@akhillrockstar</div>
+                  <div className="text-stone-900 font-semibold">
+                    {instagramLink.includes("akhillrockstar") ? "@akhillrockstar" : "@wearesolozindia"}
+                  </div>
                 </div>
               </a>
               <a

@@ -30,7 +30,8 @@ export function TripBookingForm({ destination }: TripBookingFormProps) {
     setError("");
 
     try {
-      const res = await fetch("/api/contacts", {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const res = await fetch(`${API_URL}/contacts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -46,6 +47,11 @@ export function TripBookingForm({ destination }: TripBookingFormProps) {
         const data = await res.json();
         throw new Error(data.error || "Failed to submit request.");
       }
+
+      // Open WhatsApp chat prefilled with details
+      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${formData.fullName}. Mobile: ${formData.mobile}. Email: ${formData.email}. I want to join the group trip to ${destination}. Message: ${formData.message}`);
+      const waUrl = `https://wa.me/919966085310?text=${waText}`;
+      window.open(waUrl, "_blank");
 
       setSuccess(true);
     } catch (err: any) {
@@ -73,7 +79,7 @@ export function TripBookingForm({ destination }: TripBookingFormProps) {
 
         <div className="pt-4 border-t border-white/10 space-y-3">
           <a
-            href="https://wa.me/919966085310"
+            href={`https://wa.me/919966085310?text=${encodeURIComponent(`Hi WeAreSoloz, my name is ${formData.fullName}. Mobile: ${formData.mobile}. Email: ${formData.email}. I want to join the group trip to ${destination}. Message: ${formData.message}`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-500 transition shadow-lg"
@@ -81,7 +87,7 @@ export function TripBookingForm({ destination }: TripBookingFormProps) {
             Chat Directly on WhatsApp
           </a>
           <a
-            href="https://www.instagram.com/akhillrockstar"
+            href="https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw=="
             target="_blank"
             rel="noopener noreferrer"
             className="block w-full rounded-full border border-white/10 bg-white/5 py-3 text-sm font-semibold text-white hover:bg-white/10 transition"

@@ -33,7 +33,7 @@ export default function Footer() {
             A family of solo explorers crossing mountains, temples, villages and hidden trails. Travel Solo. You&apos;re Not Alone.
           </p>
           <div className="flex items-center gap-3 mt-6">
-            <a data-testid="footer-instagram" href="https://www.instagram.com/akhillrockstar" target="_blank" rel="noreferrer" className="w-11 h-11 rounded-full bg-white border border-stone-100 flex items-center justify-center hover:bg-orange-50 hover:text-[#ea580c] hover:border-orange-200 transition-all text-stone-500 shadow-sm">
+            <a data-testid="footer-instagram" href="https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==" target="_blank" rel="noreferrer" className="w-11 h-11 rounded-full bg-white border border-stone-100 flex items-center justify-center hover:bg-orange-50 hover:text-[#ea580c] hover:border-orange-200 transition-all text-stone-500 shadow-sm">
               <Instagram className="w-4 h-4" />
             </a>
             <a data-testid="footer-whatsapp" href="https://wa.me/919966085310" target="_blank" rel="noreferrer" className="w-11 h-11 rounded-full bg-white border border-stone-100 flex items-center justify-center hover:bg-orange-50 hover:text-[#ea580c] hover:border-orange-200 transition-all text-stone-500 shadow-sm">
@@ -61,7 +61,7 @@ export default function Footer() {
             <li><Link href="/about-akhil" className="hover:text-stone-900 transition-colors">About Akhil</Link></li>
             <li><Link href="/contact" className="hover:text-stone-900 transition-colors">Contact</Link></li>
             <li><a href="tel:+919966085310" className="hover:text-stone-900 transition-colors">+91 9966085310</a></li>
-            <li><a href="https://www.instagram.com/akhillrockstar" target="_blank" rel="noreferrer" className="hover:text-stone-900 transition-colors">@akhillrockstar</a></li>
+            <li><a href="https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==" target="_blank" rel="noreferrer" className="hover:text-stone-900 transition-colors">@wearesolozindia</a></li>
           </ul>
         </div>
       </div>

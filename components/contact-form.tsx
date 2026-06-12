@@ -38,7 +38,8 @@ export function ContactForm() {
     setError("");
 
     try {
-      const res = await fetch("/api/contacts", {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const res = await fetch(`${API_URL}/contacts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
@@ -48,6 +49,11 @@ export function ContactForm() {
         const data = await res.json();
         throw new Error(data.error || "Failed to submit request.");
       }
+
+      // Open WhatsApp chat prefilled with details
+      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${formData.fullName}. Mobile: ${formData.mobile}. Email: ${formData.email}. Destination: ${formData.destination}. Message: ${formData.message}`);
+      const waUrl = `https://wa.me/919966085310?text=${waText}`;
+      window.open(waUrl, "_blank");
 
       setSuccess(true);
     } catch (err: any) {
@@ -74,7 +80,7 @@ export function ContactForm() {
         </div>
         <div className="pt-4 border-t border-white/10">
           <a
-            href="https://wa.me/919966085310"
+            href={`https://wa.me/919966085310?text=${encodeURIComponent(`Hi WeAreSoloz, my name is ${formData.fullName}. Mobile: ${formData.mobile}. Email: ${formData.email}. Destination: ${formData.destination}. Message: ${formData.message}`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-500 transition shadow-lg"

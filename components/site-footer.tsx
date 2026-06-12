@@ -35,7 +35,8 @@ export function SiteFooter() {
               <Phone size={16} /> {brand.phone}
             </a>
             <a href={brand.instagram} className="flex items-center gap-2 hover:text-white">
-              <Instagram size={16} /> @akhillrockstar
+              <Instagram size={16} />
+              {brand.instagram.includes("akhillrockstar") ? "@akhillrockstar" : "@wearesolozindia"}
             </a>
           </div>
         </div>

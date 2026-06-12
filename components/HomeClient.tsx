@@ -451,8 +451,8 @@ export default function HomeClient({
             </Link>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-10 text-sm text-soloz-textSecondary">
-            <a href="https://www.instagram.com/akhillrockstar" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 hover:text-stone-900">
-              <Instagram className="w-4 h-4" /> @akhillrockstar
+            <a href="https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 hover:text-stone-900">
+              <Instagram className="w-4 h-4" /> @wearesolozindia
             </a>
             <a href="tel:+919966085310" className="inline-flex items-center gap-2 hover:text-stone-900">
               <Phone className="w-4 h-4" /> +91 9966085310

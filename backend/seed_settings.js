@@ -28,7 +28,7 @@ async function seed() {
     // Seed contact settings
     const contactSettings = {
       phone: "+91 9966085310",
-      instagram: "https://www.instagram.com/akhillrockstar",
+      instagram: "https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==",
       whatsapp: "https://wa.me/919966085310"
     };
 

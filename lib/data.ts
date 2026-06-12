@@ -14,7 +14,7 @@ export const brand = {
   tagline: "Start Solo. Travel Together.",
   secondaryTagline: "Travel Solo. You're Not Alone.",
   founder: "Akhil",
-  instagram: "https://www.instagram.com/akhillrockstar",
+  instagram: "https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==",
   phone: "+91 9966085310"
 };
 
