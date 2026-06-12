@@ -1,22 +1,30 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowUpRight, MapPin, Calendar, Clock, Users, Sparkles, Shield, Heart, Star, Quote, Instagram, Phone } from "lucide-react";
+import { toast } from "sonner";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  MapPin,
+  Calendar,
+  Clock,
+  Users,
+  Sparkles,
+  Shield,
+  Heart,
+  Star,
+  Quote,
+  Instagram,
+  Phone,
+  MessageCircle,
+} from "lucide-react";
 import Reveal, { stagger, item, SectionLabel } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { HomeHero } from "@/components/home-hero";
-
-const DEFAULT_DESTS = [
-  { name: "Munnar", location: "Kerala", image: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1600&q=80", description: "Lush tea gardens, misty hills, and cool mountain air.", span: "wide" },
-  { name: "Hampi", location: "Karnataka", image: "https://images.unsplash.com/photo-1600100397608-f010e45fa674?auto=format&fit=crop&w=1200&q=80", description: "Explore the ancient ruins and boulder-strewn landscapes.", span: "default" },
-  { name: "Gandikota", location: "Andhra Pradesh", image: "https://images.unsplash.com/photo-1616038242814-a6eac7845d88?auto=format&fit=crop&w=1200&q=80", description: "The stunning Grand Canyon of India gorge.", span: "default" },
-  { name: "Araku Valley", location: "Andhra Pradesh", image: "https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?auto=format&fit=crop&w=1200&q=80", description: "Cascading waterfalls and lush coffee plantations.", span: "tall" },
-  { name: "Gokarna", location: "Karnataka", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80", description: "Trek along pristine beaches and rocky cliffs.", span: "default" },
-  { name: "Ooty", location: "Tamil Nadu", image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80", description: "Misty pine forests and beautiful botanical gardens.", span: "default" },
-  { name: "Coorg", location: "Karnataka", image: "https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=1600&q=80", description: "Scenic coffee estates and peaceful waterfalls.", span: "wide" },
-];
 
 const WHY = [
   { icon: Users, title: "Travel Together", text: "Solo at start. Family by the end of every trip." },
@@ -44,142 +52,129 @@ export default function HomeClient({
   testimonials = [],
   gallery = [],
 }: HomeClientProps) {
-  // Pad destinations to exactly 7 items to prevent gaps in the bento grid
-  const getBentoDests = () => {
-    const list = [...destinations];
-    for (const def of DEFAULT_DESTS) {
-      if (list.length >= 7) break;
-      if (!list.some(d => (d.name || d.title || "").toLowerCase() === def.name.toLowerCase())) {
-        list.push(def);
+  // 1. Upcoming Trips (Treks/Signature - category === "Treks")
+  const upcomingTrips = trips.filter(
+    (t) => (t.category || "").toLowerCase() === "treks"
+  );
+  const displayUpcoming = upcomingTrips.length > 0 ? upcomingTrips : trips.slice(0, 3);
+
+  // 2. Weekend Getaways (Adventure/Short duration)
+  const weekendGetaways = trips.filter(
+    (t) =>
+      (t.category || "").toLowerCase() === "adventure" ||
+      (t.duration || "").toLowerCase().includes("2 days")
+  );
+  const displayWeekend = weekendGetaways.length > 0 ? weekendGetaways : trips.slice(1, 4);
+
+  // 3. Spiritual Journeys (Temples)
+  const spiritualJourneys = trips.filter(
+    (t) => (t.category || "").toLowerCase() === "temples"
+  );
+  const displaySpiritual =
+    spiritualJourneys.length > 0
+      ? spiritualJourneys
+      : trips.filter(
+          (t) =>
+            (t.destination || "").toLowerCase().includes("srisailam") ||
+            (t.category || "").toLowerCase() === "temples"
+        ).slice(0, 3);
+
+  // Contact Form States
+  const [form, setForm] = useState({ full_name: "", mobile: "", email: "", destination: "", message: "" });
+  const [selectedState, setSelectedState] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  // Extract unique states from active trips, falling back to default states
+  const statesList = Array.from(new Set(trips.map(t => t.state || "Andhra Pradesh").filter(Boolean)));
+  if (statesList.length === 0) {
+    statesList.push("Andhra Pradesh", "Telangana", "Karnataka", "Kerala", "Tamil Nadu");
+  }
+
+  // Extract destinations filtered by selectedState
+  const destinationsForState = selectedState 
+    ? Array.from(new Set(
+        trips
+          .filter(t => (t.state || "Andhra Pradesh").toLowerCase() === selectedState.toLowerCase())
+          .map(t => t.destination)
+          .filter(Boolean)
+      ))
+    : [];
+
+  // Fallback destinations per state if none found
+  if (selectedState && destinationsForState.length === 0) {
+    const fallbackMap: { [key: string]: string[] } = {
+      "Andhra Pradesh": ["Gandikota", "Araku Valley", "Tirupati", "Lambasingi", "Ahobilam", "Horsley Hills"],
+      "Telangana": ["Ananthagiri Hills", "Warangal", "Laknavaram", "Bhadrachalam", "Nagarjuna Sagar"],
+      "Karnataka": ["Hampi", "Gokarna", "Coorg", "Chikmagalur", "Badami", "Dandeli"],
+      "Kerala": ["Munnar", "Wayanad", "Vagamon", "Athirappilly", "Varkala", "Alappuzha"],
+      "Tamil Nadu": ["Ooty", "Kodaikanal", "Yercaud", "Rameshwaram", "Mahabalipuram", "Kanyakumari"]
+    };
+    destinationsForState.push(...(fallbackMap[selectedState] || []));
+  }
+
+  const submitContactForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const combinedDestination = `${selectedState} - ${form.destination}`;
+      
+      const res = await fetch(`${API_URL}/contacts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: form.full_name,
+          mobile: form.mobile,
+          email: form.email,
+          destination: combinedDestination,
+          message: form.message,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("API error");
       }
+
+      toast.success("Inquiry sent! Akhil will get back to you soon.");
+
+      // Open WhatsApp chat prefilled with form data
+      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${form.full_name}. Mobile: ${form.mobile}. Email: ${form.email}. Interested in: ${combinedDestination}. Message: ${form.message}`);
+      const waUrl = `https://wa.me/919966085310?text=${waText}`;
+      window.open(waUrl, "_blank");
+
+      setForm({ full_name: "", mobile: "", email: "", destination: "", message: "" });
+      setSelectedState("");
+    } catch {
+      toast.error("Couldn't send. Try again.");
     }
-    return list.slice(0, 7);
+    setBusy(false);
   };
-  const destList = getBentoDests();
 
   return (
     <div data-testid="home-page" className="bg-white min-h-screen text-[#1c1917]">
-      {/* SECTION 1 — HERO */}
+      {/* 🏠 SECTION 1 — HERO */}
       <HomeHero
         title={settings.hero_title || settings.heroTitle || "Start Solo. Travel Together."}
         subheading={settings.hero_subheading || settings.heroSubheading || "Join solo travelers, explore new destinations, meet incredible people and create unforgettable memories together."}
         heroImage={settings.hero_image || settings.heroImage}
       />
 
-      {/* SECTION 2 — Featured Destinations (Bento) */}
-      <section data-testid="destinations-section" className="py-16 md:py-32 px-4 md:px-10 relative">
-        <div className="max-w-7xl mx-auto">
-          <Reveal className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
-            <div>
-              <SectionLabel>Featured Destinations</SectionLabel>
-              <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 max-w-2xl text-stone-900">
-                Where the Soloz <span className="gradient-text">wander</span>.
-              </h2>
-            </div>
-            <Link
-              href="/upcoming-trips"
-              data-testid="see-all-destinations"
-              className="text-sm text-soloz-textSecondary hover:text-stone-900 inline-flex items-center gap-2 group transition-colors"
-            >
-              See all destinations <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-            </Link>
-          </Reveal>
- 
-          <motion.div {...stagger} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 auto-rows-[180px] md:auto-rows-[220px]">
-            {destList.slice(0, 7).map((d, i) => {
-              const spans = [
-                "sm:col-span-2 sm:row-span-2", // 0 Munnar (large)
-                "sm:col-span-1 sm:row-span-1", // 1 Hampi
-                "sm:col-span-1 sm:row-span-1", // 2 Gandikota
-                "sm:col-span-2 sm:row-span-1", // 3 Araku Valley (wide)
-                "sm:col-span-1 sm:row-span-1", // 4 Gokarna
-                "sm:col-span-1 sm:row-span-1", // 5 Ooty
-                "sm:col-span-2 sm:row-span-1", // 6 Coorg (wide)
-              ];
-              return (
-                <motion.div
-                  key={d.id || d._id || d.name}
-                  variants={item}
-                  className={`group relative overflow-hidden rounded-2xl border border-stone-200/10 shadow-sm hover:shadow-lg transition-all duration-500 ${spans[i] || ""}`}
-                >
-                  <img
-                    src={d.image}
-                    alt={d.name}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                  <div className="absolute inset-0 p-5 md:p-7 flex flex-col justify-end">
-                    <div className="text-[10px] uppercase tracking-[0.3em] text-[#ff7a1a] mb-2">{d.location}</div>
-                    <div className="font-display text-xl sm:text-2xl md:text-3xl font-medium tracking-tight text-white">{d.name || d.title}</div>
-                    {d.description && i === 0 && <div className="text-sm text-white/70 mt-2 max-w-xs hidden md:block font-body">{d.description}</div>}
-                  </div>
-                  <div className="absolute top-4 right-4 w-9 h-9 rounded-full glass flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ArrowUpRight className="w-4 h-4 text-white" />
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </section>
- 
-      {/* SECTION 3 — About */}
-      <section data-testid="about-section" className="py-16 md:py-32 px-4 md:px-10 border-t border-stone-200">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 md:gap-20 items-center">
-          <Reveal className="relative aspect-[4/5] overflow-hidden rounded-3xl">
-            <img
-              src="https://images.unsplash.com/photo-1530789253388-582c481c54b0?auto=format&fit=crop&w=1200&q=85"
-              alt="About"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <div className="absolute bottom-6 left-6 right-6 glass rounded-xl p-4">
-              <div className="text-xs uppercase tracking-widest text-soloz-primary">Since 2017</div>
-              <div className="font-display text-xl mt-1 text-stone-900">Building a family of solo explorers.</div>
-            </div>
-          </Reveal>
-          <Reveal>
-            <SectionLabel>About WeAreSoloz</SectionLabel>
-            <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 leading-[1] text-stone-900">
-              Travel Solo. <br />
-              <span className="gradient-text">You&apos;re Not Alone.</span>
-            </h2>
-            <p className="text-soloz-textSecondary mt-8 leading-relaxed font-body">
-              {settings.about_content || "WeAreSoloz is more than a travel community. It is a family of explorers who believe in adventure, friendship, self-discovery and unforgettable experiences."}
-            </p>
-            <p className="text-soloz-textSecondary mt-4 leading-relaxed font-body">
-              Whether you&apos;re a solo traveler, trekker, biker, photographer, spiritual explorer or someone seeking new experiences — you&apos;re welcome here.
-            </p>
-            <Link
-              href="/about-akhil"
-              data-testid="about-read-more"
-              className="inline-flex items-center gap-2 mt-8 text-stone-900 font-medium border-b border-soloz-primary pb-1 hover:text-soloz-primary transition-colors"
-            >
-              Read the full story <ArrowUpRight className="w-4 h-4" />
-            </Link>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* SECTION 4 — Upcoming Trips */}
-      <section data-testid="upcoming-trips-section" className="py-16 md:py-32 px-4 md:px-10 border-t border-stone-200">
+      {/* 📅 SECTION 2 — Upcoming Trips */}
+      <section data-testid="upcoming-trips-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200">
         <div className="max-w-7xl mx-auto">
           <Reveal className="text-center mb-16">
-            <SectionLabel>Upcoming Group Trips</SectionLabel>
+            <SectionLabel>📅 Upcoming Group Trips</SectionLabel>
             <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">
-              The next <span className="gradient-text">expeditions</span>.
+              The next <span className="gradient-text font-medium">expeditions</span>.
             </h2>
           </Reveal>
-          {trips.length === 0 ? (
+          {displayUpcoming.length === 0 ? (
             <div className="text-center py-16 glass rounded-3xl">
               <div className="text-soloz-textSecondary">New trips are being curated. Check back soon.</div>
-              <Link href="/soloz-community" className="mt-5 inline-flex items-center gap-2 text-soloz-primary hover:text-white">
-                Join the community to be notified <ArrowRight className="w-4 h-4" />
-              </Link>
             </div>
           ) : (
             <motion.div {...stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-              {trips.map((t) => (
+              {displayUpcoming.map((t) => (
                 <motion.div key={t.id || t._id} variants={item}>
                   <TripCard trip={t} />
                 </motion.div>
@@ -188,14 +183,64 @@ export default function HomeClient({
           )}
         </div>
       </section>
- 
-      {/* SECTION 5 — Why Travel With Us */}
-      <section data-testid="why-section" className="py-16 md:py-32 px-4 md:px-10 border-t border-stone-200 relative">
+
+      {/* 🏔️ SECTION 3 — Weekend Getaways */}
+      <section data-testid="weekend-getaways-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-stone-50/50">
         <div className="max-w-7xl mx-auto">
-          <Reveal className="max-w-2xl mb-16">
-            <SectionLabel>Why Travel With Us</SectionLabel>
+          <Reveal className="text-center mb-16">
+            <SectionLabel>🏔️ Weekend Getaways</SectionLabel>
             <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">
-              Built for <span className="gradient-text">soloz</span>, by a solo.
+              Short escapes for <span className="gradient-text font-medium">quick recharge</span>.
+            </h2>
+          </Reveal>
+          {displayWeekend.length === 0 ? (
+            <div className="text-center py-16 glass rounded-3xl">
+              <div className="text-soloz-textSecondary">Weekend getaways are being planned. Check back soon.</div>
+            </div>
+          ) : (
+            <motion.div {...stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              {displayWeekend.map((t) => (
+                <motion.div key={t.id || t._id} variants={item}>
+                  <TripCard trip={t} />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </div>
+      </section>
+
+      {/* 🛕 SECTION 4 — Spiritual Journeys */}
+      <section data-testid="spiritual-journeys-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200">
+        <div className="max-w-7xl mx-auto">
+          <Reveal className="text-center mb-16">
+            <SectionLabel>🛕 Spiritual Journeys</SectionLabel>
+            <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">
+              Sacred trails and <span className="gradient-text font-medium">soulful yatras</span>.
+            </h2>
+          </Reveal>
+          {displaySpiritual.length === 0 ? (
+            <div className="text-center py-16 glass rounded-3xl">
+              <div className="text-soloz-textSecondary">Spiritual journeys are being curated. Check back soon.</div>
+            </div>
+          ) : (
+            <motion.div {...stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              {displaySpiritual.map((t) => (
+                <motion.div key={t.id || t._id} variants={item}>
+                  <TripCard trip={t} />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </div>
+      </section>
+
+      {/* 👥 SECTION 5 — Why Join WeAreSoloz */}
+      <section data-testid="why-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-stone-50/50">
+        <div className="max-w-7xl mx-auto">
+          <Reveal className="max-w-2xl mb-16 mx-auto text-center">
+            <SectionLabel>👥 Why Join WeAreSoloz?</SectionLabel>
+            <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">
+              Built for <span className="gradient-text font-medium">soloz</span>, by a solo.
             </h2>
           </Reveal>
           <motion.div {...stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -211,139 +256,21 @@ export default function HomeClient({
           </motion.div>
         </div>
       </section>
- 
-      {/* SECTION 6 — Meet Akhil */}
-      <section data-testid="founder-section" className="py-16 md:py-32 px-4 md:px-10 border-t border-stone-200">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-12 items-center">
-          <Reveal className="md:col-span-2 relative aspect-[4/5] rounded-3xl overflow-hidden">
-            <img
-              src={settings.founder_image || "/images/akhil.jpg"}
-              alt="Akhil"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-            <div className="absolute bottom-6 left-6">
-              <div className="text-xs uppercase tracking-widest text-soloz-primary">Founder</div>
-              <div className="font-display text-3xl mt-1 text-white">Akhil</div>
-              <div className="text-xs text-stone-300">@akhillrockstar</div>
-            </div>
-          </Reveal>
-          <Reveal className="md:col-span-3">
-            <SectionLabel>Meet Akhil</SectionLabel>
-            <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 leading-[1] text-stone-900">
-              Seven years <br /><span className="gradient-text">on the road</span>.
-            </h2>
-            <p className="text-soloz-textSecondary mt-8 leading-relaxed">
-              {settings.founder_content || "Hi, I'm Akhil — creator of Akhill Rockstar Travel Stories and founder of WeAreSoloz. For 7+ years I've been exploring India through mountains, temples, villages, forests and hidden destinations. That's why I started WeAreSoloz."}
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-10">
-              {[
-                { k: "7+", v: "Years Traveling" },
-                { k: "100+", v: "Destinations" },
-                { k: "1000s", v: "Memories" },
-                { k: "∞", v: "Friendships" },
-              ].map((s) => (
-                <div key={s.v} className="bg-white/80 border border-stone-200/50 shadow-sm backdrop-blur-md rounded-xl p-4 sm:p-5 hover-lift transition-all duration-300">
-                  <div className="font-display text-3xl font-bold gradient-text">{s.k}</div>
-                  <div className="text-xs text-stone-600 mt-1 uppercase tracking-wider font-semibold font-body">{s.v}</div>
-                </div>
-              ))}
-            </div>
-            <Link
-              href="/about-akhil"
-              data-testid="founder-read-bio"
-              className="inline-flex items-center gap-2 mt-10 text-stone-900 font-medium border-b border-soloz-primary pb-1 hover:text-soloz-primary transition-colors"
-            >
-              Read full biography <ArrowUpRight className="w-4 h-4 text-soloz-primary" />
-            </Link>
-          </Reveal>
-        </div>
-      </section>
- 
-      {/* SECTION 7 — Stories */}
-      <section data-testid="stories-section" className="py-16 md:py-32 px-4 md:px-10 border-t border-stone-200">
-        <div className="max-w-7xl mx-auto">
-          <Reveal className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
-            <div>
-              <SectionLabel>From the Road</SectionLabel>
-              <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 max-w-2xl text-stone-900">Travel Stories.</h2>
-            </div>
-            <Link
-              href="/travel-stories"
-              data-testid="see-all-stories"
-              className="text-sm text-soloz-textSecondary hover:text-stone-900 inline-flex items-center gap-2 transition-colors"
-            >
-              All stories <ArrowUpRight className="w-4 h-4" />
-            </Link>
-          </Reveal>
-          {blogs.length === 0 ? (
-            <div className="text-center py-16 glass rounded-3xl text-soloz-textSecondary">
-              Akhil is writing the next story. Stay tuned.
-            </div>
-          ) : (
-            <motion.div {...stagger} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {blogs.map((b) => (
-                <motion.div key={b.id || b._id || b.slug} variants={item}>
-                  <StoryCard story={b} />
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </div>
-      </section>
 
-      {/* SECTION 8 — Testimonials */}
-      <section data-testid="testimonials-section" className="py-16 md:py-32 px-4 md:px-10 border-t border-stone-200">
-        <div className="max-w-5xl mx-auto">
-          <Reveal className="text-center mb-16">
-            <SectionLabel>Voices of Soloz</SectionLabel>
-            <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">Real travelers. Real stories.</h2>
-          </Reveal>
-          {testimonials.length === 0 ? (
-            <div className="text-center py-16 glass rounded-3xl text-soloz-textSecondary border border-stone-200">
-              Testimonials coming from real Soloz travelers.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {testimonials.slice(0, 4).map((t) => (
-                <motion.div
-                  key={t.id || t._id || t.name}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                  className="glass rounded-2xl p-6 sm:p-8 border border-stone-200"
-                >
-                  <Quote className="w-7 h-7 text-soloz-primary mb-4" />
-                  <p className="font-display text-lg sm:text-xl font-light leading-relaxed text-stone-900">{t.quote || t.message}</p>
-                  <div className="flex items-center gap-3 mt-6">
-                    {t.avatar && <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover" />}
-                    <div>
-                      <div className="font-medium text-stone-900">{t.name}</div>
-                      <div className="text-xs text-soloz-textMuted">{t.location || t.role}</div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
- 
-      {/* SECTION 9 — Gallery */}
-      <section data-testid="gallery-section" className="py-16 md:py-32 px-4 md:px-10 border-t border-stone-200">
+      {/* 📸 SECTION 6 — Travel Memories Gallery */}
+      <section data-testid="gallery-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200">
         <div className="max-w-7xl mx-auto">
           <Reveal className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
             <div>
-              <SectionLabel>Gallery</SectionLabel>
+              <SectionLabel>📸 Travel Memories Gallery</SectionLabel>
               <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">Moments, frozen.</h2>
             </div>
             <Link
               href="/gallery"
               data-testid="see-all-gallery"
-              className="text-sm text-soloz-textSecondary hover:text-stone-900 inline-flex items-center gap-2"
+              className="text-sm text-soloz-textSecondary hover:text-stone-900 inline-flex items-center gap-2 group transition-colors"
             >
-              Open gallery <ArrowUpRight className="w-4 h-4" />
+              Open gallery <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </Link>
           </Reveal>
           {gallery.length === 0 ? (
@@ -365,44 +292,206 @@ export default function HomeClient({
           )}
         </div>
       </section>
- 
-      {/* SECTION 10 — CTA */}
-      <section data-testid="cta-section" className="relative py-20 md:py-32 px-4 md:px-10 border-t border-stone-200 overflow-hidden bg-stone-50">
-        <div className="absolute inset-0 radial-orange-glow opacity-30" />
-        <div className="absolute inset-0 grid-noise opacity-20" />
-        <div className="relative max-w-4xl mx-auto text-center">
-          <SectionLabel>The Soloz Family</SectionLabel>
-          <h2 className="font-display text-4xl sm:text-5xl md:text-7xl font-light tracking-tighter mt-5 leading-[1] text-stone-900">
-            Join Solo. <br /><span className="gradient-text">Return With Friends.</span>
+
+      {/* ⭐ SECTION 7 — Testimonials */}
+      <section data-testid="testimonials-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-stone-50/50">
+        <div className="max-w-5xl mx-auto">
+          <Reveal className="text-center mb-16">
+            <SectionLabel>⭐ Voices of Soloz</SectionLabel>
+            <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">Real travelers. Real stories.</h2>
+          </Reveal>
+          {testimonials.length === 0 ? (
+            <div className="text-center py-16 glass rounded-3xl text-soloz-textSecondary border border-stone-200 bg-white">
+              Testimonials coming from real Soloz travelers.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {testimonials.slice(0, 4).map((t) => (
+                <motion.div
+                  key={t.id || t._id || t.name}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  className="bg-white rounded-2xl p-6 sm:p-8 border border-stone-200 shadow-sm"
+                >
+                  <Quote className="w-7 h-7 text-soloz-primary mb-4" />
+                  <p className="font-display text-lg sm:text-xl font-light leading-relaxed text-stone-900">{t.quote || t.message}</p>
+                  <div className="flex items-center gap-3 mt-6">
+                    {t.avatar && <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover" />}
+                    <div>
+                      <div className="font-medium text-stone-900">{t.name}</div>
+                      <div className="text-xs text-soloz-textMuted">{t.location || t.role}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 📱 SECTION 8 — WhatsApp Community CTA */}
+      <section data-testid="whatsapp-community-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 relative overflow-hidden bg-emerald-50/20">
+        <div className="absolute inset-0 radial-orange-glow opacity-5 pointer-events-none" />
+        <div className="relative max-w-4xl mx-auto text-center flex flex-col items-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-6">
+            <MessageCircle className="w-4 h-4 text-emerald-600 animate-bounce" /> Official WhatsApp Community
+          </div>
+          <h2 className="font-display text-4xl sm:text-5xl md:text-7xl font-light tracking-tighter leading-none text-stone-900">
+            Connect with <span className="text-emerald-600 font-medium">1,000+</span> <br />Solo Travelers
           </h2>
-          <p className="text-soloz-textSecondary mt-7 max-w-xl mx-auto">
-            {settings.cta_subheading || "Step into a community where every traveler becomes family. Your next adventure starts with one message."}
+          <p className="text-stone-600 mt-6 max-w-xl mx-auto leading-relaxed font-body">
+            Join our official WhatsApp group community to get instant updates on upcoming group trips, participate in trip planning Q&A, and chat with travel buddies who share your passion for adventure.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 mt-10 justify-center">
+          <div className="mt-8">
             <a
               href={settings.whatsapp_link || "https://wa.me/919966085310"}
               target="_blank"
               rel="noreferrer"
               data-testid="cta-join-whatsapp"
-              className="inline-flex items-center justify-center gap-2 gradient-orange text-white px-7 py-4 rounded-full font-medium hover:scale-[1.02] transition-transform"
+              className="inline-flex items-center justify-center gap-3 bg-emerald-600 text-white hover:bg-emerald-700 px-8 py-4 rounded-full font-bold text-sm uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(5,150,105,0.25)] hover:scale-[1.03]"
             >
-              Join WhatsApp Community <ArrowRight className="w-4 h-4" />
+              <MessageCircle className="w-5 h-5" /> Join WhatsApp Community
             </a>
-            <Link
-              href="/contact"
-              data-testid="cta-contact"
-              className="inline-flex items-center justify-center gap-2 glass text-stone-900 px-7 py-4 rounded-full font-medium hover:bg-stone-100 border border-stone-200"
-            >
-              Contact Us
-            </Link>
           </div>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-10 text-sm text-soloz-textSecondary">
-            <a href="https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 hover:text-stone-900">
-              <Instagram className="w-4 h-4" /> @wearesolozindia
-            </a>
-            <a href="tel:+919966085310" className="inline-flex items-center gap-2 hover:text-stone-900">
-              <Phone className="w-4 h-4" /> +91 9966085310
-            </a>
+        </div>
+      </section>
+
+      {/* 📞 SECTION 9 — Contact / Join Now */}
+      <section data-testid="contact-join-section" className="py-16 md:py-28 px-4 md:px-10 border-t border-stone-200 bg-stone-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-5 gap-12 items-start">
+            {/* Info panel */}
+            <div className="md:col-span-2">
+              <SectionLabel>📞 Contact / Join Now</SectionLabel>
+              <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900 leading-none">
+                Start your <br /><span className="gradient-text font-medium">adventure</span>.
+              </h2>
+              <p className="text-stone-600 mt-6 leading-relaxed font-body">
+                Ready to join an upcoming trip or have questions? Fill out the details here, and Akhil will get back to you immediately to finalize your booking.
+              </p>
+
+              <div className="mt-10 space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase font-bold text-stone-400">Call / WhatsApp</div>
+                    <a href="tel:+919966085310" className="text-stone-900 font-semibold hover:text-orange-500 transition-colors">+91 99660 85310</a>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                    <Instagram className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase font-bold text-stone-400">Instagram</div>
+                    <a href="https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==" target="_blank" rel="noreferrer" className="text-stone-900 font-semibold hover:text-orange-500 transition-colors">@wearesolozindia</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Form panel */}
+            <div className="md:col-span-3 bg-white p-6 sm:p-10 rounded-3xl border border-stone-200 shadow-sm relative">
+              <h3 className="font-display text-2xl font-semibold text-stone-900 mb-6">Inquiry & Booking Form</h3>
+              
+              <form onSubmit={submitContactForm} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Full Name</label>
+                    <Input
+                      required
+                      value={form.full_name}
+                      onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                      placeholder="Your name"
+                      className="border-stone-200 focus-visible:ring-orange-500 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Mobile Number</label>
+                    <Input
+                      required
+                      type="tel"
+                      value={form.mobile}
+                      onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+                      placeholder="Your mobile number"
+                      className="border-stone-200 focus-visible:ring-orange-500 rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Email Address</label>
+                  <Input
+                    required
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="Your email address"
+                    className="border-stone-200 focus-visible:ring-orange-500 rounded-lg"
+                  />
+                </div>
+
+                {/* Dependent Dropdowns */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">State</label>
+                    <select
+                      required
+                      value={selectedState}
+                      onChange={(e) => {
+                        setSelectedState(e.target.value);
+                        setForm({ ...form, destination: "" });
+                      }}
+                      className="w-full h-10 px-3 rounded-lg border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-stone-800"
+                    >
+                      <option value="" disabled>Select State</option>
+                      {statesList.map((st) => (
+                        <option key={st} value={st}>{st}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Destination Interested</label>
+                    <select
+                      required
+                      disabled={!selectedState}
+                      value={form.destination}
+                      onChange={(e) => setForm({ ...form, destination: e.target.value })}
+                      className="w-full h-10 px-3 rounded-lg border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 text-stone-800"
+                    >
+                      <option value="" disabled>Select Destination</option>
+                      {destinationsForState.map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Message (Optional)</label>
+                  <Textarea
+                    value={form.message}
+                    onChange={(e) => setForm({ ...form, message: e.target.value })}
+                    placeholder="Tell us if you have any questions or custom dates..."
+                    className="border-stone-200 focus-visible:ring-orange-500 rounded-lg min-h-[100px]"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={busy}
+                  className="w-full h-12 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold transition-all duration-300"
+                >
+                  {busy ? "Sending Inquiry..." : "Send Inquiry & Chat on WhatsApp"}
+                </Button>
+              </form>
+            </div>
           </div>
         </div>
       </section>
@@ -414,7 +503,7 @@ export function TripCard({ trip }: { trip: any }) {
   const tripSlug = trip.slug || trip.destination?.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   return (
     <Link href={`/upcoming-trips/${tripSlug}`} data-testid={`trip-card-${trip.id || trip._id}`} className="block group">
-      <div className="glass rounded-2xl overflow-hidden hover-lift border border-stone-200">
+      <div className="bg-white rounded-2xl overflow-hidden hover-lift border border-stone-200/80 shadow-sm hover:shadow-md transition-all duration-300">
         <div className="relative aspect-[4/3] overflow-hidden">
           <img
             src={trip.image || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80"}
@@ -433,13 +522,13 @@ export function TripCard({ trip }: { trip: any }) {
             <span className="tracking-wider text-stone-500 bg-stone-100/80 rounded-md px-1.5 py-0.5">{trip.category || "Adventure"}</span>
           </div>
           <div className="font-display text-xl font-medium mt-2 text-stone-900 truncate">{trip.title || `${trip.destination} Group Tour`}</div>
-          <div className="flex items-center gap-4 mt-4 text-xs text-soloz-textSecondary">
+          <div className="flex items-center gap-4 mt-4 text-xs text-stone-600">
             {trip.duration && <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3 text-stone-500" /> {trip.duration}</span>}
             {trip.seats > 0 && <span className="inline-flex items-center gap-1"><Users className="w-3 h-3 text-stone-500" /> {trip.seats} seats</span>}
           </div>
-          <div className="flex items-center justify-between mt-5">
+          <div className="flex items-center justify-between mt-5 pt-4 border-t border-stone-100">
             <div className="text-sm font-medium text-stone-500">Contact for Price</div>
-            <div className="text-xs text-soloz-primary inline-flex items-center gap-1">Join trip <ArrowRight className="w-3 h-3" /></div>
+            <div className="text-xs text-soloz-primary inline-flex items-center gap-1 font-bold group-hover:text-orange-600 transition-colors">Join trip <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" /></div>
           </div>
         </div>
       </div>
