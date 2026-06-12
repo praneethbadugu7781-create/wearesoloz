@@ -54,18 +54,18 @@ export function Navbar() {
               src="/logo.png"
               alt="WeAreSoloz"
               className={`rounded-full object-cover transition-all duration-300 ring-2 ring-orange-500/20 group-hover:ring-orange-500/40 ${
-                scrolled ? "h-8 w-8 md:h-10 md:w-10" : "h-10 w-10 md:h-12 md:w-12"
+                scrolled ? "h-12 w-12 md:h-14 md:w-14" : "h-14 w-14 md:h-16 md:w-16"
               }`}
             />
             <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white" />
           </div>
           <div className="leading-none">
             <div className={`font-sans font-bold tracking-tight transition-all duration-300 ${
-              scrolled ? "text-base md:text-lg" : "text-lg md:text-xl"
+              scrolled ? "text-lg md:text-xl" : "text-xl md:text-2xl"
             } text-stone-900`}>
               We<span className="text-[#ea580c]">Are</span>Soloz
             </div>
-            <div className="text-[7.5px] md:text-[9px] uppercase tracking-[0.08em] md:tracking-[0.3em] text-stone-400 font-medium mt-0.5 whitespace-nowrap">
+            <div className="text-[8.5px] md:text-[10px] uppercase tracking-[0.08em] md:tracking-[0.2em] text-stone-400 font-medium mt-0.5 whitespace-nowrap">
               Travel Solo · You're Not Alone
             </div>
           </div>
