@@ -161,10 +161,19 @@ export default function AdminEnquiriesPage() {
                     {enq.status}
                   </span>
                   <h3 className="font-bold text-white text-base mt-2">{enq.fullName}</h3>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-soloz-ash/60 mt-1">
-                    <span className="text-soloz-amber">{enq.destination || "General Enquiry"}</span>
-                    <span>{enq.email}</span>
-                    <span>{enq.mobile}</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 text-xs text-soloz-ash/80 mt-3 bg-black/20 p-3 rounded-lg border border-white/5">
+                    <div>
+                      <span className="text-white/40 block mb-0.5 uppercase tracking-wider text-[9px]">Interested Destination</span>
+                      <span className="text-soloz-amber font-semibold text-sm">{enq.destination || "General Enquiry"}</span>
+                    </div>
+                    <div>
+                      <span className="text-white/40 block mb-0.5 uppercase tracking-wider text-[9px]">Email Address</span>
+                      <span className="text-white font-medium text-sm select-all">{enq.email}</span>
+                    </div>
+                    <div>
+                      <span className="text-white/40 block mb-0.5 uppercase tracking-wider text-[9px]">Mobile Number</span>
+                      <span className="text-white font-medium text-sm select-all">{enq.mobile}</span>
+                    </div>
                   </div>
                 </div>
 

@@ -10,9 +10,10 @@ import Reveal, { SectionLabel } from "@/components/Reveal";
 
 interface ContactClientProps {
   settings: any;
+  destinations?: any[];
 }
 
-export default function ContactClient({ settings = {} }: ContactClientProps) {
+export default function ContactClient({ settings = {}, destinations = [] }: ContactClientProps) {
   const [form, setForm] = useState({ full_name: "", mobile: "", email: "", destination: "", message: "" });
   const [busy, setBusy] = useState(false);
 
@@ -154,13 +155,29 @@ export default function ContactClient({ settings = {} }: ContactClientProps) {
                 data-testid="contact-email"
                 className="glass border-stone-200 bg-white/90 h-12 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
               />
-              <Input
-                value={form.destination}
-                onChange={(e) => setForm({ ...form, destination: e.target.value })}
-                placeholder="Destination interested in (optional)"
-                data-testid="contact-destination"
-                className="glass border-stone-200 bg-white/90 h-12 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
-              />
+              <div className="relative">
+                <select
+                  value={form.destination}
+                  onChange={(e) => setForm({ ...form, destination: e.target.value })}
+                  data-testid="contact-destination"
+                  className="w-full glass border border-stone-200 bg-white/90 h-12 text-stone-900 focus-visible:ring-soloz-primary text-sm px-3 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none cursor-pointer"
+                >
+                  <option value="" className="text-stone-400">Destination interested in (optional)</option>
+                  {destinations.map((d: any) => {
+                    const label = d.name || d.title;
+                    return (
+                      <option key={label} value={label} className="text-stone-950">
+                        {label}
+                      </option>
+                    );
+                  })}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </div>
+              </div>
               <Textarea
                 required
                 value={form.message}
