@@ -142,13 +142,13 @@ export default function HomeClient({
           <motion.div {...stagger} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 auto-rows-[180px] md:auto-rows-[220px]">
             {destList.slice(0, 7).map((d, i) => {
               const spans = [
-                "sm:col-span-2 sm:row-span-2", // 0 large
-                "sm:col-span-1 sm:row-span-1",
-                "sm:col-span-1 sm:row-span-1",
-                "sm:col-span-1 sm:row-span-2", // tall
-                "sm:col-span-1 sm:row-span-1",
-                "sm:col-span-1 sm:row-span-1",
-                "sm:col-span-2 sm:row-span-1", // wide
+                "sm:col-span-2 sm:row-span-2", // 0 Munnar (large)
+                "sm:col-span-1 sm:row-span-1", // 1 Hampi
+                "sm:col-span-1 sm:row-span-1", // 2 Gandikota
+                "sm:col-span-2 sm:row-span-1", // 3 Araku Valley (wide)
+                "sm:col-span-1 sm:row-span-1", // 4 Gokarna
+                "sm:col-span-1 sm:row-span-1", // 5 Ooty
+                "sm:col-span-2 sm:row-span-1", // 6 Coorg (wide)
               ];
               return (
                 <motion.div
