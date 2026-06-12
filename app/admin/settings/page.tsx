@@ -5,6 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 import { useEffect, useState } from "react";
 import { Settings, Check, Loader2, Sparkles, AlertCircle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CloudinaryUpload } from "@/components/cloudinary-upload";
 
 interface HomepageSettings {
   heroTitle: string;
@@ -13,6 +14,7 @@ interface HomepageSettings {
   aboutText: string;
   founderHeading: string;
   founderText: string;
+  founder_image?: string;
 }
 
 interface ContactSettings {
@@ -82,7 +84,8 @@ export default function AdminSettingsPage() {
     aboutHeading: "Travel Solo. You're Not Alone.",
     aboutText: "",
     founderHeading: "Meet Akhil",
-    founderText: ""
+    founderText: "",
+    founder_image: "/images/akhil.jpg"
   });
 
   const [contact, setContact] = useState<ContactSettings>({
@@ -104,7 +107,10 @@ export default function AdminSettingsPage() {
 
       const homepageRecord = data.find((item) => item.key === "homepage");
       if (homepageRecord) {
-        setHomepage(homepageRecord.value);
+        setHomepage({
+          ...homepageRecord.value,
+          founder_image: homepageRecord.value.founder_image || homepageRecord.value.founderImage || "/images/akhil.jpg"
+        });
         setHomepageId(homepageRecord._id);
       }
 
@@ -271,6 +277,14 @@ export default function AdminSettingsPage() {
                 />
               </div>
             </div>
+          </div>
+
+          <div className="pt-6 border-t border-white/5 max-w-md">
+            <CloudinaryUpload
+              value={homepage.founder_image || ""}
+              onChange={(url) => setHomepage({ ...homepage, founder_image: url })}
+              label="Founder Image (About Akhil Photo)"
+            />
           </div>
         </div>
 

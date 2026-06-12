@@ -19,7 +19,7 @@ const offerings = [
 ];
 
 export default function AboutClient({ settings = {} }: AboutClientProps) {
-  const founderImage = settings.founder_image || settings.founderImage || "https://images.unsplash.com/photo-1598966739654-5e9a252d8c32?auto=format&fit=crop&w=1200&q=85";
+  const founderImage = settings.founder_image || settings.founderImage || "/images/akhil.jpg";
   const instagramLink = settings.instagram_link || "https://www.instagram.com/akhillrockstar";
   const whatsappLink = settings.whatsapp_link || "https://wa.me/919966085310";
 
@@ -29,13 +29,12 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       {/* HERO — About Me */}
       <section className="relative pt-32 pb-20 px-6 md:px-10">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-          <Reveal className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-stone-300/30 bg-stone-100 flex items-center justify-center">
-            <div className="text-center px-8">
-              <div className="w-20 h-20 rounded-full bg-stone-200 mx-auto mb-4 flex items-center justify-center">
-                <Camera className="w-8 h-8 text-stone-400" />
-              </div>
-              <div className="text-stone-400 text-sm font-medium">Photo Coming Soon</div>
-            </div>
+          <Reveal className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-stone-300/30 bg-stone-100">
+            <img
+              src={founderImage}
+              alt="Akhil - Founder of WeAreSoloz"
+              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+            />
           </Reveal>
 
           <Reveal>

@@ -271,7 +271,7 @@ export default function HomeClient({
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-12 items-center">
           <Reveal className="md:col-span-2 relative aspect-[4/5] rounded-3xl overflow-hidden">
             <img
-              src={settings.founder_image || "https://images.unsplash.com/photo-1598966739654-5e9a252d8c32?auto=format&fit=crop&w=1200&q=85"}
+              src={settings.founder_image || "/images/akhil.jpg"}
               alt="Akhil"
               className="absolute inset-0 w-full h-full object-cover"
             />
