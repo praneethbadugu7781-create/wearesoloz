@@ -108,12 +108,16 @@ export const testimonials = [
 ];
 
 export const gallery = [
-  { src: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80", category: "Nature", title: "Munnar Morning" },
-  { src: "https://images.unsplash.com/photo-1600100397608-f010e45fa674?auto=format&fit=crop&w=1200&q=80", category: "Heritage", title: "Hampi Sunset" },
-  { src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80", category: "Adventure", title: "Gokarna Cliffs" },
-  { src: "https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&w=1200&q=80", category: "Community Events", title: "Campfire Circle" },
-  { src: "https://images.unsplash.com/photo-1616038242814-a6eac7845d88?auto=format&fit=crop&w=1200&q=80", category: "Adventure", title: "Gandikota Gorge" },
-  { src: "https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=1200&q=80", category: "Nature", title: "Coorg Trails" }
+  { src: "/images/gallery/IMG-20260611-WA0046.jpg", category: "Treks", title: "Soloz Adventure 1" },
+  { src: "/images/gallery/IMG-20260611-WA0049.jpg", category: "Spiritual Tours", title: "Soloz Adventure 2" },
+  { src: "/images/gallery/IMG-20260611-WA0052.jpg", category: "Road Trips", title: "Soloz Adventure 3" },
+  { src: "/images/gallery/IMG-20260611-WA0054.jpg", category: "Community Events", title: "Soloz Adventure 4" },
+  { src: "/images/gallery/IMG-20260611-WA0056.jpg", category: "Hidden Destinations", title: "Soloz Adventure 5" },
+  { src: "/images/gallery/IMG-20260611-WA0060.jpg", category: "Treks", title: "Soloz Adventure 6" },
+  { src: "/images/gallery/IMG-20260611-WA0062.jpg", category: "Spiritual Tours", title: "Soloz Adventure 7" },
+  { src: "/images/gallery/IMG-20260611-WA0064.jpg", category: "Road Trips", title: "Soloz Adventure 8" },
+  { src: "/images/gallery/IMG-20260611-WA0066.jpg", category: "Community Events", title: "Soloz Adventure 9" },
+  { src: "/images/gallery/IMG-20260611-WA0068.jpg", category: "Hidden Destinations", title: "Soloz Adventure 10" }
 ];
 
 export const adminModules = [
