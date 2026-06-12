@@ -10,11 +10,12 @@ import Reveal, { SectionLabel } from "@/components/Reveal";
 
 interface ContactClientProps {
   settings: any;
-  destinations?: any[];
+  trips?: any[];
 }
 
-export default function ContactClient({ settings = {}, destinations = [] }: ContactClientProps) {
+export default function ContactClient({ settings = {}, trips = [] }: ContactClientProps) {
   const [form, setForm] = useState({ full_name: "", mobile: "", email: "", destination: "", message: "" });
+  const [selectedState, setSelectedState] = useState("");
   const [busy, setBusy] = useState(false);
 
   const phone = settings.phone || "+91 99660 85310";
@@ -22,11 +23,41 @@ export default function ContactClient({ settings = {}, destinations = [] }: Cont
   const instagramLink = settings.instagram || "https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==";
   const whatsappLink = settings.whatsapp || "https://wa.me/919966085310";
 
+  // Extract unique states from active trips, falling back to default states
+  const statesList = Array.from(new Set(trips.map(t => t.state || "Andhra Pradesh").filter(Boolean)));
+  if (statesList.length === 0) {
+    statesList.push("Andhra Pradesh", "Telangana", "Karnataka", "Kerala", "Tamil Nadu");
+  }
+
+  // Extract destinations filtered by selectedState
+  const destinationsForState = selectedState 
+    ? Array.from(new Set(
+        trips
+          .filter(t => (t.state || "Andhra Pradesh").toLowerCase() === selectedState.toLowerCase())
+          .map(t => t.destination)
+          .filter(Boolean)
+      ))
+    : [];
+
+  // Fallback destinations per state if none found
+  if (selectedState && destinationsForState.length === 0) {
+    const fallbackMap: { [key: string]: string[] } = {
+      "Andhra Pradesh": ["Gandikota", "Araku Valley", "Tirupati", "Lambasingi", "Ahobilam", "Horsley Hills"],
+      "Telangana": ["Ananthagiri Hills", "Warangal", "Laknavaram", "Bhadrachalam", "Nagarjuna Sagar"],
+      "Karnataka": ["Hampi", "Gokarna", "Coorg", "Chikmagalur", "Badami", "Dandeli"],
+      "Kerala": ["Munnar", "Wayanad", "Vagamon", "Athirappilly", "Varkala", "Alappuzha"],
+      "Tamil Nadu": ["Ooty", "Kodaikanal", "Yercaud", "Rameshwaram", "Mahabalipuram", "Kanyakumari"]
+    };
+    destinationsForState.push(...(fallbackMap[selectedState] || []));
+  }
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const combinedDestination = `${selectedState} - ${form.destination}`;
+      
       const res = await fetch(`${API_URL}/contacts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -34,7 +65,7 @@ export default function ContactClient({ settings = {}, destinations = [] }: Cont
           fullName: form.full_name,
           mobile: form.mobile,
           email: form.email,
-          destination: form.destination,
+          destination: combinedDestination,
           message: form.message,
         }),
       });
@@ -46,11 +77,12 @@ export default function ContactClient({ settings = {}, destinations = [] }: Cont
       toast.success("Message sent! Akhil will get back to you soon.");
 
       // Open WhatsApp chat prefilled with form data
-      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${form.full_name}. Mobile: ${form.mobile}. Email: ${form.email}. Interested in: ${form.destination || "General Inquiry"}. Message: ${form.message}`);
+      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${form.full_name}. Mobile: ${form.mobile}. Email: ${form.email}. Interested in: ${combinedDestination}. Message: ${form.message}`);
       const waUrl = `https://wa.me/919966085310?text=${waText}`;
       window.open(waUrl, "_blank");
 
       setForm({ full_name: "", mobile: "", email: "", destination: "", message: "" });
+      setSelectedState("");
     } catch {
       toast.error("Couldn't send. Try again.");
     }
@@ -155,22 +187,50 @@ export default function ContactClient({ settings = {}, destinations = [] }: Cont
                 data-testid="contact-email"
                 className="glass border-stone-200 bg-white/90 h-12 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
               />
+              {/* State Dropdown (Required) */}
               <div className="relative">
                 <select
+                  required
+                  value={selectedState}
+                  onChange={(e) => {
+                    setSelectedState(e.target.value);
+                    setForm({ ...form, destination: "" });
+                  }}
+                  data-testid="contact-state"
+                  className="w-full glass border border-stone-200 bg-white/90 h-12 text-stone-900 focus-visible:ring-soloz-primary text-sm px-3 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none cursor-pointer"
+                >
+                  <option value="" disabled className="text-stone-400">Select State</option>
+                  {statesList.map((st) => (
+                    <option key={st} value={st} className="text-stone-950">
+                      {st}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Destination Dropdown (Required, dependent on State) */}
+              <div className="relative">
+                <select
+                  required
+                  disabled={!selectedState}
                   value={form.destination}
                   onChange={(e) => setForm({ ...form, destination: e.target.value })}
                   data-testid="contact-destination"
-                  className="w-full glass border border-stone-200 bg-white/90 h-12 text-stone-900 focus-visible:ring-soloz-primary text-sm px-3 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none cursor-pointer"
+                  className="w-full glass border border-stone-200 bg-white/90 h-12 text-stone-900 focus-visible:ring-soloz-primary text-sm px-3 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <option value="" className="text-stone-400">Destination interested in (optional)</option>
-                  {destinations.map((d: any) => {
-                    const label = d.name || d.title;
-                    return (
-                      <option key={label} value={label} className="text-stone-950">
-                        {label}
-                      </option>
-                    );
-                  })}
+                  <option value="" disabled className="text-stone-400">
+                    {selectedState ? "Select Destination" : "Choose a state first"}
+                  </option>
+                  {destinationsForState.map((dest) => (
+                    <option key={dest} value={dest} className="text-stone-950">
+                      {dest}
+                    </option>
+                  ))}
                 </select>
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
