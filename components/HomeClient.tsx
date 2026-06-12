@@ -57,15 +57,6 @@ export default function HomeClient({
   };
   const destList = getBentoDests();
 
-  // Map trips to the shape expected by the HomeHero preview slider
-  const heroTrips = trips.slice(0, 5).map((t) => ({
-    destination: t.destination,
-    slug: t.slug || t.destination?.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-    duration: t.duration || "",
-    price: "Contact for Price", // Must be "Contact for Price" per client requirement
-    image: t.image || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80"
-  }));
-
   return (
     <div data-testid="home-page" className="bg-white min-h-screen text-[#1c1917] pt-20">
       {/* SECTION 1 — HERO */}
@@ -73,7 +64,6 @@ export default function HomeClient({
         title={settings.hero_title || settings.heroTitle || "Start Solo. Travel Together."}
         subheading={settings.hero_subheading || settings.heroSubheading || "Join solo travelers, explore new destinations, meet incredible people and create unforgettable memories together."}
         heroImage={settings.hero_image || settings.heroImage}
-        trips={heroTrips}
       />
 
       {/* SECTION 2 — Featured Destinations (Bento) */}
