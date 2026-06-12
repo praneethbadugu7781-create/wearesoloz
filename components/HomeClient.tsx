@@ -52,21 +52,13 @@ export default function HomeClient({
   testimonials = [],
   gallery = [],
 }: HomeClientProps) {
-  // 1. Upcoming Trips (Treks/Signature - category === "Treks")
+  // 1. Upcoming Trips (Treks/Adventure combined - everything except Temples)
   const upcomingTrips = trips.filter(
-    (t) => (t.category || "").toLowerCase() === "treks"
+    (t) => (t.category || "").toLowerCase() !== "temples"
   );
-  const displayUpcoming = upcomingTrips.length > 0 ? upcomingTrips : trips.slice(0, 3);
+  const displayUpcoming = upcomingTrips.length > 0 ? upcomingTrips : trips;
 
-  // 2. Weekend Getaways (Adventure/Short duration)
-  const weekendGetaways = trips.filter(
-    (t) =>
-      (t.category || "").toLowerCase() === "adventure" ||
-      (t.duration || "").toLowerCase().includes("2 days")
-  );
-  const displayWeekend = weekendGetaways.length > 0 ? weekendGetaways : trips.slice(1, 4);
-
-  // 3. Spiritual Journeys (Temples)
+  // 2. Spiritual Journeys (Temples)
   const spiritualJourneys = trips.filter(
     (t) => (t.category || "").toLowerCase() === "temples"
   );
@@ -184,33 +176,8 @@ export default function HomeClient({
         </div>
       </section>
 
-      {/* 🏔️ SECTION 3 — Weekend Getaways */}
-      <section data-testid="weekend-getaways-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-stone-50/50">
-        <div className="max-w-7xl mx-auto">
-          <Reveal className="text-center mb-16">
-            <SectionLabel>🏔️ Weekend Getaways</SectionLabel>
-            <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">
-              Short escapes for <span className="gradient-text font-medium">quick recharge</span>.
-            </h2>
-          </Reveal>
-          {displayWeekend.length === 0 ? (
-            <div className="text-center py-16 glass rounded-3xl">
-              <div className="text-soloz-textSecondary">Weekend getaways are being planned. Check back soon.</div>
-            </div>
-          ) : (
-            <motion.div {...stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-              {displayWeekend.map((t) => (
-                <motion.div key={t.id || t._id} variants={item}>
-                  <TripCard trip={t} />
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </div>
-      </section>
-
-      {/* 🛕 SECTION 4 — Spiritual Journeys */}
-      <section data-testid="spiritual-journeys-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200">
+      {/* 🛕 SECTION 3 — Spiritual Journeys */}
+      <section data-testid="spiritual-journeys-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-stone-50/50">
         <div className="max-w-7xl mx-auto">
           <Reveal className="text-center mb-16">
             <SectionLabel>🛕 Spiritual Journeys</SectionLabel>
@@ -219,7 +186,7 @@ export default function HomeClient({
             </h2>
           </Reveal>
           {displaySpiritual.length === 0 ? (
-            <div className="text-center py-16 glass rounded-3xl">
+            <div className="text-center py-16 glass rounded-3xl bg-white">
               <div className="text-soloz-textSecondary">Spiritual journeys are being curated. Check back soon.</div>
             </div>
           ) : (
@@ -283,7 +250,7 @@ export default function HomeClient({
             </div>
           ) : (
             <div className="columns-2 md:columns-4 gap-4">
-              {gallery.map((g) => (
+              {gallery.slice(0, 8).map((g) => (
                 <div key={g.id || g._id || g.image} className="mb-4 break-inside-avoid rounded-xl overflow-hidden group relative">
                   <img src={g.image} alt={g.caption || g.title} className="w-full h-auto image-zoom" />
                 </div>
