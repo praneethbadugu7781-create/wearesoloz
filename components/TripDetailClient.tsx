@@ -58,7 +58,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
   const seatsVal = trip.seats ?? trip.seats_available ?? "—";
 
   return (
-    <div data-testid="trip-detail-page" className="bg-white min-h-screen text-[#1c1917] pt-20">
+    <div data-testid="trip-detail-page" className="bg-white min-h-screen text-[#1c1917]">
       <section className="relative h-[60vh] min-h-[480px] overflow-hidden">
         <img
           src={trip.image || "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=2400&q=85"}

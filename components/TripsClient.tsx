@@ -48,7 +48,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
   });
 
   return (
-    <div data-testid="trips-page" className="bg-white min-h-screen text-[#1c1917] pt-20">
+    <div data-testid="trips-page" className="bg-white min-h-screen text-[#1c1917]">
       {/* Header Banner */}
       <section className="relative pt-40 pb-20 px-6 md:px-10 overflow-hidden">
         <div className="absolute inset-0">

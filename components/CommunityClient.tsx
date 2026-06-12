@@ -13,7 +13,7 @@ export default function CommunityClient({ settings = {} }: CommunityClientProps)
   const instagramLink = settings.instagram || settings.instagram_link || "https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==";
 
   return (
-    <div data-testid="community-page" className="bg-white min-h-screen text-[#1c1917] pt-20">
+    <div data-testid="community-page" className="bg-white min-h-screen text-[#1c1917]">
       <section className="relative pt-40 pb-16 px-6 md:px-10 overflow-hidden">
         <div className="absolute inset-0">
           <img

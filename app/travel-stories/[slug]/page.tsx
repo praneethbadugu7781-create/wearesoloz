@@ -61,7 +61,7 @@ export default async function TravelStoryDetailPage({ params }: PageProps) {
   const hasHtml = /<[a-z][\s\S]*>/i.test(story.content);
 
   return (
-    <div data-testid="story-detail-page" className="bg-white min-h-screen text-[#1c1917] pt-20">
+    <div data-testid="story-detail-page" className="bg-white min-h-screen text-[#1c1917]">
       <section className="relative h-[60vh] min-h-[440px] overflow-hidden">
         <img
           src={story.image || "https://images.unsplash.com/photo-1530789253388-582c481c54b0?auto=format&fit=crop&w=1200&q=85"}

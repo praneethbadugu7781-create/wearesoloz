@@ -34,11 +34,19 @@ export function Navbar() {
     setOpen(false);
   }, [pathname]);
 
+  const isPlainPage = 
+    pathname.startsWith("/about-akhil") ||
+    pathname.startsWith("/gallery") ||
+    pathname.startsWith("/contact") ||
+    pathname.startsWith("/admin");
+
+  const showScrolled = scrolled || isPlainPage;
+
   return (
     <header
       data-testid="navbar"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
+        showScrolled
           ? "bg-white/80 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.06)] border-b border-stone-100 py-2"
           : "bg-white/5 backdrop-blur-md border-b border-white/10 shadow-sm py-4"
       }`}
@@ -54,19 +62,19 @@ export function Navbar() {
               src="/logo.png"
               alt="WeAreSoloz"
               className={`rounded-full object-cover transition-all duration-300 ring-2 ring-orange-500/20 group-hover:ring-orange-500/40 ${
-                scrolled ? "h-12 w-12 md:h-14 md:w-14" : "h-14 w-14 md:h-16 md:w-16"
+                showScrolled ? "h-12 w-12 md:h-14 md:w-14" : "h-14 w-14 md:h-16 md:w-16"
               }`}
             />
             <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white" />
           </div>
           <div className="leading-none">
             <div className={`font-sans font-bold tracking-tight transition-all duration-300 ${
-              scrolled ? "text-lg md:text-xl text-stone-900" : "text-xl md:text-2xl text-white"
+              showScrolled ? "text-lg md:text-xl text-stone-900" : "text-xl md:text-2xl text-white"
             }`}>
               We<span className="text-[#ea580c]">Are</span>Soloz
             </div>
             <div className={`text-[8.5px] md:text-[10px] uppercase tracking-[0.08em] md:tracking-[0.2em] transition-all duration-300 ${
-              scrolled ? "text-stone-400" : "text-white/80"
+              showScrolled ? "text-stone-400" : "text-white/80"
             } font-medium mt-0.5 whitespace-nowrap`}>
               Travel Solo · You're Not Alone
             </div>
@@ -75,7 +83,7 @@ export function Navbar() {
 
         {/* Desktop Nav */}
         <nav className={`hidden lg:flex items-center gap-0.5 backdrop-blur-sm rounded-full px-1.5 py-1.5 border transition-all duration-300 ${
-          scrolled ? "bg-stone-50/80 border-stone-100" : "bg-white/10 border-white/10"
+          showScrolled ? "bg-stone-50/80 border-stone-100" : "bg-white/10 border-white/10"
         }`}>
           {links.map((l) => {
             const isActive = pathname === l.href;
@@ -86,8 +94,8 @@ export function Navbar() {
                 data-testid={`nav-${l.label.toLowerCase().replace(/\s+/g, "-")}`}
                 className={`relative px-4 py-2 text-[13px] font-medium rounded-full transition-all duration-300 ${
                   isActive
-                    ? (scrolled ? "bg-white text-stone-900 shadow-sm" : "bg-white/20 text-white shadow-sm")
-                    : (scrolled ? "text-stone-500 hover:text-stone-900 hover:bg-white/60" : "text-white/80 hover:text-white hover:bg-white/10")
+                    ? (showScrolled ? "bg-white text-stone-900 shadow-sm" : "bg-white/20 text-white shadow-sm")
+                    : (showScrolled ? "text-stone-500 hover:text-stone-900 hover:bg-white/60" : "text-white/80 hover:text-white hover:bg-white/10")
                 }`}
               >
                 {l.label}
@@ -109,7 +117,7 @@ export function Navbar() {
             href="/soloz-community"
             data-testid="nav-join-community"
             className={`hidden md:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold transition-all duration-300 hover:shadow-lg ${
-              scrolled
+              showScrolled
                 ? "bg-stone-900 text-white hover:bg-stone-800 hover:shadow-stone-900/10"
                 : "bg-white text-stone-900 hover:bg-stone-100 hover:shadow-white/10"
             }`}
@@ -120,7 +128,7 @@ export function Navbar() {
             onClick={() => setOpen(!open)}
             data-testid="mobile-menu-toggle"
             className={`lg:hidden w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-              scrolled
+              showScrolled
                 ? "bg-stone-100 hover:bg-stone-200 text-stone-700"
                 : "bg-white/10 hover:bg-white/20 text-white"
             }`}
