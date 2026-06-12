@@ -61,21 +61,21 @@ export function Navbar() {
             <img
               src="/logo.png"
               alt="WeAreSoloz"
-              className={`rounded-full object-cover transition-all duration-300 ring-2 ring-orange-500/20 group-hover:ring-orange-500/40 ${
+              className={`rounded-full object-cover transition-all duration-300 ring-2 ring-orange-500/45 group-hover:ring-orange-500 shadow-[0_0_12px_rgba(234,88,12,0.25)] group-hover:shadow-[0_0_20px_rgba(234,88,12,0.5)] ${
                 showScrolled ? "h-12 w-12 md:h-14 md:w-14" : "h-14 w-14 md:h-16 md:w-16"
               }`}
             />
-            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white" />
+            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white animate-pulse" />
           </div>
           <div className="leading-none">
-            <div className={`font-sans font-bold tracking-tight transition-all duration-300 ${
-              showScrolled ? "text-lg md:text-xl text-stone-900" : "text-xl md:text-2xl text-white"
+            <div className={`font-sans font-extrabold tracking-tight transition-all duration-300 ${
+              showScrolled ? "text-lg md:text-xl text-stone-900" : "text-xl md:text-2xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
             }`}>
               We<span className="text-[#ea580c]">Are</span>Soloz
             </div>
             <div className={`text-[8.5px] md:text-[10px] uppercase tracking-[0.08em] md:tracking-[0.2em] transition-all duration-300 ${
-              showScrolled ? "text-stone-400" : "text-white/80"
-            } font-medium mt-0.5 whitespace-nowrap`}>
+              showScrolled ? "text-stone-500" : "text-white/95 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]"
+            } font-semibold mt-0.5 whitespace-nowrap`}>
               Travel Solo · You're Not Alone
             </div>
           </div>
