@@ -39,8 +39,8 @@ export function Navbar() {
       data-testid="navbar"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? "bg-white/80 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.06)] py-2"
-          : "bg-transparent py-4"
+          ? "bg-white/80 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.06)] border-b border-stone-100 py-2"
+          : "bg-white/5 backdrop-blur-md border-b border-white/10 shadow-sm py-4"
       }`}
     >
       {/* Subtle orange accent line at top */}

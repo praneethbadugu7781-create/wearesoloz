@@ -58,7 +58,7 @@ export default function HomeClient({
   const destList = getBentoDests();
 
   return (
-    <div data-testid="home-page" className="bg-white min-h-screen text-[#1c1917] pt-20">
+    <div data-testid="home-page" className="bg-white min-h-screen text-[#1c1917]">
       {/* SECTION 1 — HERO */}
       <HomeHero
         title={settings.hero_title || settings.heroTitle || "Start Solo. Travel Together."}
