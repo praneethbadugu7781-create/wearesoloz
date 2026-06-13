@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { Phone, Instagram, MessageCircle, MapPin, ArrowRight } from "lucide-react";
+import { Phone, Instagram, MessageCircle, MapPin, ArrowRight, Youtube } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -131,6 +131,21 @@ export default function ContactClient({ settings = {}, trips = [] }: ContactClie
                   <div className="text-stone-900 font-semibold">
                     {instagramLink.includes("akhillrockstar") ? "@akhillrockstar" : "@wearesolozindia"}
                   </div>
+                </div>
+              </a>
+              <a
+                data-testid="contact-youtube"
+                href="https://youtube.com/@akhillrockstartravelstories?si=_c7w-zLBaUwBgMSi"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-4 glass rounded-xl p-4 hover:bg-stone-50 border border-stone-200/50 transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-soloz-primary/15 flex items-center justify-center">
+                  <Youtube className="w-4 h-4 text-soloz-primary" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-soloz-textMuted">YouTube</div>
+                  <div className="text-stone-900 font-semibold">@akhillrockstartravelstories</div>
                 </div>
               </a>
               <a

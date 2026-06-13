@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Instagram, Phone } from "lucide-react";
+import { Instagram, Phone, Youtube } from "lucide-react";
 import { brand, navItems } from "@/lib/data";
 import { usePathname } from "next/navigation";
 
@@ -37,6 +37,9 @@ export function SiteFooter() {
             <a href={brand.instagram} className="flex items-center gap-2 hover:text-white">
               <Instagram size={16} />
               {brand.instagram.includes("akhillrockstar") ? "@akhillrockstar" : "@wearesolozindia"}
+            </a>
+            <a href="https://youtube.com/@akhillrockstartravelstories?si=_c7w-zLBaUwBgMSi" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-white">
+              <Youtube size={16} /> @akhillrockstartravelstories
             </a>
           </div>
         </div>

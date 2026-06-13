@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Instagram, Phone, MessageCircle } from "lucide-react";
+import { Instagram, Phone, MessageCircle, Youtube } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 export default function Footer() {
@@ -33,6 +33,9 @@ export default function Footer() {
             A family of solo explorers crossing mountains, temples, villages and hidden trails. Travel Solo. You&apos;re Not Alone.
           </p>
           <div className="flex items-center gap-3 mt-6">
+            <a data-testid="footer-youtube" href="https://youtube.com/@akhillrockstartravelstories?si=_c7w-zLBaUwBgMSi" target="_blank" rel="noreferrer" className="w-11 h-11 rounded-full bg-white border border-stone-100 flex items-center justify-center hover:bg-red-50 hover:text-[#ef4444] hover:border-red-200 transition-all text-stone-500 shadow-sm">
+              <Youtube className="w-4 h-4" />
+            </a>
             <a data-testid="footer-instagram" href="https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==" target="_blank" rel="noreferrer" className="w-11 h-11 rounded-full bg-white border border-stone-100 flex items-center justify-center hover:bg-orange-50 hover:text-[#ea580c] hover:border-orange-200 transition-all text-stone-500 shadow-sm">
               <Instagram className="w-4 h-4" />
             </a>
@@ -62,6 +65,7 @@ export default function Footer() {
             <li><Link href="/contact" className="hover:text-stone-900 transition-colors">Contact</Link></li>
             <li><a href="tel:+919966085310" className="hover:text-stone-900 transition-colors">+91 9966085310</a></li>
             <li><a href="https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==" target="_blank" rel="noreferrer" className="hover:text-stone-900 transition-colors">@wearesolozindia</a></li>
+            <li><a href="https://youtube.com/@akhillrockstartravelstories?si=_c7w-zLBaUwBgMSi" target="_blank" rel="noreferrer" className="hover:text-stone-900 transition-colors">YouTube Channel</a></li>
           </ul>
         </div>
       </div>
