@@ -17,7 +17,8 @@ const stateCategories = [
   { name: "Andhra Pradesh", image: "/images/andhrapradesh_gandikota.jpg" },
   { name: "Karnataka", image: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=800&q=80" },
   { name: "Tamil Nadu", image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80" },
-  { name: "Kerala", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80" }
+  { name: "Kerala", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80" },
+  { name: "Sri Lanka", image: "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=800&q=80" }
 ];
 
 export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
@@ -92,7 +93,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
           </Reveal>
 
           {/* Grid of state cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
             {stateCategories.map((state) => {
               const count = countTrips(state.name);
               const isActive = selectedState.toLowerCase() === state.name.toLowerCase();

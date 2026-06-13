@@ -82,7 +82,8 @@ export const trips = [
   { destination: "Araku Valley", state: "Andhra Pradesh", category: "Adventure", date: "2026-10-17", duration: "2 Days", price: "₹5,999", seats: 14, image: "/images/trips/arakuimage.png" },
   { destination: "Srisailam Spiritual Trail", state: "Andhra Pradesh", category: "Temples", date: "2026-11-07", duration: "2 Days", price: "₹4,999", seats: 18, image: "/images/trips/srisailamimage.png" },
   { destination: "Gokarna Beach Trek", state: "Karnataka", category: "Treks", date: "2026-11-20", duration: "3 Days", price: "₹8,999", seats: 12, image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80" },
-  { destination: "Coorg & Chikmagalur", state: "Karnataka", category: "Adventure", date: "2026-12-05", duration: "3 Days", price: "₹9,499", seats: 15, image: "https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=1200&q=80" }
+  { destination: "Coorg & Chikmagalur", state: "Karnataka", category: "Adventure", date: "2026-12-05", duration: "3 Days", price: "₹9,499", seats: 15, image: "https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=1200&q=80" },
+  { destination: "Sri Lanka Expedition", state: "Sri Lanka", category: "Adventure", date: "2026-12-19", duration: "7 Days", price: "₹39,999", seats: 10, image: "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1200&q=80", slug: "sri-lanka-expedition" }
 ];
 
 export const whyUs = [

@@ -26,7 +26,7 @@ export default function ContactClient({ settings = {}, trips = [] }: ContactClie
   // Extract unique states from active trips, falling back to default states
   const statesList = Array.from(new Set(trips.map(t => t.state || "Andhra Pradesh").filter(Boolean)));
   if (statesList.length === 0) {
-    statesList.push("Andhra Pradesh", "Telangana", "Karnataka", "Kerala", "Tamil Nadu");
+    statesList.push("Andhra Pradesh", "Telangana", "Karnataka", "Kerala", "Tamil Nadu", "Sri Lanka");
   }
 
   // Extract destinations filtered by selectedState
@@ -46,7 +46,8 @@ export default function ContactClient({ settings = {}, trips = [] }: ContactClie
       "Telangana": ["Ananthagiri Hills", "Warangal", "Laknavaram", "Bhadrachalam", "Nagarjuna Sagar"],
       "Karnataka": ["Hampi", "Gokarna", "Coorg", "Chikmagalur", "Badami", "Dandeli"],
       "Kerala": ["Munnar", "Wayanad", "Vagamon", "Athirappilly", "Varkala", "Alappuzha"],
-      "Tamil Nadu": ["Ooty", "Kodaikanal", "Yercaud", "Rameshwaram", "Mahabalipuram", "Kanyakumari"]
+      "Tamil Nadu": ["Ooty", "Kodaikanal", "Yercaud", "Rameshwaram", "Mahabalipuram", "Kanyakumari"],
+      "Sri Lanka": ["Sri Lanka Expedition"]
     };
     destinationsForState.push(...(fallbackMap[selectedState] || []));
   }
