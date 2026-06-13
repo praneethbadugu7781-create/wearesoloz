@@ -207,7 +207,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                       <div className="flex-1 h-px bg-gradient-to-r from-stone-200 to-transparent ml-4" />
                     </div>
                     {/* Category Trip Cards */}
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8">
                       {catTrips.map((t) => (
                         <TripCard key={t.id || t._id} trip={t} />
                       ))}
@@ -217,7 +217,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
               })}
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8">
               {filteredTrips.map((t) => (
                 <TripCard key={t.id || t._id} trip={t} />
               ))}

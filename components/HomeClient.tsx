@@ -165,7 +165,7 @@ export default function HomeClient({
               <div className="text-soloz-textSecondary">New trips are being curated. Check back soon.</div>
             </div>
           ) : (
-            <motion.div {...stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            <motion.div {...stagger} className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8">
               {displayUpcoming.map((t) => (
                 <motion.div key={t.id || t._id} variants={item}>
                   <TripCard trip={t} />
@@ -190,7 +190,7 @@ export default function HomeClient({
               <div className="text-soloz-textSecondary">Spiritual journeys are being curated. Check back soon.</div>
             </div>
           ) : (
-            <motion.div {...stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            <motion.div {...stagger} className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8">
               {displaySpiritual.map((t) => (
                 <motion.div key={t.id || t._id} variants={item}>
                   <TripCard trip={t} />
@@ -497,29 +497,29 @@ export function TripCard({ trip }: { trip: any }) {
             className="w-full h-full object-cover image-zoom"
           />
           {trip.date && (
-            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md border border-stone-200 rounded-full px-3 py-1 text-[10px] uppercase tracking-widest text-stone-900 font-semibold">
+            <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-white/90 backdrop-blur-md border border-stone-200 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[10px] uppercase tracking-widest text-stone-900 font-semibold">
               {new Date(trip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             </div>
           )}
           {trip.state?.toLowerCase() === "sri lanka" && (
-            <div className="absolute top-4 right-4 bg-[#ea580c] border border-orange-500 rounded-full px-3 py-1 text-[9px] uppercase tracking-widest text-white font-extrabold shadow-md animate-pulse">
-              Budget International
+            <div className="absolute top-2 right-2 md:top-4 md:right-4 bg-[#ea580c] border border-orange-500 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[9px] uppercase tracking-widest text-white font-extrabold shadow-md animate-pulse">
+              Budget <span className="hidden sm:inline">International</span><span className="sm:hidden">Intl</span>
             </div>
           )}
         </div>
-        <div className="p-6">
-          <div className="flex items-center justify-between gap-2 text-[10px] uppercase font-semibold">
-            <span className="tracking-[0.2em] text-[#ea580c]">{trip.destination}</span>
-            <span className="tracking-wider text-stone-500 bg-stone-100/80 rounded-md px-1.5 py-0.5">{trip.category || "Adventure"}</span>
+        <div className="p-3 md:p-6">
+          <div className="flex items-center justify-between gap-1.5 text-[8px] md:text-[10px] uppercase font-semibold">
+            <span className="tracking-[0.1em] md:tracking-[0.2em] text-[#ea580c] truncate max-w-[60%] sm:max-w-none">{trip.destination}</span>
+            <span className="tracking-wider text-stone-500 bg-stone-100/80 rounded-md px-1 md:px-1.5 py-0.5 scale-90 md:scale-100 origin-right shrink-0">{trip.category || "Adventure"}</span>
           </div>
-          <div className="font-display text-xl font-medium mt-2 text-stone-900 truncate">{trip.title || `${trip.destination} Expedition`}</div>
-          <div className="flex items-center gap-4 mt-4 text-xs text-stone-600">
-            {trip.duration && <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3 text-stone-500" /> {trip.duration}</span>}
-            {trip.seats > 0 && <span className="inline-flex items-center gap-1"><Users className="w-3 h-3 text-stone-500" /> {trip.seats} seats</span>}
+          <div className="font-display text-sm md:text-xl font-medium mt-1 md:mt-2 text-stone-900 truncate">{trip.title || `${trip.destination} Expedition`}</div>
+          <div className="flex items-center gap-2 md:gap-4 mt-2 md:mt-4 text-[10px] md:text-xs text-stone-600">
+            {trip.duration && <span className="inline-flex items-center gap-0.5 md:gap-1"><Clock className="w-3 h-3 text-stone-500 shrink-0" /> {trip.duration}</span>}
+            {trip.seats > 0 && <span className="inline-flex items-center gap-0.5 md:gap-1"><Users className="w-3 h-3 text-stone-500 shrink-0" /> {trip.seats} seats</span>}
           </div>
-          <div className="flex items-center justify-between mt-5 pt-4 border-t border-stone-100">
-            <div className="text-sm font-medium text-stone-500">Contact for Price</div>
-            <div className="text-xs text-soloz-primary inline-flex items-center gap-1 font-bold group-hover:text-orange-600 transition-colors">Join trip <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" /></div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-3 pt-3 md:mt-5 md:pt-4 border-t border-stone-100 gap-1 sm:gap-2">
+            <div className="text-[10px] md:text-sm font-semibold text-stone-500">Contact for Price</div>
+            <div className="text-[10px] md:text-xs text-soloz-primary inline-flex items-center gap-0.5 md:gap-1 font-bold group-hover:text-orange-600 transition-colors">Join trip <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" /></div>
           </div>
         </div>
       </div>
