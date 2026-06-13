@@ -18,14 +18,14 @@ export const metadata: Metadata = {
     template: `%s | ${brand.name}`
   },
   description:
-    "A premium solo travel community for group trips, treks, spiritual journeys, road trips, and lifelong travel friendships.",
+    "A premium solo travel community for curated expeditions, treks, spiritual journeys, road trips, and lifelong travel friendships.",
   openGraph: {
     title: `${brand.name} | ${brand.tagline}`,
     description: "Start solo, travel together with India's growing premium travel community.",
     type: "website",
     images: ["/og-image.jpg"]
   },
-  keywords: ["solo travel", "group trips", "Kedarnath", "travel community", "WeAreSoloz", "Akhil"]
+  keywords: ["solo travel", "solo trips", "Kedarnath", "travel community", "WeAreSoloz", "Akhil"]
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

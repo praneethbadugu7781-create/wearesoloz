@@ -31,7 +31,7 @@ async function getTrip(slug: string) {
       duration: staticTrip.duration,
       price: staticTrip.price,
       seats: staticTrip.seats,
-      description: `Join WeAreSoloz on a spectacular group trip to ${staticTrip.destination}. Meet awesome solo travelers, explore pristine peaks, valleys, beaches, and local cultures.`,
+      description: `Join WeAreSoloz on a spectacular curated trip to ${staticTrip.destination}. Meet awesome solo travelers, explore pristine peaks, valleys, beaches, and local cultures.`,
       image: staticTrip.image,
       inclusions: [
         "Double/Triple sharing premium accommodation",
@@ -45,8 +45,8 @@ async function getTrip(slug: string) {
         { day: "Day 1", title: "Arrival at Base Camp", description: "Reach the pickup point, meet fellow explorers, and transfer to your luxury tents/hotel. Evening bonfire and trip briefing." },
         { day: "Day 2", title: "Scenic Exploration", description: "Hike through trails, capture gorgeous sunset photos, and sample authentic local recipes." },
         { day: "Day 3", title: "Peak Adventure Day", description: "A thrilling day visiting the main attraction. Walk across mountain rivers, explore local temples, and stargaze." },
-        { day: "Day 4", title: "Return Trails & Farewell", description: "Descent to base camp. Enjoy a grand final dinner with songs, laughter, and group memories." },
-        { day: "Day 5", title: "Departure", description: "Bid farewell to your travel group. Leave with friendships and stories for a lifetime!" }
+        { day: "Day 4", title: "Return Trails & Farewell", description: "Descent to base camp. Enjoy a grand final dinner with songs, laughter, and shared memories." },
+        { day: "Day 5", title: "Departure", description: "Bid farewell to your travel buddies. Leave with friendships and stories for a lifetime!" }
       ]
     };
   }

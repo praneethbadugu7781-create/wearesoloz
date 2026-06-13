@@ -69,8 +69,8 @@ export default function CommunityClient({ settings = {} }: CommunityClientProps)
             },
             {
               icon: MapPin,
-              title: "Group Adventures",
-              text: "Curated group trips to mountains, temples, coasts and beyond.",
+              title: "Solo Adventures",
+              text: "Curated solo-friendly trips to mountains, temples, coasts and beyond.",
             },
           ].map((c) => (
             <div key={c.title} className="glass rounded-2xl p-8 hover-lift border border-stone-200">

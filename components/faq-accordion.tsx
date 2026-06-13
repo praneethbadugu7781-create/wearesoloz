@@ -12,11 +12,11 @@ interface FAQItem {
 const defaultFAQs: FAQItem[] = [
   {
     question: "What makes WeAreSoloz different from standard tour operators?",
-    answer: "We are a travel community, not a travel agency. We focus heavily on group compatibility, safety, and fostering friendships. We coordinate verified departures where solo travelers move as a supportive crew rather than a bus full of strangers."
+    answer: "We are a travel community, not a travel agency. We focus heavily on traveler compatibility, safety, and fostering friendships. We coordinate verified departures where solo travelers move as a supportive crew rather than a bus full of strangers."
   },
   {
     question: "Is it safe for solo female travelers?",
-    answer: "Absolutely. Safety is our primary pillar. All participants are verified through brief confirmation profiles prior to slot approvals. Our trip captains are trained in local safety guidelines and first-aid support, creating a secure, respectful group environment."
+    answer: "Absolutely. Safety is our primary pillar. All participants are verified through brief confirmation profiles prior to slot approvals. Our trip captains are trained in local safety guidelines and first-aid support, creating a secure, respectful community environment."
   },
   {
     question: "How do I confirm my slot placement?",

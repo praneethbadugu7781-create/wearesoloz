@@ -162,6 +162,11 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
                   <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-orange-200">
                     {activeTrip.state}
                   </span>
+                  {activeTrip.state?.toLowerCase() === "sri lanka" && (
+                    <span className="ml-2 px-2.5 py-0.5 rounded-full bg-[#ea580c] text-white text-[9px] uppercase tracking-widest font-black shadow-sm shadow-orange-500/20 animate-pulse">
+                      Budget International
+                    </span>
+                  )}
                 </motion.div>
               </div>
 
@@ -203,7 +208,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
                   variants={textRevealVariants}
                   className="text-white/80 font-body text-sm sm:text-base leading-relaxed select-text"
                 >
-                  Explore the untouched beauty of {activeTrip.destination}. This group tour includes comfortable sharing accommodations, AC transportation, breakfasts and dinners, alongside guidance from Akhil.
+                  Explore the untouched beauty of {activeTrip.destination}. This curated solo-friendly journey includes comfortable sharing accommodations, AC transportation, breakfasts and dinners, alongside guidance from Akhil.
                 </motion.p>
               </div>
 

@@ -15,7 +15,7 @@ const offerings = [
   { icon: Heart, label: "Hidden Destinations", emoji: "🌍" },
   { icon: Camera, label: "Travel Stories & Experiences", emoji: "📸" },
   { icon: Users, label: "Travel Community Meetups", emoji: "🤝" },
-  { icon: Car, label: "Road Trips & Group Journeys", emoji: "🚗" },
+  { icon: Car, label: "Road Trips & Solo Journeys", emoji: "🚗" },
 ];
 
 export default function AboutClient({ settings = {} }: AboutClientProps) {

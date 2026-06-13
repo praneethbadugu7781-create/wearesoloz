@@ -155,7 +155,7 @@ export default function HomeClient({
       <section data-testid="upcoming-trips-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200">
         <div className="max-w-7xl mx-auto">
           <Reveal className="text-center mb-16">
-            <SectionLabel>📅 Upcoming Group Trips</SectionLabel>
+            <SectionLabel>📅 Upcoming Solo Trips</SectionLabel>
             <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">
               The next <span className="gradient-text font-medium">expeditions</span>.
             </h2>
@@ -309,7 +309,7 @@ export default function HomeClient({
             Connect with <span className="text-emerald-600 font-medium">1,000+</span> <br />Solo Travelers
           </h2>
           <p className="text-stone-600 mt-6 max-w-xl mx-auto leading-relaxed font-body">
-            Join our official WhatsApp group community to get instant updates on upcoming group trips, participate in trip planning Q&A, and chat with travel buddies who share your passion for adventure.
+            Join our official WhatsApp community to get instant updates on upcoming solo trips, participate in trip planning Q&A, and chat with travel buddies who share your passion for adventure.
           </p>
           <div className="mt-8">
             <a
@@ -482,13 +482,18 @@ export function TripCard({ trip }: { trip: any }) {
               {new Date(trip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             </div>
           )}
+          {trip.state?.toLowerCase() === "sri lanka" && (
+            <div className="absolute top-4 right-4 bg-[#ea580c] border border-orange-500 rounded-full px-3 py-1 text-[9px] uppercase tracking-widest text-white font-extrabold shadow-md animate-pulse">
+              Budget International
+            </div>
+          )}
         </div>
         <div className="p-6">
           <div className="flex items-center justify-between gap-2 text-[10px] uppercase font-semibold">
             <span className="tracking-[0.2em] text-[#ea580c]">{trip.destination}</span>
             <span className="tracking-wider text-stone-500 bg-stone-100/80 rounded-md px-1.5 py-0.5">{trip.category || "Adventure"}</span>
           </div>
-          <div className="font-display text-xl font-medium mt-2 text-stone-900 truncate">{trip.title || `${trip.destination} Group Tour`}</div>
+          <div className="font-display text-xl font-medium mt-2 text-stone-900 truncate">{trip.title || `${trip.destination} Expedition`}</div>
           <div className="flex items-center gap-4 mt-4 text-xs text-stone-600">
             {trip.duration && <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3 text-stone-500" /> {trip.duration}</span>}
             {trip.seats > 0 && <span className="inline-flex items-center gap-1"><Users className="w-3 h-3 text-stone-500" /> {trip.seats} seats</span>}

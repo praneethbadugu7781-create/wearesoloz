@@ -69,7 +69,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
         <div className="absolute bottom-12 left-0 right-0 max-w-7xl mx-auto px-6 md:px-10">
           <SectionLabel>{trip.destination}</SectionLabel>
           <h1 className="font-display text-5xl md:text-7xl font-light tracking-tighter mt-3 max-w-3xl text-stone-900">
-            {trip.title || `${trip.destination} Group Tour`}
+            {trip.title || `${trip.destination} Expedition`}
           </h1>
         </div>
       </section>
@@ -142,6 +142,18 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                 </ul>
               </div>
             )}
+
+            {/* ⚠️ Travel & Transportation Notice */}
+            <div className="mt-12 p-6 rounded-2xl bg-amber-50 border border-amber-200 text-stone-900 font-body">
+              <h4 className="font-display text-lg font-semibold text-amber-800 flex items-center gap-2 mb-2">
+                ⚠️ Important Travel Policy
+              </h4>
+              <p className="text-sm text-stone-700 leading-relaxed">
+                Please note that <strong>train tickets and flight tickets are not included</strong> in the trip cost. 
+                All travelers must reach the designated meeting point in the starting city by themselves. 
+                Akhil will communicate the exact starting location and meeting coordinates prior to the trip departure.
+              </p>
+            </div>
           </div>
           <div>
             <form onSubmit={submit} data-testid="trip-join-form" className="glass rounded-2xl p-6 bg-stone-50 border border-stone-200 sticky top-28 space-y-3">
@@ -190,6 +202,9 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                 data-testid="join-message"
                 className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
               />
+              <div className="text-[10px] text-stone-500 leading-tight">
+                * Note: Flights/trains to the starting city are not included. You will meet Akhil at the designated starting point.
+              </div>
               <Button
                 type="submit"
                 disabled={submitting}
