@@ -26,11 +26,24 @@ export function getAuthHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-/* ───── Public fetch (server-side safe) ───── */
-export async function fetchPublic(path: string) {
-  const res = await fetch(`${API_URL}${path}`, { cache: 'no-store' });
-  if (!res.ok) return null;
-  return res.json();
+/* ───── Public fetch (server-side safe) with timeout ───── */
+export async function fetchPublic(path: string, fallback: any = null, timeoutMs: number = 2500) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(`${API_URL}${path}`, {
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    clearTimeout(id);
+    if (!res.ok) return fallback;
+    return res.json();
+  } catch (err: any) {
+    clearTimeout(id);
+    console.error(`fetchPublic error for path ${path}:`, err.message || err);
+    return fallback;
+  }
 }
 
 /* ───── Admin fetch (client-side only) ───── */

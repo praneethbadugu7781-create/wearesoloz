@@ -1,12 +1,11 @@
 import AboutClient from "@/components/AboutClient";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+import { fetchPublic } from "@/lib/api";
 
 async function getAboutData() {
   try {
     const [homepageValues, contactValues] = await Promise.all([
-      fetch(`${API_URL}/settings/homepage`, { cache: "no-store" }).then(r => r.ok ? r.json() : {}) as Promise<any>,
-      fetch(`${API_URL}/settings/contact`, { cache: "no-store" }).then(r => r.ok ? r.json() : {}) as Promise<any>,
+      fetchPublic("/settings/homepage", {}),
+      fetchPublic("/settings/contact", {}),
     ]);
 
     return {

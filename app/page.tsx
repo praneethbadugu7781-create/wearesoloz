@@ -1,17 +1,16 @@
 import HomeClient from "@/components/HomeClient";
 import { brand, destinations as defaultDests, trips as defaultTrips, stories as defaultStories, testimonials as defaultTestimonials, gallery as defaultGallery } from "@/lib/data";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+import { fetchPublic } from "@/lib/api";
 
 async function getData() {
   try {
     const [homepageSettings, dests, dbTrips, dbBlogs, dbTestimonials, dbGallery] = await Promise.all([
-      fetch(`${API_URL}/settings/homepage`, { cache: "no-store" }).then(r => r.ok ? r.json() : null),
-      fetch(`${API_URL}/destinations`, { cache: "no-store" }).then(r => r.ok ? r.json() : []),
-      fetch(`${API_URL}/trips`, { cache: "no-store" }).then(r => r.ok ? r.json() : []),
-      fetch(`${API_URL}/blogs`, { cache: "no-store" }).then(r => r.ok ? r.json() : []),
-      fetch(`${API_URL}/testimonials`, { cache: "no-store" }).then(r => r.ok ? r.json() : []),
-      fetch(`${API_URL}/gallery`, { cache: "no-store" }).then(r => r.ok ? r.json() : []),
+      fetchPublic("/settings/homepage", null),
+      fetchPublic("/destinations", []),
+      fetchPublic("/trips", []),
+      fetchPublic("/blogs", []),
+      fetchPublic("/testimonials", []),
+      fetchPublic("/gallery", []),
     ]);
 
     const settings = homepageSettings || {

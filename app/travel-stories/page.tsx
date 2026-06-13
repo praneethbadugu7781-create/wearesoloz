@@ -1,15 +1,11 @@
 import StoriesClient from "@/components/StoriesClient";
 import { stories as defaultStories } from "@/lib/data";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+import { fetchPublic } from "@/lib/api";
 
 async function getStories() {
   try {
-    const res = await fetch(`${API_URL}/blogs`, { cache: "no-store" });
-    if (res.ok) {
-      const dbBlogs = await res.json();
-      if (dbBlogs.length > 0) return dbBlogs;
-    }
+    const dbBlogs = await fetchPublic("/blogs", []);
+    if (dbBlogs && dbBlogs.length > 0) return dbBlogs;
   } catch (error) {
     console.error("API error fetching travel stories:", error);
   }

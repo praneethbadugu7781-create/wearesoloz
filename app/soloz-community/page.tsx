@@ -1,11 +1,9 @@
 import CommunityClient from "@/components/CommunityClient";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+import { fetchPublic } from "@/lib/api";
 
 async function getCommunitySettings() {
   try {
-    const res = await fetch(`${API_URL}/settings/contact`, { cache: "no-store" });
-    return res.ok ? await res.json() : {};
+    return await fetchPublic("/settings/contact", {});
   } catch (error) {
     console.error("Community Page API Error:", error);
     return {};

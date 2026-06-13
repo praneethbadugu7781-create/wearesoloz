@@ -3,8 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/Reveal";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+import { fetchPublic } from "@/lib/api";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -12,9 +11,9 @@ interface PageProps {
 
 async function getBlogData(slug: string) {
   try {
-    const res = await fetch(`${API_URL}/blogs/${slug}`, { cache: "no-store" });
-    if (res.ok) {
-      return await res.json();
+    const dbBlog = await fetchPublic(`/blogs/${slug}`, null);
+    if (dbBlog) {
+      return dbBlog;
     }
   } catch (error) {
     console.error("API error fetching story details:", error);

@@ -2,8 +2,7 @@ import TripDetailClient from "@/components/TripDetailClient";
 import { trips as defaultTrips } from "@/lib/data";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+import { fetchPublic } from "@/lib/api";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -11,9 +10,9 @@ interface PageProps {
 
 async function getTrip(slug: string) {
   try {
-    const res = await fetch(`${API_URL}/trips/${slug}`, { cache: "no-store" });
-    if (res.ok) {
-      return await res.json();
+    const dbTrip = await fetchPublic(`/trips/${slug}`, null);
+    if (dbTrip) {
+      return dbTrip;
     }
   } catch (error) {
     console.error("API error fetching single trip:", error);
