@@ -407,36 +407,50 @@ export default function HomeClient({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">State</label>
-                    <select
-                      required
-                      value={selectedState}
-                      onChange={(e) => {
-                        setSelectedState(e.target.value);
-                        setForm({ ...form, destination: "" });
-                      }}
-                      className="w-full h-10 px-3 rounded-lg border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-stone-800"
-                    >
-                      <option value="" disabled>Select State</option>
-                      {statesList.map((st) => (
-                        <option key={st} value={st}>{st}</option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <select
+                        required
+                        value={selectedState}
+                        onChange={(e) => {
+                          setSelectedState(e.target.value);
+                          setForm({ ...form, destination: "" });
+                        }}
+                        className="w-full h-10 px-3 pr-10 rounded-lg border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-stone-800 appearance-none cursor-pointer"
+                      >
+                        <option value="" disabled>Select State</option>
+                        {statesList.map((st) => (
+                          <option key={st} value={st}>{st}</option>
+                        ))}
+                      </select>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                      </div>
+                    </div>
                   </div>
 
                   <div>
                     <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Destination Interested</label>
-                    <select
-                      required
-                      disabled={!selectedState}
-                      value={form.destination}
-                      onChange={(e) => setForm({ ...form, destination: e.target.value })}
-                      className="w-full h-10 px-3 rounded-lg border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 text-stone-800"
-                    >
-                      <option value="" disabled>Select Destination</option>
-                      {destinationsForState.map((d) => (
-                        <option key={d} value={d}>{d}</option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <select
+                        required
+                        disabled={!selectedState}
+                        value={form.destination}
+                        onChange={(e) => setForm({ ...form, destination: e.target.value })}
+                        className="w-full h-10 px-3 pr-10 rounded-lg border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 text-stone-800 appearance-none cursor-pointer"
+                      >
+                        <option value="" disabled>Select Destination</option>
+                        {destinationsForState.map((d) => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -448,6 +462,11 @@ export default function HomeClient({
                     placeholder="Tell us if you have any questions or custom dates..."
                     className="border-stone-200 focus-visible:ring-orange-500 rounded-lg min-h-[100px]"
                   />
+                </div>
+
+                {/* Styled Travel Policy Notice Card */}
+                <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200/80 text-[11px] text-amber-900 leading-normal font-body">
+                  <strong>⚠️ Booking Notice:</strong> Train/flight tickets to the starting city are not included. You will meet Akhil directly at the assembly point.
                 </div>
 
                 <Button

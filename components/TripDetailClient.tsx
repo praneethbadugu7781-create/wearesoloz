@@ -156,55 +156,104 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
             </div>
           </div>
           <div>
-            <form onSubmit={submit} data-testid="trip-join-form" className="glass rounded-2xl p-6 bg-stone-50 border border-stone-200 sticky top-28 space-y-3">
-              <div className="text-xs uppercase tracking-widest text-soloz-primary font-semibold">Join this Trip</div>
-              <div className="font-display text-2xl font-light text-stone-900">
-                Contact for Price
+            <form onSubmit={submit} data-testid="trip-join-form" className="glass rounded-2xl p-6 bg-stone-50 border border-stone-200 sticky top-28 space-y-4">
+              <div>
+                <div className="text-xs uppercase tracking-widest text-[#ea580c] font-semibold">Inquire for this Trip</div>
+                <div className="font-display text-2xl font-light text-stone-900 mt-1">
+                  Contact for Price
+                </div>
               </div>
-              <Input
-                required
-                value={form.full_name}
-                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-                placeholder="Full Name"
-                data-testid="join-name"
-                className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
-              />
-              <Input
-                required
-                value={form.mobile}
-                onChange={(e) => setForm({ ...form, mobile: e.target.value })}
-                placeholder="Mobile"
-                data-testid="join-mobile"
-                className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
-              />
-              <Input
-                required
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="Email"
-                data-testid="join-email"
-                className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
-              />
-              <Input
-                type="number"
-                min="1"
-                value={form.travelers}
-                onChange={(e) => setForm({ ...form, travelers: parseInt(e.target.value) || 1 })}
-                placeholder="Travelers"
-                data-testid="join-travelers"
-                className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
-              />
-              <Textarea
-                value={form.message}
-                onChange={(e) => setForm({ ...form, message: e.target.value })}
-                placeholder="Any message for Akhil?"
-                data-testid="join-message"
-                className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
-              />
-              <div className="text-[10px] text-stone-500 leading-tight">
-                * Note: Flights/trains to the starting city are not included. You will meet Akhil at the designated starting point.
+
+              {/* Full Name */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                  Full Name
+                </label>
+                <Input
+                  required
+                  value={form.full_name}
+                  onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                  placeholder="Enter your full name"
+                  data-testid="join-name"
+                  className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c]"
+                />
               </div>
+
+              {/* Mobile Number */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                  Mobile Number (WhatsApp)
+                </label>
+                <Input
+                  required
+                  value={form.mobile}
+                  onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+                  placeholder="e.g. +91 9966085310"
+                  data-testid="join-mobile"
+                  className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c]"
+                />
+              </div>
+
+              {/* Email Address */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                  Email Address
+                </label>
+                <Input
+                  required
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="yourname@example.com"
+                  data-testid="join-email"
+                  className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c]"
+                />
+              </div>
+
+              {/* Number of Travelers Select Dropdown */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                  Number of Travelers
+                </label>
+                <div className="relative">
+                  <select
+                    required
+                    value={form.travelers}
+                    onChange={(e) => setForm({ ...form, travelers: parseInt(e.target.value) || 1 })}
+                    data-testid="join-travelers"
+                    className="w-full glass border border-stone-200 bg-white/90 h-10 text-stone-900 text-sm px-3 pr-10 rounded-md focus:outline-none focus:ring-1 focus:ring-[#ea580c]/20 focus:border-[#ea580c] appearance-none cursor-pointer"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                      <option key={num} value={num}>{num} {num === 1 ? 'Traveler' : 'Travelers'}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Message for Akhil */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                  Message for Akhil (Optional)
+                </label>
+                <Textarea
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  placeholder="Any questions or travel preferences?"
+                  data-testid="join-message"
+                  className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c] min-h-[80px]"
+                />
+              </div>
+
+              {/* Styled Travel Policy Notice Card */}
+              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200/80 text-[11px] text-amber-900 leading-normal font-body">
+                <strong>⚠️ Booking Notice:</strong> Train/flight tickets to the starting city are not included. You will meet Akhil directly at the assembly point.
+              </div>
+
               <Button
                 type="submit"
                 disabled={submitting}

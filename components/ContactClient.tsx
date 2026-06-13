@@ -161,93 +161,138 @@ export default function ContactClient({ settings = {}, trips = [] }: ContactClie
           </Reveal>
 
           <Reveal className="self-start">
-            <form onSubmit={submit} data-testid="contact-form" className="glass rounded-3xl p-8 bg-stone-50 border border-stone-200 space-y-3">
-              <div className="text-xs uppercase tracking-widest text-soloz-primary mb-2 font-semibold">Send a message</div>
-              <Input
-                required
-                value={form.full_name}
-                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-                placeholder="Full Name"
-                data-testid="contact-name"
-                className="glass border-stone-200 bg-white/90 h-12 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
-              />
-              <Input
-                required
-                value={form.mobile}
-                onChange={(e) => setForm({ ...form, mobile: e.target.value })}
-                placeholder="Mobile Number"
-                data-testid="contact-mobile"
-                className="glass border-stone-200 bg-white/90 h-12 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
-              />
-              <Input
-                required
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="Email"
-                data-testid="contact-email"
-                className="glass border-stone-200 bg-white/90 h-12 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
-              />
-              {/* State Dropdown (Required) */}
-              <div className="relative">
-                <select
+            <form onSubmit={submit} data-testid="contact-form" className="glass rounded-3xl p-8 bg-stone-50 border border-stone-200 space-y-4">
+              <div className="text-xs uppercase tracking-widest text-[#ea580c] font-semibold mb-2">Send a message</div>
+              
+              {/* Full Name */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                  Full Name
+                </label>
+                <Input
                   required
-                  value={selectedState}
-                  onChange={(e) => {
-                    setSelectedState(e.target.value);
-                    setForm({ ...form, destination: "" });
-                  }}
-                  data-testid="contact-state"
-                  className="w-full glass border border-stone-200 bg-white/90 h-12 text-stone-900 focus-visible:ring-soloz-primary text-sm px-3 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none cursor-pointer"
-                >
-                  <option value="" disabled className="text-stone-400">Select State</option>
-                  {statesList.map((st) => (
-                    <option key={st} value={st} className="text-stone-950">
-                      {st}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path>
-                  </svg>
+                  value={form.full_name}
+                  onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                  placeholder="Enter your full name"
+                  data-testid="contact-name"
+                  className="glass border-stone-200 bg-white/90 h-12 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c]"
+                />
+              </div>
+
+              {/* Mobile Number */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                  Mobile Number
+                </label>
+                <Input
+                  required
+                  value={form.mobile}
+                  onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+                  placeholder="e.g. +91 9966085310"
+                  data-testid="contact-mobile"
+                  className="glass border-stone-200 bg-white/90 h-12 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c]"
+                />
+              </div>
+
+              {/* Email Address */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                  Email Address
+                </label>
+                <Input
+                  required
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="yourname@example.com"
+                  data-testid="contact-email"
+                  className="glass border-stone-200 bg-white/90 h-12 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c]"
+                />
+              </div>
+
+              {/* State Dropdown (Required) */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                  State Interested In
+                </label>
+                <div className="relative">
+                  <select
+                    required
+                    value={selectedState}
+                    onChange={(e) => {
+                      setSelectedState(e.target.value);
+                      setForm({ ...form, destination: "" });
+                    }}
+                    data-testid="contact-state"
+                    className="w-full glass border border-stone-200 bg-white/90 h-12 text-stone-900 focus-visible:ring-soloz-primary text-sm px-3 pr-10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]/20 focus:border-[#ea580c] appearance-none cursor-pointer"
+                  >
+                    <option value="" disabled className="text-stone-400">Select State</option>
+                    {statesList.map((st) => (
+                      <option key={st} value={st} className="text-stone-950">
+                        {st}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </div>
                 </div>
               </div>
 
               {/* Destination Dropdown (Required, dependent on State) */}
-              <div className="relative">
-                <select
-                  required
-                  disabled={!selectedState}
-                  value={form.destination}
-                  onChange={(e) => setForm({ ...form, destination: e.target.value })}
-                  data-testid="contact-destination"
-                  className="w-full glass border border-stone-200 bg-white/90 h-12 text-stone-900 focus-visible:ring-soloz-primary text-sm px-3 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <option value="" disabled className="text-stone-400">
-                    {selectedState ? "Select Destination" : "Choose a state first"}
-                  </option>
-                  {destinationsForState.map((dest) => (
-                    <option key={dest} value={dest} className="text-stone-950">
-                      {dest}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                  Destination Interested In
+                </label>
+                <div className="relative">
+                  <select
+                    required
+                    disabled={!selectedState}
+                    value={form.destination}
+                    onChange={(e) => setForm({ ...form, destination: e.target.value })}
+                    data-testid="contact-destination"
+                    className="w-full glass border border-stone-200 bg-white/90 h-12 text-stone-900 focus-visible:ring-soloz-primary text-sm px-3 pr-10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]/20 focus:border-[#ea580c] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="" disabled className="text-stone-400">
+                      {selectedState ? "Select Destination" : "Choose a state first"}
                     </option>
-                  ))}
-                </select>
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path>
-                  </svg>
+                    {destinationsForState.map((dest) => (
+                      <option key={dest} value={dest} className="text-stone-950">
+                        {dest}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </div>
                 </div>
               </div>
-              <Textarea
-                required
-                value={form.message}
-                onChange={(e) => setForm({ ...form, message: e.target.value })}
-                placeholder="Your message"
-                data-testid="contact-message"
-                rows={5}
-                className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary"
-              />
+
+              {/* Message */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                  Your Message
+                </label>
+                <Textarea
+                  required
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  placeholder="Tell us what you are looking for..."
+                  data-testid="contact-message"
+                  rows={4}
+                  className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c]"
+                />
+              </div>
+
+              {/* Styled Travel Policy Notice Card */}
+              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200/80 text-[11px] text-amber-900 leading-normal font-body">
+                <strong>⚠️ Booking Notice:</strong> Train/flight tickets to the starting city are not included. You will meet Akhil directly at the assembly point.
+              </div>
+
               <Button
                 type="submit"
                 disabled={busy}
