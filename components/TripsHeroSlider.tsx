@@ -37,7 +37,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
 
   if (order.length === 0 || featuredTrips.length === 0) {
     return (
-      <div className="h-[85vh] bg-stone-950 flex items-center justify-center text-white font-display uppercase tracking-widest text-sm">
+      <div className="h-screen bg-stone-950 flex items-center justify-center text-white font-display uppercase tracking-widest text-sm">
         Loading Featured Trips...
       </div>
     );
@@ -105,7 +105,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
 
   return (
     <LayoutGroup id="hero-slider">
-      <section className="relative h-[85vh] w-full bg-stone-950 overflow-hidden select-none">
+      <section className="relative h-screen w-full bg-stone-950 overflow-hidden select-none">
         
         {/* 1. White entrance reveal cover */}
         <motion.div
