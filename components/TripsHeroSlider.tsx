@@ -143,7 +143,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
         </div>
 
         {/* 4. Details Box (Left Aligned) with stagger text slide reveals */}
-        <div className="absolute left-6 md:left-20 top-1/4 max-w-xl z-20 text-white flex flex-col justify-center">
+        <div className="absolute left-6 md:left-20 top-1/4 max-w-md md:max-w-lg xl:max-w-xl z-20 text-white flex flex-col justify-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeIndex}
@@ -231,10 +231,10 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
           </AnimatePresence>
         </div>
 
-        {/* 5. Thumbnail Card Queue (Desktop / lg screens only) */}
-        <div className="absolute right-20 bottom-24 w-[1000px] h-[260px] z-20 pointer-events-none hidden lg:block">
+        {/* 5. Thumbnail Card Queue (Desktop / xl screens only) */}
+        <div className="absolute right-20 bottom-24 w-[580px] h-[260px] z-20 pointer-events-none hidden xl:block">
           <div className="relative w-full h-full">
-            {order.slice(1).map((tripIndex, i) => {
+            {order.slice(1, 4).map((tripIndex, i) => {
               const trip = featuredTrips[tripIndex];
               return (
                 <motion.div
@@ -270,7 +270,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
 
         {/* 6. Pagination Controls (Desktop & Mobile responsive) */}
         {/* Desktop Controls (Aligned with Thumbnails) */}
-        <div className="absolute bottom-12 right-20 z-30 hidden lg:flex items-center gap-6">
+        <div className="absolute bottom-12 right-20 z-30 hidden xl:flex items-center gap-6">
           <div className="flex gap-3">
             <button
               onClick={handlePrev}
@@ -289,7 +289,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
           </div>
 
           {/* Static Step Progress Bar (represents active slide index) */}
-          <div className="w-[450px] h-1 bg-white/25 rounded-full overflow-hidden relative">
+          <div className="w-[260px] h-1 bg-white/25 rounded-full overflow-hidden relative">
             <motion.div
               className="absolute top-0 left-0 h-full bg-[#ea580c] rounded-full"
               animate={{ width: `${((activeIndex + 1) / featuredTrips.length) * 100}%` }}
@@ -319,7 +319,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
         </div>
 
         {/* Mobile / Tablet Controls (Centered at bottom) */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex lg:hidden items-center gap-6 bg-black/30 backdrop-blur-md px-6 py-3 rounded-full border border-white/10">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex xl:hidden items-center gap-6 bg-black/30 backdrop-blur-md px-6 py-3 rounded-full border border-white/10">
           <button
             onClick={handlePrev}
             className="w-10 h-10 rounded-full border border-white/20 text-white flex items-center justify-center active:scale-90 transition-all pointer-events-auto"
