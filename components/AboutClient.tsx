@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Youtube, Instagram, Phone, MessageCircle, Mountain, Compass, Camera, Users, Car, Heart, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Reveal, { SectionLabel } from "@/components/Reveal";
+import indiaMap from "@svg-maps/india";
 
 interface AboutClientProps {
   settings: any;
@@ -191,45 +192,48 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
             {/* Minimalist Vector India Map with Constellation Routes */}
             <div className="w-full max-w-[500px] aspect-[1/1.1] relative">
               <svg
-                viewBox="0 0 500 550"
+                viewBox="0 0 612 696"
                 className="w-full h-full drop-shadow-[0_10px_30px_rgba(234,88,12,0.04)]"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                {/* Minimalist outline map of India */}
-                <motion.path
-                  d="M250 30 Q210 50 190 90 Q160 120 120 180 Q110 210 140 230 Q150 280 170 360 Q180 430 190 480 L195 490 Q215 450 250 380 Q290 320 310 240 Q330 220 370 230 Q430 235 440 200 Q430 170 380 180 Q320 170 280 140 Q270 90 250 30 Z"
-                  stroke="#ea580c"
-                  strokeWidth="1.5"
-                  strokeOpacity="0.12"
-                  strokeDasharray="4 4"
-                  fill="rgba(234,88,12,0.01)"
-                  initial={{ pathLength: 0 }}
-                  whileInView={{ pathLength: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 2, ease: "easeInOut" }}
-                />
+                {/* Geographically accurate outline map of India */}
+                {indiaMap.locations.map((loc: any) => (
+                  <motion.path
+                    key={loc.id}
+                    d={loc.path}
+                    stroke="#ea580c"
+                    strokeWidth="1.2"
+                    strokeOpacity="0.15"
+                    fill="rgba(234,88,12,0.015)"
+                    className="transition-colors hover:fill-orange-500/10 hover:stroke-orange-500/40 cursor-default"
+                    initial={{ pathLength: 0 }}
+                    whileInView={{ pathLength: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.5, ease: "easeInOut" }}
+                  />
+                ))}
 
                 {/* Connecting travel route lines (constellation lines) */}
                 {[
-                  // North to Center
-                  { x1: 250, y1: 60, x2: 230, y2: 140 },
-                  // Delhi to West
-                  { x1: 230, y1: 140, x2: 160, y2: 340 },
-                  // Delhi to East
-                  { x1: 230, y1: 140, x2: 290, y2: 300 },
-                  // West to Center
-                  { x1: 160, y1: 340, x2: 240, y2: 320 },
-                  // Center to East
-                  { x1: 240, y1: 320, x2: 290, y2: 300 },
-                  // Center to South-West
-                  { x1: 240, y1: 320, x2: 180, y2: 440 },
-                  // East to South-West
-                  { x1: 290, y1: 300, x2: 180, y2: 440 },
-                  // South-West to South
-                  { x1: 180, y1: 440, x2: 190, y2: 490 },
-                  // South to Sri Lanka
-                  { x1: 190, y1: 490, x2: 250, y2: 530 }
+                  // Himalayas to Delhi Base
+                  { x1: 232, y1: 175, x2: 186, y2: 210 },
+                  // Delhi Base to Gokarna/Hampi
+                  { x1: 186, y1: 210, x2: 170, y2: 518 },
+                  // Delhi Base to Gandikota/Araku
+                  { x1: 186, y1: 210, x2: 310, y2: 460 },
+                  // Gokarna/Hampi to Hyderabad
+                  { x1: 170, y1: 518, x2: 237, y2: 456 },
+                  // Hyderabad to Gandikota/Araku
+                  { x1: 237, y1: 456, x2: 310, y2: 460 },
+                  // Hyderabad to Munnar/Vagamon
+                  { x1: 237, y1: 456, x2: 166, y2: 615 },
+                  // Gandikota/Araku to Munnar/Vagamon
+                  { x1: 310, y1: 460, x2: 166, y2: 615 },
+                  // Munnar/Vagamon to Kanyakumari
+                  { x1: 166, y1: 615, x2: 195, y2: 665 },
+                  // Kanyakumari to Sri Lanka
+                  { x1: 195, y1: 665, x2: 270, y2: 660 }
                 ].map((route, idx) => (
                   <motion.line
                     key={idx}
@@ -261,11 +265,11 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
 
                 {/* Glowing underlays for major active hubs */}
                 {[
-                  { x: 250, y: 60, r: 24 }, // Himalayan Peaks
-                  { x: 160, y: 340, r: 20 }, // Gokarna/Hampi
-                  { x: 290, y: 300, r: 20 }, // Gandikota/Araku
-                  { x: 180, y: 440, r: 22 }, // Munnar/Vagamon
-                  { x: 250, y: 530, r: 18 }  // Sri Lanka
+                  { x: 232, y: 175, r: 24 }, // Himalayan Peaks
+                  { x: 170, y: 518, r: 20 }, // Gokarna/Hampi
+                  { x: 310, y: 460, r: 20 }, // Gandikota/Araku
+                  { x: 166, y: 615, r: 22 }, // Munnar/Vagamon
+                  { x: 270, y: 660, r: 18 }  // Sri Lanka
                 ].map((glow, idx) => (
                   <circle
                     key={idx}
@@ -278,11 +282,11 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
 
                 {/* Pulse lines */}
                 {[
-                  { x: 250, y: 60 },
-                  { x: 160, y: 340 },
-                  { x: 290, y: 300 },
-                  { x: 180, y: 440 },
-                  { x: 250, y: 530 }
+                  { x: 232, y: 175 },
+                  { x: 170, y: 518 },
+                  { x: 310, y: 460 },
+                  { x: 166, y: 615 },
+                  { x: 270, y: 660 }
                 ].map((pulse, idx) => (
                   <circle
                     key={`pulse-${idx}`}
@@ -298,14 +302,14 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
 
                 {/* Map Nodes (Cities/Regions) */}
                 {[
-                  { x: 250, y: 60, label: "Himalayas", sub: "Kedarnath/Mana", align: "middle" as const, dy: -12 },
-                  { x: 230, y: 140, label: "Delhi Base", sub: "", align: "end" as const, dx: -10, dy: 4 },
-                  { x: 160, y: 340, label: "Gokarna/Hampi", sub: "Karnataka", align: "end" as const, dx: -10, dy: 4 },
-                  { x: 240, y: 320, label: "Hyderabad", sub: "Telangana", align: "middle" as const, dy: -10 },
-                  { x: 290, y: 300, label: "Gandikota/Araku", sub: "Andhra Pradesh", align: "start" as const, dx: 10, dy: 4 },
-                  { x: 180, y: 440, label: "Munnar/Vagamon", sub: "Kerala", align: "end" as const, dx: -10, dy: 4 },
-                  { x: 190, y: 490, label: "Kanyakumari", sub: "", align: "middle" as const, dy: 14 },
-                  { x: 250, y: 530, label: "Sri Lanka", sub: "Expedition", align: "start" as const, dx: 10, dy: 4 }
+                  { x: 232, y: 175, label: "Himalayas", sub: "Kedarnath/Mana", align: "middle" as const, dy: -12 },
+                  { x: 186, y: 210, label: "Delhi Base", sub: "", align: "end" as const, dx: -10, dy: 4 },
+                  { x: 170, y: 518, label: "Gokarna/Hampi", sub: "Karnataka", align: "end" as const, dx: -10, dy: 4 },
+                  { x: 237, y: 456, label: "Hyderabad", sub: "Telangana", align: "middle" as const, dy: -10 },
+                  { x: 310, y: 460, label: "Gandikota/Araku", sub: "Andhra Pradesh", align: "start" as const, dx: 10, dy: 4 },
+                  { x: 166, y: 615, label: "Munnar/Vagamon", sub: "Kerala", align: "end" as const, dx: -10, dy: 4 },
+                  { x: 195, y: 665, label: "Kanyakumari", sub: "", align: "middle" as const, dy: 14 },
+                  { x: 270, y: 660, label: "Sri Lanka", sub: "Expedition", align: "start" as const, dx: 10, dy: 4 }
                 ].map((node, idx) => (
                   <g key={idx} className="cursor-pointer group">
                     {/* Node Dot */}
