@@ -128,22 +128,38 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
           />
         </div>
 
-        {/* 3. Active Background Slide with shared LayoutId */}
-        <div className="absolute inset-0 z-0">
+        {/* 3a. Active Background Slide with shared LayoutId (Desktop - xl screens) */}
+        <div className="absolute inset-0 z-0 hidden xl:block">
           <motion.div
-            key={activeTrip.id || activeTrip._id}
+            key={`desktop-${activeTrip.id || activeTrip._id}`}
             layoutId={`card-${activeTrip.id || activeTrip._id}`}
             className="absolute inset-0 w-full h-full bg-cover bg-center"
             style={{ backgroundImage: `url(${activeTrip.image})` }}
             transition={{ type: "spring", stiffness: 120, damping: 22 }}
           >
-            {/* Background gradient overlay to make text stand out */}
             <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-900/50 to-black/35" />
           </motion.div>
         </div>
 
+        {/* 3b. Active Background Slide with Cross-fade Zoom transition (Mobile/Tablet - xl hidden) */}
+        <div className="absolute inset-0 z-0 xl:hidden">
+          <AnimatePresence mode="popLayout">
+            <motion.div
+              key={`mobile-${activeTrip.id || activeTrip._id}`}
+              initial={{ opacity: 0, scale: 1.05 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.7, ease: [0.25, 1, 0.5, 1] }}
+              className="absolute inset-0 w-full h-full bg-cover bg-center"
+              style={{ backgroundImage: `url(${activeTrip.image})` }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-900/50 to-black/35" />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
         {/* 4. Details Box (Left Aligned) with stagger text slide reveals */}
-        <div className="absolute left-6 md:left-20 top-1/4 max-w-md md:max-w-lg xl:max-w-xl z-20 text-white flex flex-col justify-center">
+        <div className="absolute left-6 md:left-20 top-24 xl:top-1/4 max-w-md md:max-w-lg xl:max-w-xl z-20 text-white flex flex-col justify-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeIndex}
@@ -153,7 +169,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               exit="hidden"
             >
               {/* Small State Badge (Cropped Reveal) */}
-              <div className="overflow-hidden mb-4 h-6 flex items-center">
+              <div className="overflow-hidden mb-2 md:mb-4 h-6 flex items-center">
                 <motion.div
                   variants={textRevealVariants}
                   className="flex items-center gap-2"
@@ -171,7 +187,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               </div>
 
               {/* Split Title (Cropped Reveal) */}
-              <div className="font-display leading-none tracking-tight font-black text-4xl sm:text-6xl md:text-7xl uppercase select-text mb-6">
+              <div className="font-display leading-none tracking-tight font-black text-3xl sm:text-6xl md:text-7xl uppercase select-text mb-4 md:mb-6">
                 <div className="overflow-hidden py-1">
                   <motion.div variants={textRevealVariants} className="text-white/95">
                     {title1}
@@ -185,28 +201,28 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               </div>
 
               {/* Trip Specs (Cropped Reveal) */}
-              <div className="overflow-hidden mb-6 py-1">
+              <div className="overflow-hidden mb-4 md:mb-6 py-1">
                 <motion.div
                   variants={textRevealVariants}
-                  className="flex flex-wrap gap-4 text-xs font-semibold text-stone-200 uppercase tracking-wider bg-white/5 border border-white/10 backdrop-blur-md px-4 py-2.5 rounded-xl w-fit"
+                  className="flex flex-wrap gap-2 md:gap-4 text-[10px] md:text-xs font-semibold text-stone-200 uppercase tracking-wider bg-white/5 border border-white/10 backdrop-blur-md px-3 py-1.5 md:px-4 md:py-2.5 rounded-xl w-fit"
                 >
-                  <span className="flex items-center gap-1.5 border-r border-white/10 pr-4">
-                    <Clock className="w-3.5 h-3.5 text-orange-400" /> {activeTrip.duration}
+                  <span className="flex items-center gap-1.5 border-r border-white/10 pr-3 md:pr-4">
+                    <Clock className="w-3.5 h-3.5 text-orange-400 shrink-0" /> {activeTrip.duration}
                   </span>
-                  <span className="flex items-center gap-1.5 border-r border-white/10 pr-4">
-                    <Calendar className="w-3.5 h-3.5 text-orange-400" /> {new Date(activeTrip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  <span className="flex items-center gap-1.5 border-r border-white/10 pr-3 md:pr-4">
+                    <Calendar className="w-3.5 h-3.5 text-orange-400 shrink-0" /> {new Date(activeTrip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-orange-400" /> {activeTrip.seats} Seats Left
+                    <Users className="w-3.5 h-3.5 text-orange-400 shrink-0" /> {activeTrip.seats} Seats Left
                   </span>
                 </motion.div>
               </div>
 
               {/* Description (Cropped Reveal) */}
-              <div className="overflow-hidden mb-8 max-w-lg">
+              <div className="overflow-hidden mb-5 md:mb-8 max-w-lg">
                 <motion.p
                   variants={textRevealVariants}
-                  className="text-white/80 font-body text-sm sm:text-base leading-relaxed select-text"
+                  className="text-white/80 font-body text-xs sm:text-base leading-relaxed select-text"
                 >
                   Explore the untouched beauty of {activeTrip.destination}. This curated solo-friendly journey includes comfortable sharing accommodations, AC transportation, breakfasts and dinners, alongside guidance from Akhil.
                 </motion.p>
@@ -220,13 +236,13 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
                 >
                   <Link
                     href={`/upcoming-trips/${tripSlug}`}
-                    className="inline-flex items-center justify-center bg-white text-stone-950 hover:bg-stone-100 px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest active:scale-95 transition-all shadow-lg pointer-events-auto"
+                    className="inline-flex items-center justify-center bg-white text-stone-950 hover:bg-stone-100 px-6 py-2.5 md:px-8 md:py-3.5 rounded-full font-bold text-[10px] md:text-xs tracking-widest active:scale-95 transition-all shadow-lg pointer-events-auto"
                   >
                     Book Now
                   </Link>
                   <Link
                     href="/contact"
-                    className="inline-flex items-center justify-center bg-white/10 border border-white/20 hover:bg-white/20 text-white px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest active:scale-95 transition-all pointer-events-auto"
+                    className="inline-flex items-center justify-center bg-white/10 border border-white/20 hover:bg-white/20 text-white px-6 py-2.5 md:px-8 md:py-3.5 rounded-full font-bold text-[10px] md:text-xs tracking-widest active:scale-95 transition-all pointer-events-auto"
                   >
                     Inquire
                   </Link>
@@ -333,10 +349,23 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
             <ArrowLeft className="w-4 h-4" />
           </button>
           
-          <div className="flex items-center gap-1.5 text-white/60 text-xs font-bold uppercase tracking-wider min-w-[50px] justify-center">
-            <span className="text-white text-base font-extrabold">{activeIndex + 1}</span>
-            <span>/</span>
-            <span>{featuredTrips.length}</span>
+          <div className="flex items-center gap-1.5 text-white/60 text-xs font-bold uppercase tracking-wider min-w-[45px] justify-center">
+            <div className="relative w-6 h-8 overflow-hidden flex items-center justify-center">
+              <AnimatePresence mode="popLayout">
+                <motion.span
+                  key={activeIndex}
+                  initial={{ y: 15, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -15, opacity: 0 }}
+                  transition={{ duration: 0.35, ease: "easeInOut" }}
+                  className="absolute text-white text-base font-extrabold"
+                >
+                  {activeIndex + 1}
+                </motion.span>
+              </AnimatePresence>
+            </div>
+            <span className="text-white/40 font-semibold">/</span>
+            <span className="font-semibold text-white/85">{featuredTrips.length}</span>
           </div>
 
           <button
