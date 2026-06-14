@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 export function Preloader() {
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
+  const [isSplit, setIsSplit] = useState(false);
 
   useEffect(() => {
     if (pathname.startsWith("/admin")) {
@@ -17,13 +18,19 @@ export function Preloader() {
     // Lock body scroll during preloader animation
     document.body.style.overflow = "hidden";
 
+    // Trigger the split layout animation after the text slides up
+    const splitTimer = setTimeout(() => {
+      setIsSplit(true);
+    }, 900);
+
     const timer = setTimeout(() => {
       setLoading(false);
       document.body.style.overflow = "unset";
-    }, 2400);
+    }, 2600);
 
     return () => {
       document.body.style.overflow = "unset";
+      clearTimeout(splitTimer);
       clearTimeout(timer);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -42,10 +49,10 @@ export function Preloader() {
           className="fixed inset-0 bg-white z-[99999] flex items-center justify-center overflow-hidden"
         >
           {/* Centered Intro Container */}
-          <div className="flex items-center justify-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 select-none font-sans">
+          <div className="flex items-center justify-center select-none font-sans">
             
             {/* Left Text: "weare" */}
-            <div className="overflow-hidden py-2">
+            <motion.div layout className="overflow-hidden py-2">
               <motion.div
                 initial={{ y: "110%" }}
                 animate={{ y: 0 }}
@@ -55,18 +62,31 @@ export function Preloader() {
                 <span className="text-stone-900">we</span>
                 <span className="text-[#ea580c]">are</span>
               </motion.div>
-            </div>
+            </motion.div>
 
             {/* Logo Image in the Middle */}
-            <div className="overflow-hidden p-1">
+            <motion.div
+              layout
+              className="overflow-hidden flex items-center justify-center"
+              style={{
+                width: isSplit ? "auto" : 0,
+                opacity: isSplit ? 1 : 0,
+                marginRight: isSplit ? "12px" : 0,
+                marginLeft: isSplit ? "12px" : 0,
+              }}
+              transition={{
+                duration: 0.8,
+                ease: [0.76, 0, 0.24, 1],
+              }}
+            >
               <motion.div
                 initial={{ scale: 0, rotate: -15 }}
-                animate={{ scale: 1, rotate: 0 }}
+                animate={isSplit ? { scale: 1, rotate: 0 } : { scale: 0 }}
                 transition={{ 
                   type: "spring",
                   stiffness: 110,
                   damping: 15,
-                  delay: 0.4 
+                  delay: isSplit ? 0.15 : 0 
                 }}
                 className="w-12 h-12 sm:w-20 sm:h-20 md:w-28 md:h-28 lg:w-36 lg:h-36 rounded-full border border-stone-100 shadow-md overflow-hidden bg-white flex items-center justify-center"
               >
@@ -76,10 +96,10 @@ export function Preloader() {
                   className="w-full h-full object-cover"
                 />
               </motion.div>
-            </div>
+            </motion.div>
 
             {/* Right Text: "soloz" (outlined) */}
-            <div className="overflow-hidden py-2">
+            <motion.div layout className="overflow-hidden py-2">
               <motion.div
                 initial={{ y: "110%" }}
                 animate={{ y: 0 }}
@@ -88,7 +108,7 @@ export function Preloader() {
               >
                 solo<span style={{ fontFamily: "Arial, Helvetica, sans-serif" }}>z</span>
               </motion.div>
-            </div>
+            </motion.div>
 
           </div>
         </motion.div>
