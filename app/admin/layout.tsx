@@ -15,7 +15,8 @@ import {
   LogOut,
   ChevronRight,
   Menu,
-  X
+  X,
+  Briefcase
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -27,7 +28,8 @@ const sidebarLinks = [
   { href: "/admin/gallery", label: "Gallery", icon: ImageIcon },
   { href: "/admin/testimonials", label: "Testimonials", icon: MessageSquareQuote },
   { href: "/admin/settings", label: "Site Settings", icon: Settings },
-  { href: "/admin/enquiries", label: "Enquiries", icon: MailQuestion }
+  { href: "/admin/enquiries", label: "Enquiries", icon: MailQuestion },
+  { href: "/admin/careers", label: "Careers", icon: Briefcase }
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

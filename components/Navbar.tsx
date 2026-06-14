@@ -13,6 +13,7 @@ const links = [
   { href: "/soloz-community", label: "Community" },
   { href: "/gallery", label: "Gallery" },
   { href: "/about-akhil", label: "About" },
+  { href: "/careers", label: "Careers" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -36,6 +37,7 @@ export function Navbar() {
 
   const isPlainPage = 
     pathname.startsWith("/about-akhil") ||
+    pathname.startsWith("/careers") ||
     pathname.startsWith("/gallery") ||
     pathname.startsWith("/contact") ||
     pathname.startsWith("/admin");

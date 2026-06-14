@@ -10,6 +10,7 @@ const Gallery = require("../models/Gallery");
 const Testimonial = require("../models/Testimonial");
 const Contact = require("../models/Contact");
 const SiteSetting = require("../models/SiteSetting");
+const Career = require("../models/Career");
 
 const models = {
   trips: Trip,
@@ -19,6 +20,7 @@ const models = {
   testimonials: Testimonial,
   contacts: Contact,
   site_settings: SiteSetting,
+  careers: Career,
 };
 
 const router = express.Router();

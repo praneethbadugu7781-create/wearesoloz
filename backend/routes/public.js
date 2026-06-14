@@ -7,6 +7,7 @@ const Gallery = require("../models/Gallery");
 const Testimonial = require("../models/Testimonial");
 const Contact = require("../models/Contact");
 const SiteSetting = require("../models/SiteSetting");
+const Career = require("../models/Career");
 
 const router = express.Router();
 
@@ -99,7 +100,7 @@ router.get("/settings/:key", async (req, res) => {
 });
 
 // --- Contacts (public submit) ---
-const { sendContactEmail } = require("../lib/mailer");
+const { sendContactEmail, sendCareerEmail } = require("../lib/mailer");
 
 router.post("/contacts", async (req, res) => {
   try {
@@ -116,6 +117,48 @@ router.post("/contacts", async (req, res) => {
     sendContactEmail({ fullName, mobile, email, destination, message }).catch(console.error);
 
     res.status(201).json(contact);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- Careers (public submit) ---
+router.post("/careers", async (req, res) => {
+  try {
+    const { fullName, gender, age, email, mobile, instagram, experience, whyJoin } = req.body;
+    if (!fullName || fullName.length < 2) return res.status(400).json({ error: "Full name must be at least 2 characters" });
+    if (!gender || !["Male", "Female", "Other"].includes(gender)) return res.status(400).json({ error: "Please select a valid gender" });
+    if (!age || isNaN(Number(age)) || Number(age) < 18 || Number(age) > 100) return res.status(400).json({ error: "Please enter a valid age (18 or older)" });
+    if (!email) return res.status(400).json({ error: "Email is required" });
+    if (!mobile || mobile.length < 7) return res.status(400).json({ error: "Please enter a valid mobile number" });
+    if (!experience || experience.length < 10) return res.status(400).json({ error: "Travel experience must be at least 10 characters" });
+    if (!whyJoin || whyJoin.length < 10) return res.status(400).json({ error: "Statement must be at least 10 characters" });
+
+    await connectDB();
+    const career = await Career.create({
+      fullName,
+      gender,
+      age: Number(age),
+      email,
+      mobile,
+      instagram: instagram || "",
+      experience,
+      whyJoin,
+    });
+
+    // Send email notification asynchronously
+    sendCareerEmail({
+      fullName,
+      gender,
+      age: Number(age),
+      email,
+      mobile,
+      instagram: instagram || "",
+      experience,
+      whyJoin,
+    }).catch(console.error);
+
+    res.status(201).json(career);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

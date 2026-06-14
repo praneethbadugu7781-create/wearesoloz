@@ -62,6 +62,7 @@ export default function Footer() {
           <div className="text-[10px] uppercase tracking-[0.25em] text-[#ea580c] font-semibold mb-5">Connect</div>
           <ul className="space-y-3 text-sm text-stone-500">
             <li><Link href="/about-akhil" className="hover:text-stone-900 transition-colors">About Akhil</Link></li>
+            <li><Link href="/careers" className="hover:text-stone-900 transition-colors">Careers</Link></li>
             <li><Link href="/contact" className="hover:text-stone-900 transition-colors">Contact</Link></li>
             <li><a href="tel:+919966085310" className="hover:text-stone-900 transition-colors">+91 9966085310</a></li>
             <li><a href="https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==" target="_blank" rel="noreferrer" className="hover:text-stone-900 transition-colors">@wearesolozindia</a></li>

@@ -62,4 +62,78 @@ Sent automatically by WeAreSoloz Server.
   }
 }
 
-module.exports = { sendContactEmail };
+async function sendCareerEmail(careerData) {
+  // Check if SMTP details are provided in environment
+  const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
+  const smtpPort = parseInt(process.env.SMTP_PORT || "587", 10);
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+
+  if (!smtpUser || !smtpPass) {
+    console.warn("⚠️ SMTP credentials (SMTP_USER, SMTP_PASS) not configured. Email notification skipped.");
+    return false;
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465,
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+    });
+
+    const mailOptions = {
+      from: `"WeAreSoloz Notification" <${smtpUser}>`,
+      to: "wearsoloz.india@gmail.com",
+      subject: `New Careers Application from ${careerData.fullName}`,
+      text: `
+You have received a new Careers application on WeAreSoloz:
+
+Name: ${careerData.fullName}
+Gender: ${careerData.gender}
+Age: ${careerData.age}
+Mobile (WhatsApp): ${careerData.mobile}
+Email: ${careerData.email}
+Instagram: ${careerData.instagram || "Not provided"}
+
+Travel Experience:
+${careerData.experience}
+
+Why they want to join/travel:
+${careerData.whyJoin}
+
+---
+Sent automatically by WeAreSoloz Server.
+      `,
+      html: `
+        <h3>New Careers Application Received</h3>
+        <p><strong>Name:</strong> ${careerData.fullName}</p>
+        <p><strong>Gender:</strong> ${careerData.gender}</p>
+        <p><strong>Age:</strong> ${careerData.age}</p>
+        <p><strong>Mobile (WhatsApp):</strong> ${careerData.mobile}</p>
+        <p><strong>Email:</strong> ${careerData.email}</p>
+        <p><strong>Instagram:</strong> ${careerData.instagram || "Not provided"}</p>
+        <p><strong>Travel Experience:</strong></p>
+        <blockquote style="background: #f9f9f9; border-left: 5px solid #ff7a1a; padding: 10px; margin: 10px 0;">
+          ${careerData.experience.replace(/\n/g, "<br>")}
+        </blockquote>
+        <p><strong>Why they want to travel/work:</strong></p>
+        <blockquote style="background: #f9f9f9; border-left: 5px solid #ea580c; padding: 10px; margin: 10px 0;">
+          ${careerData.whyJoin.replace(/\n/g, "<br>")}
+        </blockquote>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("📨 Career email sent successfully:", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("❌ Failed to send career email notification:", error);
+    return false;
+  }
+}
+
+module.exports = { sendContactEmail, sendCareerEmail };
