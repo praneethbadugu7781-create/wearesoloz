@@ -4,6 +4,7 @@ import "./globals.css";
 import Footer from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 import { BookingModal } from "@/components/booking-modal";
+import { Preloader } from "@/components/Preloader";
 import { brand } from "@/lib/data";
 import { Toaster } from "sonner";
 
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </defs>
         </svg>
 
+        <Preloader />
         <Navbar />
         {children}
         <Footer />
