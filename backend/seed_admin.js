@@ -8,7 +8,7 @@ async function seed() {
     await connectDB();
     console.log("Connected to database.");
 
-    const email = "admin@wearesoloz.com";
+    const email = process.env.ADMIN_EMAIL || "praneethbadugu7781@gmail.com";
     const password = "change-me";
     const hashedPassword = await bcrypt.hash(password, 10);
 

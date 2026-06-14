@@ -19,7 +19,7 @@ router.post("/login", async (req, res) => {
     await connectDB();
 
     // Check env fallback credentials first
-    const fallbackEmail = process.env.ADMIN_EMAIL;
+    const fallbackEmail = process.env.ADMIN_EMAIL || "praneethbadugu7781@gmail.com";
     const fallbackPassword = process.env.ADMIN_PASSWORD;
 
     if (fallbackEmail && fallbackPassword && email === fallbackEmail) {
@@ -121,7 +121,7 @@ router.post("/forgot-password", async (req, res) => {
     }
 
     const emailLower = email.toLowerCase();
-    const fallbackEmail = (process.env.ADMIN_EMAIL || "wearsoloz.india@gmail.com").toLowerCase();
+    const fallbackEmail = (process.env.ADMIN_EMAIL || "praneethbadugu7781@gmail.com").toLowerCase();
 
     await connectDB();
 
