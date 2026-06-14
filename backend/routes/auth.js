@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { connectDB } = require("../lib/db");
 const User = require("../models/User");
 const { requireAuth } = require("../middleware/auth");
+const { sendOtpEmail } = require("../lib/mailer");
 
 const router = express.Router();
 
@@ -108,6 +109,95 @@ router.post("/change-password", requireAuth, async (req, res) => {
   } catch (error) {
     console.error("Change password error:", error);
     res.status(500).json({ error: error.message || "Internal server error" });
+  }
+});
+
+// POST /api/auth/forgot-password
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const emailLower = email.toLowerCase();
+    const fallbackEmail = (process.env.ADMIN_EMAIL || "wearsoloz.india@gmail.com").toLowerCase();
+
+    await connectDB();
+
+    // Check if user exists in DB or matches the fallback email
+    let user = await User.findOne({ email: emailLower });
+    if (!user) {
+      if (emailLower === fallbackEmail) {
+        // Create user in DB so we can assign OTP fields
+        const tempPassword = await bcrypt.hash(Math.random().toString(36), 10);
+        user = await User.create({
+          name: "Akhil",
+          email: emailLower,
+          password: tempPassword,
+          role: "admin",
+        });
+      } else {
+        return res.status(400).json({ error: "Invalid admin email address" });
+      }
+    }
+
+    // Generate 6-digit OTP code
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+
+    user.otpCode = otpCode;
+    user.otpExpiresAt = otpExpiresAt;
+    await user.save();
+
+    // Send the email
+    await sendOtpEmail(user.email, otpCode);
+
+    res.json({ success: true, message: "A 6-digit OTP code has been sent to your email." });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /api/auth/reset-password
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: "New passcode must be at least 6 characters" });
+    }
+
+    const emailLower = email.toLowerCase();
+    await connectDB();
+
+    const user = await User.findOne({ email: emailLower });
+    if (!user) {
+      return res.status(400).json({ error: "Invalid request" });
+    }
+
+    if (!user.otpCode || user.otpCode !== otp.trim()) {
+      return res.status(400).json({ error: "Invalid OTP code" });
+    }
+
+    if (new Date() > user.otpExpiresAt) {
+      return res.status(400).json({ error: "OTP has expired. Please request a new one." });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashedPassword;
+    user.otpCode = undefined;
+    user.otpExpiresAt = undefined;
+    await user.save();
+
+    res.json({ success: true, message: "Passcode reset successfully. You can now log in." });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
