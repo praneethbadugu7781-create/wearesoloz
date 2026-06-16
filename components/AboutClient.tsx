@@ -6,6 +6,7 @@ import { Youtube, Instagram, Phone, MessageCircle, ArrowRight, Leaf, Quote } fro
 import { motion } from "framer-motion";
 import Reveal, { SectionLabel } from "@/components/Reveal";
 import indiaMap from "@svg-maps/india";
+import Card3D from "@/components/Card3D";
 
 interface AboutClientProps {
   settings: any;
@@ -16,37 +17,37 @@ const uniqueOfferings = [
     title: "Travel With Your Mother",
     desc: "A journey of gratitude and connection, creating beautiful travel memories with the woman who gave you everything.",
     emoji: "👩‍👦",
-    color: "hover:border-pink-200 hover:bg-pink-50/20"
+    color: "hover:border-pink-200 hover:bg-pink-50/20 hover:shadow-pink-100/30"
   },
   {
     title: "Travel With Your Father",
     desc: "Strengthen your bond and share road trips, outdoor campfires, and meaningful stories with your father.",
     emoji: "👨‍👦",
-    color: "hover:border-blue-200 hover:bg-blue-50/20"
+    color: "hover:border-blue-200 hover:bg-blue-50/20 hover:shadow-blue-100/30"
   },
   {
     title: "Travel With Your Grandparents",
     desc: "A comfortable, slower-paced journey focusing on respect, story-sharing, and multi-generational warmth.",
     emoji: "👴👵",
-    color: "hover:border-amber-200 hover:bg-amber-50/20"
+    color: "hover:border-amber-200 hover:bg-amber-50/20 hover:shadow-amber-100/30"
   },
   {
     title: "Travel With Your Siblings",
     desc: "Reignite childhood bonds, sibling rivalries, and shared laughs on amazing trails and road trips.",
     emoji: "🧑‍🤝‍🧑",
-    color: "hover:border-emerald-200 hover:bg-emerald-50/20"
+    color: "hover:border-emerald-200 hover:bg-emerald-50/20 hover:shadow-emerald-100/30"
   },
   {
     title: "Solo Traveler Meetups",
     desc: "Set out alone but join a welcoming, close-knit community of like-minded solo explorers to form your new travel family.",
     emoji: "🤝",
-    color: "hover:border-purple-200 hover:bg-purple-50/20"
+    color: "hover:border-purple-200 hover:bg-purple-50/20 hover:shadow-purple-100/30"
   },
   {
     title: "Adventure, Spiritual & Healing Trips",
     desc: "Reconnect with yourself. Rejuvenate your mind, body, and spirit on sacred trails, mountain summits, and yoga retreats.",
     emoji: "🏔️✨",
-    color: "hover:border-orange-200 hover:bg-orange-50/20"
+    color: "hover:border-orange-200 hover:bg-orange-50/20 hover:shadow-orange-100/30"
   }
 ];
 
@@ -56,7 +57,21 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
   const whatsappLink = settings.whatsapp_link || "https://wa.me/919966085310";
 
   return (
-    <div data-testid="about-page" className="bg-white min-h-screen text-[#1c1917] pt-20">
+    <div data-testid="about-page" className="bg-white min-h-screen text-[#1c1917] pt-20 relative overflow-hidden">
+      
+      {/* Background Decorative floating plane */}
+      <div className="absolute top-48 left-10 opacity-[0.015] pointer-events-none hidden lg:block animate-bounce" style={{ animationDuration: '10s' }}>
+        <svg className="w-56 h-56" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L14 19v-5.5L21 16z"/>
+        </svg>
+      </div>
+
+      {/* Background Decorative floating Globe */}
+      <div className="absolute bottom-96 right-10 opacity-[0.015] pointer-events-none hidden lg:block animate-pulse" style={{ animationDuration: '12s' }}>
+        <svg className="w-64 h-64 rotate-12" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L11 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+        </svg>
+      </div>
 
       {/* SECTION 1: Top Philosophy Quote Banner */}
       <section className="pt-36 pb-12 px-6 md:px-10 text-center relative overflow-hidden">
@@ -64,7 +79,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
         <Reveal className="max-w-4xl mx-auto">
           <Quote className="w-12 h-12 mx-auto text-orange-500/25 mb-6 rotate-180" />
           <h2 className="font-display text-3xl md:text-5xl lg:text-6xl font-light italic tracking-tight text-stone-850 leading-tight">
-            &ldquo;If you think travel is expensive, wait until you see the price of a <span className="gradient-text font-semibold">wasted life</span>.&rdquo;
+            &ldquo;If you think travel is expensive, wait until you see the price of a <span className="gradient-text font-semibold animate-pulse">wasted life</span>.&rdquo;
           </h2>
         </Reveal>
       </section>
@@ -73,23 +88,25 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       <section className="py-20 px-6 md:px-10">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           
-          {/* Left Panel: Animated Image */}
-          <Reveal className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-stone-300/30 bg-stone-100 group">
-            <img
-              src={founderImage}
-              alt="Akhil - Founder of WeAreSoloz"
-              className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-transparent to-transparent opacity-65 group-hover:opacity-45 transition-opacity" />
-            <div className="absolute bottom-6 left-6 text-white z-10">
-              <div className="text-xs uppercase font-bold tracking-wider opacity-75">Founder of WeAreSoloz</div>
-              <h3 className="font-display text-2xl font-bold mt-1">Akhil 🌍✈️</h3>
-            </div>
+          {/* Left Panel: 3D Animated Image */}
+          <Reveal className="w-full">
+            <Card3D className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-stone-400/20 bg-stone-100 group cursor-pointer" maxRotate={8} scale={1.02}>
+              <img
+                src={founderImage}
+                alt="Akhil - Founder of WeAreSoloz"
+                className="w-full h-full object-cover transition-transform duration-75"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/70 via-stone-900/10 to-transparent opacity-75" />
+              <div style={{ transform: "translateZ(45px)", transformStyle: "preserve-3d" }} className="absolute bottom-8 left-8 text-white z-10">
+                <div className="text-[10px] uppercase font-bold tracking-widest opacity-80 text-orange-400">Founder of WeAreSoloz</div>
+                <h3 className="font-display text-3xl font-bold mt-2 tracking-tight">Akhil 🌍✈️</h3>
+              </div>
+            </Card3D>
           </Reveal>
 
           {/* Right Panel: Bio Text */}
           <Reveal>
-            <SectionLabel>About the Founder</SectionLabel>
+            <SectionLabel>Founder Story</SectionLabel>
             <h1 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-5 text-stone-900 leading-tight">
               Hi, I&apos;m <span className="gradient-text font-semibold">Akhil</span>.
             </h1>
@@ -147,7 +164,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
         </div>
       </section>
 
-      {/* SECTION 3: The Mission pillars (Travel, Connect, Heal, Grow) */}
+      {/* SECTION 3: The Mission pillars (Travel, Connect, Heal, Grow) with 3D Float */}
       <section className="py-24 px-6 md:px-10 border-t border-stone-200 bg-stone-50/40">
         <div className="max-w-6xl mx-auto">
           <Reveal className="text-center mb-16">
@@ -162,27 +179,27 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { label: "Travel", desc: "Discovering remote trails, unknown terrains, and new horizons across the globe.", emoji: "🌍", color: "from-orange-500/10 to-transparent" },
-              { label: "Connect", desc: "Bringing solo adventurers together to form a close-knit, supportive travel family.", emoji: "🤝", color: "from-blue-500/10 to-transparent" },
-              { label: "Heal", desc: "Finding peace, digital detox, and spiritual grounding in sacred nature.", emoji: "🌱", color: "from-emerald-500/10 to-transparent" },
-              { label: "Grow", desc: "Expanding your comfort zone, building confidence, and discovering who you are.", emoji: "🚀", color: "from-purple-500/10 to-transparent" }
+              { label: "Travel", desc: "Discovering remote trails, unknown terrains, and new horizons across the globe.", emoji: "🌍", color: "from-orange-500/10 to-transparent", border: "group-hover:border-orange-300" },
+              { label: "Connect", desc: "Bringing solo adventurers together to form a close-knit, supportive travel family.", emoji: "🤝", color: "from-blue-500/10 to-transparent", border: "group-hover:border-blue-300" },
+              { label: "Heal", desc: "Finding peace, digital detox, and spiritual grounding in sacred nature.", emoji: "🌱", color: "from-emerald-500/10 to-transparent", border: "group-hover:border-emerald-300" },
+              { label: "Grow", desc: "Expanding your comfort zone, building confidence, and discovering who you are.", emoji: "🚀", color: "from-purple-500/10 to-transparent", border: "group-hover:border-purple-300" }
             ].map((pillar) => (
               <Reveal key={pillar.label} className="h-full">
-                <div className="bg-white rounded-2xl p-8 border border-stone-200/60 h-full relative overflow-hidden flex flex-col justify-between hover:shadow-lg hover:border-orange-200 transition-all group">
+                <Card3D className={`bg-white rounded-3xl p-8 border border-stone-200/60 h-full relative overflow-hidden flex flex-col justify-between hover:shadow-2xl hover:shadow-stone-300/30 transition-all duration-300 group cursor-pointer ${pillar.border}`}>
                   <div className={`absolute inset-0 bg-gradient-to-br ${pillar.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                  <div className="relative z-10 space-y-4">
-                    <div className="text-4xl">{pillar.emoji}</div>
-                    <h3 className="font-display text-2xl font-bold text-stone-900 group-hover:text-[#ea580c] transition-colors">{pillar.label}</h3>
-                    <p className="text-stone-500 font-body text-sm leading-relaxed">{pillar.desc}</p>
+                  <div className="relative z-10 space-y-4" style={{ transform: "translateZ(30px)", transformStyle: "preserve-3d" }}>
+                    <div style={{ transform: "translateZ(40px)" }} className="text-4xl">{pillar.emoji}</div>
+                    <h3 style={{ transform: "translateZ(35px)" }} className="font-display text-2xl font-bold text-stone-900 group-hover:text-[#ea580c] transition-colors">{pillar.label}</h3>
+                    <p style={{ transform: "translateZ(20px)" }} className="text-stone-500 font-body text-sm leading-relaxed">{pillar.desc}</p>
                   </div>
-                </div>
+                </Card3D>
               </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* SECTION 4: Unique Monthly Travel Offerings Grid */}
+      {/* SECTION 4: Unique Monthly Travel Offerings Grid with 3D Tilt */}
       <section className="py-24 px-6 md:px-10 border-t border-stone-200">
         <div className="max-w-7xl mx-auto">
           
@@ -199,40 +216,40 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {uniqueOfferings.map((item, idx) => (
               <Reveal key={idx} className="h-full">
-                <div className={`bg-white rounded-3xl p-8 border border-stone-200/60 shadow-sm transition-all duration-305 h-full flex flex-col justify-between group ${item.color} hover:shadow-lg hover:-translate-y-1`}>
-                  <div className="space-y-4">
-                    <div className="text-4xl">{item.emoji}</div>
-                    <h3 className="font-display text-xl font-bold text-stone-900 group-hover:text-[#ea580c] transition-colors">
+                <Card3D className={`bg-white rounded-3xl p-8 border border-stone-200/60 shadow-sm transition-all duration-300 h-full flex flex-col justify-between group ${item.color} hover:shadow-2xl hover:shadow-stone-300/35 cursor-pointer`}>
+                  <div className="space-y-4" style={{ transform: "translateZ(25px)", transformStyle: "preserve-3d" }}>
+                    <div style={{ transform: "translateZ(40px)" }} className="text-4xl">{item.emoji}</div>
+                    <h3 style={{ transform: "translateZ(30px)" }} className="font-display text-xl font-bold text-stone-900 group-hover:text-[#ea580c] transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-stone-500 text-sm font-body leading-relaxed">
+                    <p style={{ transform: "translateZ(20px)" }} className="text-stone-500 text-sm font-body leading-relaxed">
                       {item.desc}
                     </p>
                   </div>
-                </div>
+                </Card3D>
               </Reveal>
             ))}
           </div>
 
-          {/* Social Initiative: farmers program */}
-          <Reveal>
-            <div className="relative overflow-hidden rounded-3xl border border-amber-200 bg-amber-50/40 p-8 md:p-12 shadow-xl shadow-amber-100/15 max-w-5xl mx-auto mt-16 group">
+          {/* 3D Social Initiative Card for Farmers */}
+          <Reveal className="mt-16">
+            <Card3D className="relative overflow-hidden rounded-3xl border border-amber-250 bg-amber-50/45 p-8 md:p-12 shadow-xl shadow-amber-200/20 max-w-5xl mx-auto group cursor-pointer" maxRotate={6} scale={1.015}>
               <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-48 h-48 bg-amber-200/20 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-300/35 transition-colors" />
-              <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
-                <div className="w-16 h-16 rounded-2xl bg-amber-550/10 flex items-center justify-center shrink-0">
+              <div className="flex flex-col md:flex-row items-center gap-8 relative z-10" style={{ transform: "translateZ(30px)", transformStyle: "preserve-3d" }}>
+                <div style={{ transform: "translateZ(50px)" }} className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center shrink-0">
                   <Leaf className="w-8 h-8 text-amber-600 animate-pulse" />
                 </div>
                 <div className="space-y-3 text-center md:text-left">
-                  <div className="text-[10px] uppercase font-bold tracking-widest text-amber-600">Social Initiative</div>
-                  <h3 className="font-display text-2xl md:text-3xl font-bold text-stone-900 leading-tight">
+                  <div style={{ transform: "translateZ(35px)" }} className="text-[10px] uppercase font-bold tracking-widest text-amber-600">Social Initiative</div>
+                  <h3 style={{ transform: "translateZ(40px)" }} className="font-display text-2xl md:text-3xl font-bold text-stone-900 tracking-tight leading-tight">
                     Giving Back: Supporting Our Farmers
                   </h3>
-                  <p className="text-stone-600 leading-relaxed font-body text-base max-w-3xl">
+                  <p style={{ transform: "translateZ(20px)" }} className="text-stone-600 leading-relaxed font-body text-base max-w-3xl">
                     We also believe in giving back to society. As a mark of respect for the people who feed our nation, **one deserving farmer** will receive a fully sponsored free trip every single month.
                   </p>
                 </div>
               </div>
-            </div>
+            </Card3D>
           </Reveal>
 
         </div>
@@ -456,7 +473,8 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
             <img
               src="/logo.png"
               alt="WeAreSoloz"
-              className="w-20 h-20 rounded-full object-cover mx-auto ring-4 ring-orange-500/20 mb-8"
+              className="w-20 h-20 rounded-full object-cover mx-auto ring-4 ring-orange-500/20 mb-8 animate-spin"
+              style={{ animationDuration: '30s' }}
             />
             <h2 className="font-display text-4xl md:text-6xl font-light italic tracking-tight text-stone-200 leading-tight">
               &ldquo;Travel isn&apos;t expensive. <span className="text-[#ea580c] font-semibold font-sans italic">A wasted life is.</span>&rdquo;
@@ -470,7 +488,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/upcoming-trips"
-                className="inline-flex items-center justify-center gap-2 bg-[#ea580c] text-white px-8 py-4 rounded-full font-bold hover:bg-orange-600 hover:scale-[1.02] transition-all"
+                className="inline-flex items-center justify-center gap-2 bg-[#ea580c] text-white px-8 py-4 rounded-full font-bold hover:bg-orange-600 hover:scale-[1.02] transition-all hover:shadow-xl hover:shadow-orange-500/20"
               >
                 Explore Trips <ArrowRight className="w-4 h-4" />
               </Link>
