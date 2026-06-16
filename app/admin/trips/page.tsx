@@ -57,6 +57,7 @@ export default function AdminTripsPage() {
   const [view, setView] = useState<"list" | "form">("list");
   const [formData, setFormData] = useState<TripData>(emptyForm);
   const [editId, setEditId] = useState<string | null>(null);
+  const [subView, setSubView] = useState<"all" | "months">("all");
 
   useEffect(() => {
     fetchTrips();
@@ -189,6 +190,86 @@ export default function AdminTripsPage() {
     setFormData({ ...formData, inclusions: updated });
   };
 
+  // Group trips by month
+  const groupTripsByMonth = (tripsList: TripData[]) => {
+    const groups: { [key: string]: TripData[] } = {};
+    
+    const sorted = [...tripsList].sort((a, b) => {
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
+
+    sorted.forEach((trip) => {
+      let key = "Unscheduled";
+      if (trip.date) {
+        const d = new Date(trip.date);
+        if (!isNaN(d.getTime())) {
+          key = d.toLocaleString("en-US", { month: "long", year: "numeric" });
+        }
+      }
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(trip);
+    });
+
+    return groups;
+  };
+
+  // Render a single trip card to avoid code duplication
+  const renderTripCard = (trip: TripData) => (
+    <div
+      key={trip._id}
+      className="rounded-xl border border-white/10 bg-[#14110d] overflow-hidden flex flex-col justify-between"
+    >
+      <div>
+        <div className="relative aspect-video w-full">
+          <img src={trip.image} alt={trip.destination} className="h-full w-full object-cover" />
+          <div className="absolute right-3 top-3 flex gap-2">
+            <span className="bg-orange-500/90 text-white rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+              {trip.state || "Andhra Pradesh"}
+            </span>
+            <span
+              className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                trip.status === "published" ? "bg-emerald-500/80 text-white" : "bg-white/20 text-white"
+              }`}
+            >
+              {trip.status}
+            </span>
+          </div>
+        </div>
+        <div className="p-5 space-y-3">
+          <h3 className="font-display text-lg font-bold text-white leading-tight">{trip.destination}</h3>
+          <div className="grid grid-cols-2 gap-2 text-xs text-soloz-ash/70">
+            <div className="flex items-center gap-1.5">
+              <Calendar size={13} />
+              {new Date(trip.date).toLocaleDateString()}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Users size={13} />
+              {trip.seats} seats
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-5 pt-0 border-t border-white/5 mt-4 flex items-center justify-between">
+        <span className="text-base font-bold text-soloz-amber">{trip.price}</span>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleEdit(trip)}
+            className="grid size-8 place-items-center rounded bg-white/5 border border-white/10 text-white hover:bg-white/10"
+          >
+            <Edit2 size={13} />
+          </button>
+          <button
+            onClick={() => handleDelete(trip._id!)}
+            className="grid size-8 place-items-center rounded bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20"
+          >
+            <Trash2 size={13} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <main className="space-y-8">
       {/* Title */}
@@ -212,6 +293,31 @@ export default function AdminTripsPage() {
         )}
       </div>
 
+      {view === "list" && !loading && trips.length > 0 && (
+        <div className="flex border-b border-white/10 pb-1 gap-6">
+          <button
+            onClick={() => setSubView("all")}
+            className={`text-sm font-semibold pb-2 border-b-2 transition-all duration-300 ${
+              subView === "all"
+                ? "border-soloz-ember text-white"
+                : "border-transparent text-soloz-ash/60 hover:text-white"
+            }`}
+          >
+            All Trips ({trips.length})
+          </button>
+          <button
+            onClick={() => setSubView("months")}
+            className={`text-sm font-semibold pb-2 border-b-2 transition-all duration-300 ${
+              subView === "months"
+                ? "border-soloz-ember text-white"
+                : "border-transparent text-soloz-ash/60 hover:text-white"
+            }`}
+          >
+            Month-wise ({Object.keys(groupTripsByMonth(trips)).length} Months)
+          </button>
+        </div>
+      )}
+
       {view === "list" ? (
         loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-soloz-ash/60">
@@ -223,62 +329,31 @@ export default function AdminTripsPage() {
             No group trips configured. Click "Create New Trip" or seed the database.
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {trips.map((trip) => (
-              <div
-                key={trip._id}
-                className="rounded-xl border border-white/10 bg-[#14110d] overflow-hidden flex flex-col justify-between"
-              >
-                <div>
-                  <div className="relative aspect-video w-full">
-                    <img src={trip.image} alt={trip.destination} className="h-full w-full object-cover" />
-                    <div className="absolute right-3 top-3 flex gap-2">
-                      <span className="bg-orange-500/90 text-white rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-                        {trip.state || "Andhra Pradesh"}
-                      </span>
-                      <span
-                        className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                          trip.status === "published" ? "bg-emerald-500/80 text-white" : "bg-white/20 text-white"
-                        }`}
-                      >
-                        {trip.status}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-5 space-y-3">
-                    <h3 className="font-display text-lg font-bold text-white leading-tight">{trip.destination}</h3>
-                    <div className="grid grid-cols-2 gap-2 text-xs text-soloz-ash/70">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar size={13} />
-                        {new Date(trip.date).toLocaleDateString()}
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Users size={13} />
-                        {trip.seats} seats
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-5 pt-0 border-t border-white/5 mt-4 flex items-center justify-between">
-                  <span className="text-base font-bold text-soloz-amber">{trip.price}</span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEdit(trip)}
-                      className="grid size-8 place-items-center rounded bg-white/5 border border-white/10 text-white hover:bg-white/10"
-                    >
-                      <Edit2 size={13} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(trip._id!)}
-                      className="grid size-8 place-items-center rounded bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                </div>
+          <div className="space-y-10">
+            {subView === "all" ? (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {trips.map((trip) => renderTripCard(trip))}
               </div>
-            ))}
+            ) : (
+              <div className="space-y-12">
+                {Object.entries(groupTripsByMonth(trips)).map(([month, monthTrips]) => (
+                  <div key={month} className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-display text-sm font-bold text-white uppercase tracking-wider text-soloz-amber">
+                        {month}
+                      </h3>
+                      <span className="bg-white/10 text-white/70 px-2 py-0.5 rounded text-[10px] font-bold">
+                        {monthTrips.length} {monthTrips.length === 1 ? "trip" : "trips"}
+                      </span>
+                      <div className="flex-1 h-px bg-white/10" />
+                    </div>
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      {monthTrips.map((trip) => renderTripCard(trip))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )
       ) : (
