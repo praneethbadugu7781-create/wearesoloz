@@ -15,7 +15,7 @@ const router = express.Router();
 router.get("/trips", async (req, res) => {
   try {
     await connectDB();
-    const trips = await Trip.find({ status: "published" }).sort({ date: -1 }).lean();
+    const trips = await Trip.find({ status: "published" }).sort({ date: 1 }).lean();
     res.json(trips);
   } catch (e) {
     res.status(500).json({ error: e.message });
