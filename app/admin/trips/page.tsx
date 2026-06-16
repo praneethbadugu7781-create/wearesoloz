@@ -190,27 +190,48 @@ export default function AdminTripsPage() {
     setFormData({ ...formData, inclusions: updated });
   };
 
-  // Group trips by month
+  // Group trips by month, pre-initializing 12 months starting from July 2026
   const groupTripsByMonth = (tripsList: TripData[]) => {
     const groups: { [key: string]: TripData[] } = {};
     
+    // Pre-initialize 12 upcoming months starting from July 2026
+    const startDate = new Date(2026, 6, 1); // July 2026
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
+      const label = d.toLocaleString("en-US", { month: "long", year: "numeric" });
+      groups[label] = [];
+    }
+
     const sorted = [...tripsList].sort((a, b) => {
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
 
     sorted.forEach((trip) => {
-      let key = "Unscheduled";
       if (trip.date) {
         const d = new Date(trip.date);
         if (!isNaN(d.getTime())) {
-          key = d.toLocaleString("en-US", { month: "long", year: "numeric" });
+          const label = d.toLocaleString("en-US", { month: "long", year: "numeric" });
+          if (!groups[label]) groups[label] = []; // Fallback for outside the 12 month range
+          groups[label].push(trip);
         }
       }
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(trip);
     });
 
     return groups;
+  };
+
+  const handleCreateForMonth = (monthLabel: string) => {
+    const date = new Date(monthLabel);
+    let dateStr = "";
+    if (!isNaN(date.getTime())) {
+      dateStr = date.toISOString().split("T")[0];
+    }
+    setFormData({
+      ...emptyForm,
+      date: dateStr
+    });
+    setEditId(null);
+    setView("form");
   };
 
   // Render a single trip card to avoid code duplication
@@ -347,9 +368,22 @@ export default function AdminTripsPage() {
                       </span>
                       <div className="flex-1 h-px bg-white/10" />
                     </div>
-                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {monthTrips.map((trip) => renderTripCard(trip))}
-                    </div>
+                    {monthTrips.length > 0 ? (
+                      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {monthTrips.map((trip) => renderTripCard(trip))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center border border-dashed border-white/10 rounded-xl py-6 px-4 bg-white/[0.01] text-soloz-ash/40 text-center gap-2">
+                        <span className="text-xs">No trips scheduled for this month.</span>
+                        <button
+                          type="button"
+                          onClick={() => handleCreateForMonth(month)}
+                          className="text-[10px] uppercase font-bold text-[#ff7a1a] hover:underline flex items-center gap-1"
+                        >
+                          <Plus size={10} /> Add Trip for {month.split(" ")[0]}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
