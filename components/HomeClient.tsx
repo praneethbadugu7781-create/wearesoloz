@@ -150,6 +150,7 @@ export default function HomeClient({
         title={settings.hero_title || settings.heroTitle || "Start Solo. Travel Together."}
         subheading={settings.hero_subheading || settings.heroSubheading || "Join solo travelers, explore new destinations, meet incredible people and create unforgettable memories together."}
         heroImage={settings.hero_image || settings.heroImage}
+        featuredTrips={trips.filter(t => t.status === "published").length > 0 ? trips.filter(t => t.status === "published").slice(0, 3) : trips.slice(0, 3)}
       />
 
       {/* 📅 SECTION 2 — Upcoming Trips */}
