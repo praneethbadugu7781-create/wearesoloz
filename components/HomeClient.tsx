@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { HomeHero } from "@/components/home-hero";
+import Card3D from "@/components/Card3D";
 
 const WHY = [
   { icon: Users, title: "Travel Together", text: "Solo at start. Family by the end of every trip." },
@@ -212,12 +213,16 @@ export default function HomeClient({
           </Reveal>
           <motion.div {...stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {WHY.map((w) => (
-              <motion.div key={w.title} variants={item} className="bg-white/80 border border-stone-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)] backdrop-blur-md rounded-2xl p-6 md:p-8 hover-lift hover:shadow-md hover:border-orange-500/20 transition-all duration-300">
-                <div className="w-12 h-12 rounded-full bg-soloz-primary/10 border border-soloz-primary/20 flex items-center justify-center mb-5">
-                  <w.icon className="w-5 h-5 text-soloz-primary" />
-                </div>
-                <div className="font-display text-xl font-semibold text-stone-900">{w.title}</div>
-                <div className="text-sm text-stone-600 mt-2 leading-relaxed font-body">{w.text}</div>
+              <motion.div key={w.title} variants={item}>
+                <Card3D maxRotate={7} scale={1.02} className="h-full">
+                  <div className="bg-white/80 border border-stone-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)] backdrop-blur-md rounded-2xl p-6 md:p-8 hover-lift hover:shadow-md hover:border-orange-500/20 transition-all duration-300 h-full">
+                    <div className="w-12 h-12 rounded-full bg-soloz-primary/10 border border-soloz-primary/20 flex items-center justify-center mb-5">
+                      <w.icon className="w-5 h-5 text-soloz-primary" />
+                    </div>
+                    <div className="font-display text-xl font-semibold text-stone-900">{w.title}</div>
+                    <div className="text-sm text-stone-600 mt-2 leading-relaxed font-body">{w.text}</div>
+                  </div>
+                </Card3D>
               </motion.div>
             ))}
           </motion.div>
@@ -280,17 +285,22 @@ export default function HomeClient({
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                  className="bg-white rounded-2xl p-6 sm:p-8 border border-stone-200 shadow-sm"
                 >
-                  <Quote className="w-7 h-7 text-soloz-primary mb-4" />
-                  <p className="font-display text-lg sm:text-xl font-light leading-relaxed text-stone-900">{t.quote || t.message}</p>
-                  <div className="flex items-center gap-3 mt-6">
-                    {t.avatar && <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover" />}
-                    <div>
-                      <div className="font-medium text-stone-900">{t.name}</div>
-                      <div className="text-xs text-soloz-textMuted">{t.location || t.role}</div>
+                  <Card3D maxRotate={5} scale={1.01} className="h-full">
+                    <div className="bg-white rounded-2xl p-6 sm:p-8 border border-stone-200 shadow-sm h-full flex flex-col justify-between">
+                      <div>
+                        <Quote className="w-7 h-7 text-soloz-primary mb-4" />
+                        <p className="font-display text-lg sm:text-xl font-light leading-relaxed text-stone-900">{t.quote || t.message}</p>
+                      </div>
+                      <div className="flex items-center gap-3 mt-6">
+                        {t.avatar && <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover" />}
+                        <div>
+                          <div className="font-medium text-stone-900">{t.name}</div>
+                          <div className="text-xs text-soloz-textMuted">{t.location || t.role}</div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  </Card3D>
                 </motion.div>
               ))}
             </div>
@@ -302,26 +312,28 @@ export default function HomeClient({
       <section data-testid="whatsapp-community-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 relative overflow-hidden bg-emerald-50/20">
         <div className="absolute inset-0 radial-orange-glow opacity-5 pointer-events-none" />
         <div className="relative max-w-4xl mx-auto text-center flex flex-col items-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-6">
-            <MessageCircle className="w-4 h-4 text-emerald-600 animate-bounce" /> Official WhatsApp Community
-          </div>
-          <h2 className="font-display text-4xl sm:text-5xl md:text-7xl font-light tracking-tighter leading-none text-stone-900">
-            Connect with <span className="text-emerald-600 font-medium">1,000+</span> <br />Solo Travelers
-          </h2>
-          <p className="text-stone-600 mt-6 max-w-xl mx-auto leading-relaxed font-body">
-            Join our official WhatsApp community to get instant updates on upcoming solo trips, participate in trip planning Q&A, and chat with travel buddies who share your passion for adventure.
-          </p>
-          <div className="mt-8">
-            <a
-              href={settings.whatsapp_link || "https://wa.me/919966085310"}
-              target="_blank"
-              rel="noreferrer"
-              data-testid="cta-join-whatsapp"
-              className="inline-flex items-center justify-center gap-3 bg-emerald-600 text-white hover:bg-emerald-700 px-8 py-4 rounded-full font-bold text-sm uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(5,150,105,0.25)] hover:scale-[1.03]"
-            >
-              <MessageCircle className="w-5 h-5" /> Join WhatsApp Community
-            </a>
-          </div>
+          <Reveal className="flex flex-col items-center text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-6">
+              <MessageCircle className="w-4 h-4 text-emerald-600 animate-bounce" /> Official WhatsApp Community
+            </div>
+            <h2 className="font-display text-4xl sm:text-5xl md:text-7xl font-light tracking-tighter leading-none text-stone-900">
+              Connect with <span className="text-emerald-600 font-medium">1,000+</span> <br />Solo Travelers
+            </h2>
+            <p className="text-stone-600 mt-6 max-w-xl mx-auto leading-relaxed font-body">
+              Join our official WhatsApp community to get instant updates on upcoming solo trips, participate in trip planning Q&A, and chat with travel buddies who share your passion for adventure.
+            </p>
+            <div className="mt-8">
+              <a
+                href={settings.whatsapp_link || "https://wa.me/919966085310"}
+                target="_blank"
+                rel="noreferrer"
+                data-testid="cta-join-whatsapp"
+                className="inline-flex items-center justify-center gap-3 bg-emerald-600 text-white hover:bg-emerald-700 px-8 py-4 rounded-full font-bold text-sm uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(5,150,105,0.25)] hover:scale-[1.03]"
+              >
+                <MessageCircle className="w-5 h-5" /> Join WhatsApp Community
+              </a>
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -330,7 +342,7 @@ export default function HomeClient({
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-5 gap-12 items-start">
             {/* Info panel */}
-            <div className="md:col-span-2">
+            <Reveal className="md:col-span-2">
               <SectionLabel>📞 Contact / Join Now</SectionLabel>
               <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900 leading-none">
                 Start your <br /><span className="gradient-text font-medium">adventure</span>.
@@ -360,10 +372,10 @@ export default function HomeClient({
                   </div>
                 </div>
               </div>
-            </div>
+            </Reveal>
 
             {/* Form panel */}
-            <div className="md:col-span-3 bg-white p-6 sm:p-10 rounded-3xl border border-stone-200 shadow-sm relative">
+            <Reveal className="md:col-span-3 bg-white p-6 sm:p-10 rounded-3xl border border-stone-200 shadow-sm relative">
               <h3 className="font-display text-2xl font-semibold text-stone-900 mb-6">Inquiry & Booking Form</h3>
               
               <form onSubmit={submitContactForm} className="space-y-6">
@@ -477,7 +489,7 @@ export default function HomeClient({
                   {busy ? "Sending Inquiry..." : "Send Inquiry & Chat on WhatsApp"}
                 </Button>
               </form>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -488,40 +500,46 @@ export default function HomeClient({
 export function TripCard({ trip }: { trip: any }) {
   const tripSlug = trip.slug || trip.destination?.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   return (
-    <Link href={`/upcoming-trips/${tripSlug}`} data-testid={`trip-card-${trip.id || trip._id}`} className="block group">
-      <div className="bg-white rounded-2xl overflow-hidden hover-lift border border-stone-200/80 shadow-sm hover:shadow-md transition-all duration-300">
-        <div className="relative aspect-[4/3] overflow-hidden">
-          <img
-            src={trip.image || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80"}
-            alt={trip.title || trip.destination}
-            className="w-full h-full object-cover image-zoom"
-          />
-          {trip.date && (
-            <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-white/90 backdrop-blur-md border border-stone-200 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[10px] uppercase tracking-widest text-stone-900 font-semibold">
-              {new Date(trip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+    <Link href={`/upcoming-trips/${tripSlug}`} data-testid={`trip-card-${trip.id || trip._id}`} className="block group h-full">
+      <Card3D maxRotate={6} scale={1.02} className="h-full">
+        <div className="bg-white rounded-2xl overflow-hidden border border-stone-200/80 shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col justify-between">
+          <div>
+            <div className="relative aspect-[4/3] overflow-hidden">
+              <img
+                src={trip.image || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80"}
+                alt={trip.title || trip.destination}
+                className="w-full h-full object-cover image-zoom"
+              />
+              {trip.date && (
+                <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-white/90 backdrop-blur-md border border-stone-200 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[10px] uppercase tracking-widest text-stone-900 font-semibold">
+                  {new Date(trip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                </div>
+              )}
+              {trip.state?.toLowerCase() === "sri lanka" && (
+                <div className="absolute top-2 right-2 md:top-4 md:right-4 bg-[#ea580c] border border-orange-500 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[9px] uppercase tracking-widest text-white font-extrabold shadow-md animate-pulse">
+                  Budget <span className="hidden sm:inline">International</span><span className="sm:hidden">Intl</span>
+                </div>
+              )}
             </div>
-          )}
-          {trip.state?.toLowerCase() === "sri lanka" && (
-            <div className="absolute top-2 right-2 md:top-4 md:right-4 bg-[#ea580c] border border-orange-500 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[9px] uppercase tracking-widest text-white font-extrabold shadow-md animate-pulse">
-              Budget <span className="hidden sm:inline">International</span><span className="sm:hidden">Intl</span>
+            <div className="p-3 md:p-6">
+              <div className="flex items-center justify-between gap-1.5 text-[8px] md:text-[10px] uppercase font-semibold">
+                <span className="tracking-[0.1em] md:tracking-[0.2em] text-[#ea580c] truncate max-w-[60%] sm:max-w-none">{trip.destination}</span>
+                <span className="tracking-wider text-stone-500 bg-stone-100/80 rounded-md px-1 md:px-1.5 py-0.5 scale-90 md:scale-100 origin-right shrink-0">{trip.category || "Adventure"}</span>
+              </div>
+              <div className="font-display text-sm md:text-xl font-medium mt-1 md:mt-2 text-stone-900 truncate">{trip.title || `${trip.destination} Expedition`}</div>
+              <div className="flex items-center gap-2 md:gap-4 mt-2 md:mt-4 text-[10px] md:text-xs text-stone-600">
+                {trip.duration && <span className="inline-flex items-center gap-0.5 md:gap-1"><Clock className="w-3 h-3 text-stone-500 shrink-0" /> {trip.duration}</span>}
+              </div>
             </div>
-          )}
-        </div>
-        <div className="p-3 md:p-6">
-          <div className="flex items-center justify-between gap-1.5 text-[8px] md:text-[10px] uppercase font-semibold">
-            <span className="tracking-[0.1em] md:tracking-[0.2em] text-[#ea580c] truncate max-w-[60%] sm:max-w-none">{trip.destination}</span>
-            <span className="tracking-wider text-stone-500 bg-stone-100/80 rounded-md px-1 md:px-1.5 py-0.5 scale-90 md:scale-100 origin-right shrink-0">{trip.category || "Adventure"}</span>
           </div>
-          <div className="font-display text-sm md:text-xl font-medium mt-1 md:mt-2 text-stone-900 truncate">{trip.title || `${trip.destination} Expedition`}</div>
-          <div className="flex items-center gap-2 md:gap-4 mt-2 md:mt-4 text-[10px] md:text-xs text-stone-600">
-            {trip.duration && <span className="inline-flex items-center gap-0.5 md:gap-1"><Clock className="w-3 h-3 text-stone-500 shrink-0" /> {trip.duration}</span>}
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-3 pt-3 md:mt-5 md:pt-4 border-t border-stone-100 gap-1 sm:gap-2">
-            <div className="text-[10px] md:text-sm font-semibold text-stone-500">Contact for Price</div>
-            <div className="text-[10px] md:text-xs text-soloz-primary inline-flex items-center gap-0.5 md:gap-1 font-bold group-hover:text-orange-600 transition-colors">Join trip <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" /></div>
+          <div className="p-3 md:p-6 pt-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-3 pt-3 md:mt-5 md:pt-4 border-t border-stone-100 gap-1 sm:gap-2">
+              <div className="text-[10px] md:text-sm font-semibold text-stone-500">Contact for Price</div>
+              <div className="text-[10px] md:text-xs text-soloz-primary inline-flex items-center gap-0.5 md:gap-1 font-bold group-hover:text-orange-600 transition-colors">Join trip <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" /></div>
+            </div>
           </div>
         </div>
-      </div>
+      </Card3D>
     </Link>
   );
 }
