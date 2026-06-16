@@ -47,7 +47,7 @@ const emptyForm: TripData = {
   itinerary: [
     { day: "Day 1", title: "Arrival", description: "Arrive at pickup location." }
   ],
-  inclusions: ["Shared accommodation", "AC transfers", "Breakfast & Dinner", "Tour Guide"]
+  inclusions: ["Shared accommodation (AC/Non-AC)", "Transfers (AC/Non-AC)", "Breakfast & Dinner", "Tour Guide"]
 };
 
 export default function AdminTripsPage() {

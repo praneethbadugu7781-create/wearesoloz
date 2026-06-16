@@ -77,11 +77,10 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
       <section className="px-6 md:px-10 py-20">
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-12">
           <div className="md:col-span-2">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
               {[
                 { icon: Calendar, label: "Start Date", value: formattedDate },
                 { icon: Clock, label: "Duration", value: trip.duration || "—" },
-                { icon: Users, label: "Seats Left", value: seatsVal },
                 { icon: MapPin, label: "Region", value: trip.destination },
               ].map((s) => (
                 <div key={s.label} className="glass rounded-xl p-4 border border-stone-200">

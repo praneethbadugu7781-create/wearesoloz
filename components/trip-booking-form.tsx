@@ -108,7 +108,7 @@ export function TripBookingForm({ destination }: TripBookingFormProps) {
         </div>
         <h3 className="font-display text-2xl font-bold text-white">Join This Trip</h3>
         <p className="text-xs text-soloz-ash/70 leading-relaxed">
-          Submit your contact info. Seats are allocated on a first-come, first-served basis following a short confirmation call.
+          Submit your contact info. Slots are allocated on a first-come, first-served basis following a short confirmation call.
         </p>
       </div>
 

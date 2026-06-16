@@ -35,7 +35,7 @@ async function getTrip(slug: string) {
       image: staticTrip.image,
       inclusions: [
         "Double/Triple sharing premium accommodation",
-        "AC transfers from assembly point",
+        "AC or Non-AC transfers from assembly point",
         "All breakfasts & dinners on trip",
         "Certified tour guide & local support team",
         "Medical safety kit & support",

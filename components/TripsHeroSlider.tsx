@@ -209,11 +209,8 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
                   <span className="flex items-center gap-1.5 border-r border-white/10 pr-3 md:pr-4">
                     <Clock className="w-3.5 h-3.5 text-orange-400 shrink-0" /> {activeTrip.duration}
                   </span>
-                  <span className="flex items-center gap-1.5 border-r border-white/10 pr-3 md:pr-4">
-                    <Calendar className="w-3.5 h-3.5 text-orange-400 shrink-0" /> {new Date(activeTrip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                  </span>
                   <span className="flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-orange-400 shrink-0" /> {activeTrip.seats} Seats Left
+                    <Calendar className="w-3.5 h-3.5 text-orange-400 shrink-0" /> {new Date(activeTrip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                   </span>
                 </motion.div>
               </div>
@@ -224,7 +221,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
                   variants={textRevealVariants}
                   className="text-white/80 font-body text-xs sm:text-base leading-relaxed select-text"
                 >
-                  Explore the untouched beauty of {activeTrip.destination}. This curated solo-friendly journey includes comfortable sharing accommodations, AC transportation, breakfasts and dinners, alongside guidance from Akhil.
+                  Explore the untouched beauty of {activeTrip.destination}. This curated solo-friendly journey includes comfortable sharing accommodations, AC or Non-AC transportation, breakfasts and dinners, alongside guidance from Akhil.
                 </motion.p>
               </div>
 

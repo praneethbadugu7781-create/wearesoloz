@@ -515,7 +515,6 @@ export function TripCard({ trip }: { trip: any }) {
           <div className="font-display text-sm md:text-xl font-medium mt-1 md:mt-2 text-stone-900 truncate">{trip.title || `${trip.destination} Expedition`}</div>
           <div className="flex items-center gap-2 md:gap-4 mt-2 md:mt-4 text-[10px] md:text-xs text-stone-600">
             {trip.duration && <span className="inline-flex items-center gap-0.5 md:gap-1"><Clock className="w-3 h-3 text-stone-500 shrink-0" /> {trip.duration}</span>}
-            {trip.seats > 0 && <span className="inline-flex items-center gap-0.5 md:gap-1"><Users className="w-3 h-3 text-stone-500 shrink-0" /> {trip.seats} seats</span>}
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-3 pt-3 md:mt-5 md:pt-4 border-t border-stone-100 gap-1 sm:gap-2">
             <div className="text-[10px] md:text-sm font-semibold text-stone-500">Contact for Price</div>
