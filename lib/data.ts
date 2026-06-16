@@ -77,6 +77,9 @@ export const destinations = [
 ];
 
 export const trips = [
+  { destination: "Ananthagiri Hills Trek", state: "Telangana", category: "Treks", date: "2026-07-04", duration: "1 Day", price: "₹1,499", seats: 15, image: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80", slug: "ananthagiri-hills-trek" },
+  { destination: "Srisailam & Nallamala Forest", state: "Andhra Pradesh", category: "Temples", date: "2026-07-11", duration: "2 Days", price: "₹4,999", seats: 12, image: "/images/trips/srisailamimage.png", slug: "srisailam-nallamala-forest" },
+  { destination: "Hampi Heritage Trip", state: "Karnataka", category: "Adventure", date: "2026-07-24", duration: "4 Days", price: "₹7,999", seats: 12, image: "https://images.unsplash.com/photo-1600100397608-f010e45fa674?auto=format&fit=crop&w=1200&q=80", slug: "hampi-heritage-trip" },
   { destination: "Munnar & Kodaikanal", state: "Kerala", category: "Treks", date: "2026-09-18", duration: "4 Days", price: "₹12,499", seats: 12, image: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80" },
   { destination: "Hampi Weekend", state: "Karnataka", category: "Adventure", date: "2026-10-03", duration: "2 Days", price: "₹6,499", seats: 15, image: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=1200&q=80" },
   { destination: "Araku Valley", state: "Andhra Pradesh", category: "Adventure", date: "2026-10-17", duration: "2 Days", price: "₹5,999", seats: 14, image: "/images/trips/arakuimage.png" },
