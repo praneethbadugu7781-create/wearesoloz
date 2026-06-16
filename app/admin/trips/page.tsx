@@ -59,6 +59,12 @@ export default function AdminTripsPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [subView, setSubView] = useState<"all" | "months">("all");
 
+  // State for scheduling draft templates
+  const [schedulingMonth, setSchedulingMonth] = useState<string | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  const [scheduleDate, setScheduleDate] = useState<string>("");
+  const [scheduling, setScheduling] = useState(false);
+
   useEffect(() => {
     fetchTrips();
   }, []);
@@ -191,6 +197,7 @@ export default function AdminTripsPage() {
   };
 
   // Group trips by month, pre-initializing 12 months starting from July 2026
+  // Only displays published/scheduled trips in the Month-wise calendar slots
   const groupTripsByMonth = (tripsList: TripData[]) => {
     const groups: { [key: string]: TripData[] } = {};
     
@@ -202,9 +209,11 @@ export default function AdminTripsPage() {
       groups[label] = [];
     }
 
-    const sorted = [...tripsList].sort((a, b) => {
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
-    });
+    const sorted = [...tripsList]
+      .filter((t) => t.status === "published")
+      .sort((a, b) => {
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      });
 
     sorted.forEach((trip) => {
       if (trip.date) {
@@ -221,16 +230,80 @@ export default function AdminTripsPage() {
   };
 
   const handleCreateForMonth = (monthLabel: string) => {
-    const date = new Date(monthLabel);
-    let dateStr = "";
-    if (!isNaN(date.getTime())) {
-      dateStr = date.toISOString().split("T")[0];
+    setSchedulingMonth(monthLabel);
+    const parsedDate = new Date(monthLabel);
+    let defaultDate = "";
+    if (!isNaN(parsedDate.getTime())) {
+      const year = parsedDate.getFullYear();
+      const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+      defaultDate = `${year}-${month}-01`;
     }
+    setScheduleDate(defaultDate);
+    const firstDraft = trips.find((t) => t.status === "draft");
+    setSelectedTemplateId(firstDraft?._id || "");
+  };
+
+  const handleScheduleTrip = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTemplateId) {
+      alert("Please select a template trip.");
+      return;
+    }
+    if (!scheduleDate) {
+      alert("Please select a date.");
+      return;
+    }
+
+    setScheduling(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/trips/${selectedTemplateId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        body: JSON.stringify({
+          date: scheduleDate,
+          status: "published"
+        })
+      });
+
+      if (!res.ok) throw new Error("Failed to schedule trip");
+
+      setSchedulingMonth(null);
+      setSelectedTemplateId("");
+      setScheduleDate("");
+      fetchTrips();
+    } catch (err: any) {
+      alert(err.message || "Error scheduling trip.");
+    } finally {
+      setScheduling(false);
+    }
+  };
+
+  const handleCustomizeTemplate = () => {
+    if (!selectedTemplateId) {
+      alert("Please select a template trip first.");
+      return;
+    }
+    const template = trips.find((t) => t._id === selectedTemplateId);
+    if (!template) return;
+
+    setFormData({
+      ...template,
+      date: scheduleDate,
+      status: "published"
+    });
+    setEditId(template._id || null);
+    setSchedulingMonth(null);
+    setView("form");
+  };
+
+  const handleCreateNewFromScratch = () => {
     setFormData({
       ...emptyForm,
-      date: dateStr
+      date: scheduleDate,
+      status: "published"
     });
     setEditId(null);
+    setSchedulingMonth(null);
     setView("form");
   };
 
@@ -359,14 +432,25 @@ export default function AdminTripsPage() {
               <div className="space-y-12">
                 {Object.entries(groupTripsByMonth(trips)).map(([month, monthTrips]) => (
                   <div key={month} className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-display text-sm font-bold text-white uppercase tracking-wider text-soloz-amber">
-                        {month}
-                      </h3>
-                      <span className="bg-white/10 text-white/70 px-2 py-0.5 rounded text-[10px] font-bold">
-                        {monthTrips.length} {monthTrips.length === 1 ? "trip" : "trips"}
-                      </span>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-display text-sm font-bold text-white uppercase tracking-wider text-soloz-amber">
+                          {month}
+                        </h3>
+                        <span className="bg-white/10 text-white/70 px-2 py-0.5 rounded text-[10px] font-bold">
+                          {monthTrips.length} {monthTrips.length === 1 ? "trip" : "trips"}
+                        </span>
+                      </div>
                       <div className="flex-1 h-px bg-white/10" />
+                      {monthTrips.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => handleCreateForMonth(month)}
+                          className="text-[10px] uppercase font-bold text-[#ff7a1a] hover:text-[#ff7a1a]/85 transition-all flex items-center gap-1 shrink-0"
+                        >
+                          <Plus size={12} /> Add Trip
+                        </button>
+                      )}
                     </div>
                     {monthTrips.length > 0 ? (
                       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -640,6 +724,106 @@ export default function AdminTripsPage() {
             </Button>
           </div>
         </form>
+      )}
+
+      {/* Scheduling Modal */}
+      {schedulingMonth && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-xl border border-white/10 bg-[#14110d] p-6 shadow-2xl relative space-y-4">
+            <button
+              onClick={() => setSchedulingMonth(null)}
+              className="absolute right-4 top-4 text-soloz-ash/60 hover:text-white transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="space-y-1">
+              <h3 className="font-display text-lg font-bold text-white">
+                Schedule Trip for {schedulingMonth}
+              </h3>
+              <p className="text-xs text-soloz-ash/60">
+                Choose an existing draft template to schedule, or build a new one.
+              </p>
+            </div>
+
+            <form onSubmit={handleScheduleTrip} className="space-y-4 pt-2">
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block font-semibold">
+                  Select Template Trip
+                </label>
+                {trips.filter(t => t.status === "draft").length === 0 ? (
+                  <div className="text-xs text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded p-2">
+                    No draft template trips available in the database.
+                  </div>
+                ) : (
+                  <select
+                    required
+                    value={selectedTemplateId}
+                    onChange={(e) => setSelectedTemplateId(e.target.value)}
+                    className="h-10 w-full rounded-lg border border-white/10 bg-[#1a1712] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+                  >
+                    <option value="" disabled>-- Select a template --</option>
+                    {trips
+                      .filter(t => t.status === "draft")
+                      .map((t) => (
+                        <option key={t._id} value={t._id}>
+                          {t.destination} ({t.state} - {t.duration})
+                        </option>
+                      ))}
+                  </select>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block font-semibold">
+                  Departure Date
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={scheduleDate}
+                  onChange={(e) => setScheduleDate(e.target.value)}
+                  className="h-10 w-full rounded-lg border border-white/10 bg-[#1a1712] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2 pt-2">
+                <Button
+                  type="submit"
+                  disabled={scheduling || trips.filter(t => t.status === "draft").length === 0}
+                  className="w-full justify-center pt-0.5"
+                >
+                  {scheduling ? (
+                    <>
+                      <Loader2 className="animate-spin mr-2" size={15} /> Scheduling...
+                    </>
+                  ) : (
+                    "Schedule & Publish Now"
+                  )}
+                </Button>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCustomizeTemplate}
+                    disabled={scheduling || !selectedTemplateId}
+                    className="h-10 rounded-lg border border-white/10 bg-white/5 px-4 text-xs font-semibold text-white hover:bg-white/10 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                  >
+                    Customize Details
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCreateNewFromScratch}
+                    disabled={scheduling}
+                    className="h-10 rounded-lg border border-white/10 bg-white/5 px-4 text-xs font-semibold text-white hover:bg-white/10 transition-colors"
+                  >
+                    New from Scratch
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </main>
   );
