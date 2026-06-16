@@ -52,7 +52,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
   return (
     <div data-testid="trips-page" className="bg-white min-h-screen text-[#1c1917]">
       {/* 🏠 Animated Hero Slider - Timed Cards Opening */}
-      <TripsHeroSlider trips={initialTrips} />
+      <TripsHeroSlider trips={initialTrips.filter(t => t.status === "published").length > 0 ? initialTrips.filter(t => t.status === "published") : initialTrips} />
 
       {/* State/Region Selector Categories */}
       <section className="py-12 px-6 md:px-10 bg-stone-50 border-b border-stone-100">

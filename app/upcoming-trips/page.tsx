@@ -4,7 +4,7 @@ import { fetchPublic } from "@/lib/api";
 
 async function getTrips() {
   try {
-    const dbTrips = await fetchPublic("/trips", []);
+    const dbTrips = await fetchPublic("/trips?all=true", []);
     if (dbTrips && dbTrips.length > 0) return dbTrips;
   } catch (error) {
     console.error("Failed to fetch trips from API:", error);
