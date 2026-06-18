@@ -204,7 +204,12 @@ router.post("/change-email", requireAuth, async (req, res) => {
     await sendEmailChangeInitiatedAlert(currentEmail, emailLower);
 
     // Send verification code to the new email address
-    await sendEmailChangeOtp(emailLower, verificationCode);
+    const emailSent = await sendEmailChangeOtp(emailLower, verificationCode);
+    if (!emailSent) {
+      return res.status(502).json({
+        error: "Failed to send verification email. Please check your Resend API configuration on Render."
+      });
+    }
 
     res.json({ success: true, message: "A verification code has been sent to your new email address." });
   } catch (error) {
@@ -324,7 +329,12 @@ router.post("/forgot-password", async (req, res) => {
     await user.save();
 
     // Send the email
-    await sendOtpEmail(user.email, otpCode);
+    const emailSent = await sendOtpEmail(user.email, otpCode);
+    if (!emailSent) {
+      return res.status(502).json({
+        error: "Failed to send verification email. Please check your Resend API configuration on Render."
+      });
+    }
 
     res.json({ success: true, message: "A 6-digit OTP code has been sent to your email." });
   } catch (error) {
