@@ -155,7 +155,7 @@ export default function AdminSettingsPage() {
 
   const [homepage, setHomepage] = useState<HomepageSettings>({
     heroTitle: "START SOLO. TRAVEL TOGETHER.",
-    heroSubheading: "Join solo travelers, explore new destinations, meet incredible people and create unforgettable memories together.",
+    heroSubheading: "Join solo travellers, explore new destinations, meet incredible people and create unforgettable memories together.",
     aboutHeading: "Travel Solo. You're Not Alone.",
     aboutText: "",
     founderHeading: "Meet Akhil",

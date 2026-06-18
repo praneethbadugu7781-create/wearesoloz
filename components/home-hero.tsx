@@ -118,7 +118,7 @@ export function HomeHero({ title, subheading, heroImage }: HomeHeroProps) {
               transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
               className="max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-white/90 leading-relaxed font-body drop-shadow-sm pt-2"
             >
-              {subheading || "Join solo travelers, explore new destinations, meet incredible people and create unforgettable memories together."}
+              {subheading || "Join solo travellers, explore new destinations, meet incredible people and create unforgettable memories together."}
             </motion.p>
           </div>
 

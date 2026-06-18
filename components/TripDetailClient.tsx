@@ -29,7 +29,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
           mobile: form.mobile,
           email: form.email,
           destination: trip.destination,
-          message: `Trip booking request for: "${trip.title || trip.destination}" (${trip.duration}). Travelers: ${form.travelers}. Additional Message: ${form.message}`
+          message: `Trip booking request for: "${trip.title || trip.destination}" (${trip.duration}). Travellers: ${form.travelers}. Additional Message: ${form.message}`
         })
       });
 
@@ -40,7 +40,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
       toast.success("Request sent. Akhil will reach out shortly.");
 
       // Open WhatsApp chat prefilled with booking data
-      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${form.full_name}. Mobile: ${form.mobile}. Email: ${form.email}. I want to book a seat for the trip: "${trip.title || trip.destination}" (${trip.duration}). Travelers: ${form.travelers}. Message: ${form.message}`);
+      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${form.full_name}. Mobile: ${form.mobile}. Email: ${form.email}. I want to book a seat for the trip: "${trip.title || trip.destination}" (${trip.duration}). Travellers: ${form.travelers}. Message: ${form.message}`);
       const waUrl = `https://wa.me/919966085310?text=${waText}`;
       window.open(waUrl, "_blank");
 
@@ -149,7 +149,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
               </h4>
               <p className="text-sm text-stone-700 leading-relaxed">
                 Please note that <strong>train tickets and flight tickets are not included</strong> in the trip cost. 
-                All travelers must reach the designated meeting point in the starting city by themselves. 
+                All travellers must reach the designated meeting point in the starting city by themselves. 
                 Akhil will communicate the exact starting location and meeting coordinates prior to the trip departure.
               </p>
             </div>
@@ -212,7 +212,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
               {/* Number of Travelers Select Dropdown */}
               <div className="space-y-1">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
-                  Number of Travelers
+                  Number of Travellers
                 </label>
                 <div className="relative">
                   <select
@@ -223,7 +223,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                     className="w-full glass border border-stone-200 bg-white/90 h-10 text-stone-900 text-sm px-3 pr-10 rounded-md focus:outline-none focus:ring-1 focus:ring-[#ea580c]/20 focus:border-[#ea580c] appearance-none cursor-pointer"
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                      <option key={num} value={num}>{num} {num === 1 ? 'Traveler' : 'Travelers'}</option>
+                      <option key={num} value={num}>{num} {num === 1 ? 'Traveller' : 'Travellers'}</option>
                     ))}
                   </select>
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">

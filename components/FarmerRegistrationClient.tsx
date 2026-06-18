@@ -13,6 +13,7 @@ export default function FarmerRegistrationClient() {
   const [form, setForm] = useState({
     fullName: "",
     gender: "",
+    bloodGroup: "",
     age: "",
     email: "",
     mobile: "",
@@ -41,6 +42,10 @@ export default function FarmerRegistrationClient() {
     const ageNum = Number(form.age);
     if (!form.age || isNaN(ageNum) || ageNum < 18 || ageNum > 100) {
       toast.error("Please enter a valid age (18 or older)");
+      return;
+    }
+    if (!form.bloodGroup) {
+      toast.error("Please select your blood group");
       return;
     }
     if (!form.email || !form.email.includes("@")) {
@@ -93,7 +98,7 @@ export default function FarmerRegistrationClient() {
 
       // Open WhatsApp chat prefilled with form data
       const waText = encodeURIComponent(
-        `Hi Akhil, my name is ${form.fullName}. I just applied for the Free Farmer Trip initiative on WeAreSoloz.\nFarming: ${form.farmingType} (${form.cropType})\nLocation: ${form.district}, ${form.state}\nThank you for this beautiful initiative!`
+        `Hi Akhil, my name is ${form.fullName}. I just applied for the Free Farmer Trip initiative on WeAreSoloz.\nFarming: ${form.farmingType} (${form.cropType})\nLocation: ${form.district}, ${form.state}\nBlood Group: ${form.bloodGroup}\nThank you for this beautiful initiative!`
       );
       const waUrl = `https://wa.me/919966085310?text=${waText}`;
       window.open(waUrl, "_blank");
@@ -102,6 +107,7 @@ export default function FarmerRegistrationClient() {
       setForm({
         fullName: "",
         gender: "",
+        bloodGroup: "",
         age: "",
         email: "",
         mobile: "",
@@ -193,7 +199,7 @@ export default function FarmerRegistrationClient() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-2 md:gap-4">
                 {/* Gender */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
@@ -203,9 +209,9 @@ export default function FarmerRegistrationClient() {
                     required
                     value={form.gender}
                     onChange={(e) => setForm({ ...form, gender: e.target.value })}
-                    className="w-full rounded-md border border-stone-250 bg-white/90 px-3 py-2 h-12 text-sm text-stone-900 focus-visible:outline-none focus:border-[#ea580c]"
+                    className="w-full rounded-md border border-stone-250 bg-white/90 px-2 md:px-3 py-2 h-12 text-xs md:text-sm text-stone-900 focus-visible:outline-none focus:border-[#ea580c]"
                   >
-                    <option value="">Select Gender</option>
+                    <option value="">Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
@@ -222,9 +228,27 @@ export default function FarmerRegistrationClient() {
                     type="number"
                     value={form.age}
                     onChange={(e) => setForm({ ...form, age: e.target.value })}
-                    placeholder="Enter your age"
-                    className="glass border-stone-200 bg-white/90 h-12 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c]"
+                    placeholder="Age"
+                    className="glass border-stone-200 bg-white/90 h-12 px-2 md:px-3 text-xs md:text-sm text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c]"
                   />
+                </div>
+
+                {/* Blood Group */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                    Blood Group
+                  </label>
+                  <select
+                    required
+                    value={form.bloodGroup}
+                    onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}
+                    className="w-full rounded-md border border-stone-250 bg-white/90 px-2 md:px-3 py-2 h-12 text-xs md:text-sm text-stone-900 focus-visible:outline-none focus:border-[#ea580c]"
+                  >
+                    <option value="">Blood</option>
+                    {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bg) => (
+                      <option key={bg} value={bg}>{bg}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

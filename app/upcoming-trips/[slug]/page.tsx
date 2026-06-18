@@ -57,7 +57,7 @@ async function getTrip(slug: string) {
       duration: staticTrip.duration,
       price: staticTrip.price,
       seats: staticTrip.seats,
-      description: `Join WeAreSoloz on a spectacular curated trip to ${staticTrip.destination}. Meet awesome solo travelers, explore pristine peaks, valleys, beaches, and local cultures.`,
+      description: `Join WeAreSoloz on a spectacular curated trip to ${staticTrip.destination}. Meet awesome solo travellers, explore pristine peaks, valleys, beaches, and local cultures.`,
       image: staticTrip.image,
       inclusions: [
         "Double/Triple sharing premium accommodation",

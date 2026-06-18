@@ -29,7 +29,7 @@ export default function CommunityClient({ settings = {} }: CommunityClientProps)
             Solo at start. <br /><span className="gradient-text font-medium">Family by the end.</span>
           </h1>
           <p className="text-white/90 mt-8 max-w-2xl mx-auto leading-relaxed font-body">
-            A growing family of travelers, trekkers, bikers, photographers and dreamers. Real conversations. Real meetups. Real adventures.
+            A growing family of travellers, trekkers, bikers, photographers and dreamers. Real conversations. Real meetups. Real adventures.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 mt-10 justify-center">
             <a

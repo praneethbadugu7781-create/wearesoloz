@@ -29,7 +29,7 @@ import Card3D from "@/components/Card3D";
 
 const WHY = [
   { icon: Users, title: "Travel Together", text: "Solo at start. Family by the end of every trip." },
-  { icon: Shield, title: "Safe Community", text: "Verified travelers, vetted hosts, secure trips." },
+  { icon: Shield, title: "Safe Community", text: "Verified travellers, vetted hosts, secure trips." },
   { icon: Star, title: "Trusted Experiences", text: "Curated by Akhil over 7+ years on the road." },
   { icon: MapPin, title: "Unique Destinations", text: "Hidden trails, sacred temples, untouched valleys." },
   { icon: Sparkles, title: "Adventure First", text: "Treks, bikes, riverside camps, sunrise summits." },
@@ -148,7 +148,7 @@ export default function HomeClient({
       {/* 🏠 SECTION 1 — HERO */}
       <HomeHero
         title={settings.hero_title || settings.heroTitle || "Start Solo. Travel Together."}
-        subheading={settings.hero_subheading || settings.heroSubheading || "Join solo travelers, explore new destinations, meet incredible people and create unforgettable memories together."}
+        subheading={settings.hero_subheading || settings.heroSubheading || "Join solo travellers, explore new destinations, meet incredible people and create unforgettable memories together."}
         heroImage={settings.hero_image || settings.heroImage}
         featuredTrips={trips.filter(t => t.status === "published").length > 0 ? trips.filter(t => t.status === "published").slice(0, 3) : trips.slice(0, 3)}
       />
@@ -271,11 +271,11 @@ export default function HomeClient({
         <div className="max-w-5xl mx-auto">
           <Reveal className="text-center mb-16">
             <SectionLabel>⭐ Voices of Soloz</SectionLabel>
-            <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">Real travelers. Real stories.</h2>
+            <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">Real travellers. Real stories.</h2>
           </Reveal>
           {testimonials.length === 0 ? (
             <div className="text-center py-16 glass rounded-3xl text-soloz-textSecondary border border-stone-200 bg-white">
-              Testimonials coming from real Soloz travelers.
+              Testimonials coming from real Soloz travellers.
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -318,7 +318,7 @@ export default function HomeClient({
               <MessageCircle className="w-4 h-4 text-emerald-600 animate-bounce" /> Official WhatsApp Community
             </div>
             <h2 className="font-display text-4xl sm:text-5xl md:text-7xl font-light tracking-tighter leading-none text-stone-900">
-              Connect with <span className="text-emerald-600 font-medium">1,000+</span> <br />Solo Travelers
+              Connect with <span className="text-emerald-600 font-medium">1,000+</span> <br />Solo Travellers
             </h2>
             <p className="text-stone-600 mt-6 max-w-xl mx-auto leading-relaxed font-body">
               Join our official WhatsApp community to get instant updates on upcoming solo trips, participate in trip planning Q&A, and chat with travel buddies who share your passion for adventure.

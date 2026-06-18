@@ -71,7 +71,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="relative border-t border-stone-200 py-6 text-center text-xs text-stone-400 font-medium">
-        © {new Date().getFullYear()} WeAreSoloz · Built with ❤️ for solo travelers
+        © {new Date().getFullYear()} WeAreSoloz · Built with ❤️ for solo travellers
       </div>
     </footer>
   );

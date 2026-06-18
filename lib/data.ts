@@ -86,7 +86,7 @@ export const trips = [
 ];
 
 export const whyUs = [
-  { title: "Travel Together", description: "Meet verified solo travelers and move as a supportive crew.", icon: UsersRound },
+  { title: "Travel Together", description: "Meet verified solo travellers and move as a supportive crew.", icon: UsersRound },
   { title: "Safe Community", description: "Curated groups, clear communication, and practical ground support.", icon: ShieldCheck },
   { title: "Trusted Experiences", description: "Trips shaped by years of road, trek, and spiritual travel insight.", icon: HeartHandshake },
   { title: "Unique Destinations", description: "Iconic routes plus hidden local stops that make a journey feel personal.", icon: MapPinned },
@@ -142,6 +142,6 @@ export const quickStats = [
 
 export const communityFeatures = [
   { title: "WhatsApp Community", description: "Join trip drops, travel discussions, safety updates, and destination plans.", icon: Compass },
-  { title: "Meetups", description: "Offline circles for travelers to connect before and after journeys.", icon: UsersRound },
+  { title: "Meetups", description: "Offline circles for travellers to connect before and after journeys.", icon: UsersRound },
   { title: "Travel Buddies", description: "Find people who match your pace, interests, and destination dreams.", icon: Camera }
 ];

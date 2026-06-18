@@ -4,7 +4,7 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Careers | Travel & Co-Host",
-  description: "Join WeAreSoloz. Travel with Akhil and co-host solo traveler group trips across India."
+  description: "Join WeAreSoloz. Travel with Akhil and co-host solo traveller group trips across India."
 };
 
 async function getData() {

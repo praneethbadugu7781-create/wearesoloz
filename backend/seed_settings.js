@@ -10,7 +10,7 @@ async function seed() {
     // Seed homepage settings
     const homepageSettings = {
       heroTitle: "Start Solo. Travel Together.",
-      heroSubheading: "Join solo travelers, explore new destinations, meet incredible people and create unforgettable memories together.",
+      heroSubheading: "Join solo travellers, explore new destinations, meet incredible people and create unforgettable memories together.",
       aboutHeading: "Travel Solo. You're Not Alone.",
       aboutText: "WeAreSoloz is more than a travel community. It is a family of explorers who believe in adventure, friendship, self-discovery and unforgettable experiences.",
       founderHeading: "Meet Akhil",

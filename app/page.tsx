@@ -15,7 +15,7 @@ async function getData() {
 
     const settings = homepageSettings || {
       heroTitle: "Start Solo. Travel Together.",
-      heroSubheading: "Join solo travelers, explore new destinations, meet incredible people and create unforgettable memories together.",
+      heroSubheading: "Join solo travellers, explore new destinations, meet incredible people and create unforgettable memories together.",
       aboutText: "WeAreSoloz is more than a travel community. It is a family of explorers who believe in adventure, friendship, self-discovery and unforgettable experiences.",
       founderHeading: "Meet Akhil",
       founderText: "Hi, I'm Akhil, creator of Akhill Rockstar Travel Stories and founder of WeAreSoloz."
@@ -48,7 +48,7 @@ async function getData() {
     return {
       homepageSettings: {
         heroTitle: "Start Solo. Travel Together.",
-        heroSubheading: "Join solo travelers, explore new destinations, meet incredible people and create unforgettable memories together."
+        heroSubheading: "Join solo travellers, explore new destinations, meet incredible people and create unforgettable memories together."
       },
       destinations: defaultDests.map((d) => ({ ...d, id: d.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"), slug: d.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") })),
       trips: defaultTrips.map((t) => ({ ...t, id: t.destination.toLowerCase().replace(/[^a-z0-9]+/g, "-"), slug: t.destination.toLowerCase().replace(/[^a-z0-9]+/g, "-") })),

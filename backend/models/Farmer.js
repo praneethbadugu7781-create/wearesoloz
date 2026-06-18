@@ -4,6 +4,7 @@ const farmerSchema = new mongoose.Schema(
   {
     fullName: { type: String, required: true },
     gender: { type: String, required: true, enum: ["Male", "Female", "Other"] },
+    bloodGroup: { type: String, required: true },
     age: { type: Number, required: true },
     email: { type: String, required: true },
     mobile: { type: String, required: true },

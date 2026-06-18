@@ -1107,11 +1107,47 @@ body {
    ========================================== */
 @media (max-height: 680px) {
   .trips-slider-details-box {
-    top: 10% !important;
+    top: 12% !important;
   }
   .trips-slider-title {
     font-size: 2.25rem !important; /* ~36px */
+    margin-bottom: 0.75rem !important;
+  }
+  @media (max-width: 640px) {
+    .trips-slider-title {
+      font-size: 1.5rem !important; /* ~24px */
+      margin-bottom: 0.75rem !important;
+    }
+  }
+  .trips-slider-specs {
+    margin-bottom: 0.75rem !important;
+  }
+  .trips-slider-description {
+    margin-bottom: 1rem !important;
+  }
+  .trips-slider-description p {
+    font-size: 13px !important;
+    line-height: 1.45 !important;
+  }
+  .trips-slider-actions a {
+    padding: 11px 26px !important;
+    font-size: 10px !important;
+  }
+}
+
+@media (max-height: 580px) {
+  .trips-slider-details-box {
+    top: 8% !important;
+  }
+  .trips-slider-title {
+    font-size: 1.85rem !important; /* ~30px */
     margin-bottom: 0.5rem !important;
+  }
+  @media (max-width: 640px) {
+    .trips-slider-title {
+      font-size: 1.25rem !important; /* ~20px */
+      margin-bottom: 0.5rem !important;
+    }
   }
   .trips-slider-specs {
     margin-bottom: 0.5rem !important;
@@ -1122,38 +1158,26 @@ body {
   .trips-slider-description p {
     font-size: 12px !important;
     line-height: 1.4 !important;
-  }
-  .trips-slider-actions a {
-    padding: 10px 24px !important;
-    font-size: 9px !important;
-  }
-}
-
-@media (max-height: 580px) {
-  .trips-slider-details-box {
-    top: 6% !important;
-  }
-  .trips-slider-title {
-    font-size: 1.85rem !important; /* ~30px */
-    margin-bottom: 0.35rem !important;
-  }
-  .trips-slider-specs {
-    margin-bottom: 0.35rem !important;
-  }
-  .trips-slider-description {
-    margin-bottom: 0.5rem !important;
-  }
-  .trips-slider-description p {
-    font-size: 11px !important;
-    line-height: 1.35 !important;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
   .trips-slider-actions a {
-    padding: 8px 20px !important;
-    font-size: 8px !important;
+    padding: 9px 22px !important;
+    font-size: 9px !important;
+  }
+}
+
+/* General mobile override for slider titles on narrow viewports regardless of height */
+@media (max-width: 640px) {
+  .trips-slider-title {
+    font-size: 1.65rem !important; /* ~26px */
+    line-height: 1.25 !important;
+  }
+  .trips-slider-description p {
+    font-size: 13px !important;
+    line-height: 1.45 !important;
   }
 }
 

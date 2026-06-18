@@ -208,7 +208,7 @@ export default function AdminGalleryPage() {
             <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Alt description (Optional)</label>
             <input
               type="text"
-              placeholder="e.g. Travelers hiking up snowy trail on sunrise"
+              placeholder="e.g. Travellers hiking up snowy trail on sunrise"
               value={formData.alt}
               onChange={(e) => setFormData({ ...formData, alt: e.target.value })}
               className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"

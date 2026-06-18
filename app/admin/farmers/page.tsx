@@ -9,6 +9,7 @@ interface FarmerData {
   _id: string;
   fullName: string;
   gender: string;
+  bloodGroup: string;
   age: number;
   email: string;
   mobile: string;
@@ -176,7 +177,7 @@ export default function AdminFarmersPage() {
                     </span>
                     <h3 className="font-bold text-white text-base mt-2 flex items-center gap-2">
                       {farmer.fullName}
-                      <span className="text-xs font-normal text-soloz-ash/60">({farmer.age} yrs • {farmer.gender})</span>
+                      <span className="text-xs font-normal text-soloz-ash/60">({farmer.age} yrs • {farmer.gender} • Blood: {farmer.bloodGroup})</span>
                     </h3>
                   </div>
 

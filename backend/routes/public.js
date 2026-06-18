@@ -178,9 +178,10 @@ router.post("/careers", async (req, res) => {
 // --- Farmers (public submit) ---
 router.post("/farmers", async (req, res) => {
   try {
-    const { fullName, gender, age, email, mobile, state, district, farmingType, cropType, landSize, whyJoin } = req.body;
+    const { fullName, gender, bloodGroup, age, email, mobile, state, district, farmingType, cropType, landSize, whyJoin } = req.body;
     if (!fullName || fullName.length < 2) return res.status(400).json({ error: "Full name must be at least 2 characters" });
     if (!gender || !["Male", "Female", "Other"].includes(gender)) return res.status(400).json({ error: "Please select a valid gender" });
+    if (!bloodGroup) return res.status(400).json({ error: "Blood group is required" });
     if (!age || isNaN(Number(age)) || Number(age) < 18 || Number(age) > 100) return res.status(400).json({ error: "Please enter a valid age (18 or older)" });
     if (!email) return res.status(400).json({ error: "Email is required" });
     if (!mobile || mobile.length < 7) return res.status(400).json({ error: "Please enter a valid mobile number" });
@@ -195,6 +196,7 @@ router.post("/farmers", async (req, res) => {
     const farmer = await Farmer.create({
       fullName,
       gender,
+      bloodGroup,
       age: Number(age),
       email,
       mobile,
@@ -210,6 +212,7 @@ router.post("/farmers", async (req, res) => {
     sendFarmerApplicationEmail({
       fullName,
       gender,
+      bloodGroup,
       age: Number(age),
       email,
       mobile,

@@ -230,6 +230,7 @@ You have received a new Farmer Free-Trip application on WeAreSoloz:
 
 Name: ${farmerData.fullName}
 Gender: ${farmerData.gender}
+Blood Group: ${farmerData.bloodGroup}
 Age: ${farmerData.age}
 Mobile (WhatsApp): ${farmerData.mobile}
 State: ${farmerData.state}
@@ -250,6 +251,7 @@ Sent automatically by WeAreSoloz Server.
     <h3>New Farmer Free-Trip Application Received</h3>
     <p><strong>Name:</strong> ${farmerData.fullName}</p>
     <p><strong>Gender:</strong> ${farmerData.gender}</p>
+    <p><strong>Blood Group:</strong> ${farmerData.bloodGroup}</p>
     <p><strong>Age:</strong> ${farmerData.age}</p>
     <p><strong>Mobile (WhatsApp):</strong> ${farmerData.mobile}</p>
     <p><strong>Location:</strong> ${farmerData.district}, ${farmerData.state}</p>
@@ -423,7 +425,7 @@ async function sendCareerReceiptEmail(careerData) {
   const content = `
     Hi ${careerData.fullName},<br><br>
     Thank you for applying to join the WeAreSoloz crew! We have successfully received your application.<br><br>
-    We are always looking for passionate travelers, community leaders, and storytellers to travel with us. Our team will review your profile, travel experience, and statement. If there's a match, we will reach out to you via WhatsApp or Email to schedule a chat.<br><br>
+    We are always looking for passionate travellers, community leaders, and storytellers to travel with us. Our team will review your profile, travel experience, and statement. If there's a match, we will reach out to you via WhatsApp or Email to schedule a chat.<br><br>
     Thank you for taking the time to apply!
   `;
   const html = wrapPremiumEmail(title, content, "Follow Our Journeys", "https://instagram.com/wearesolozindia");

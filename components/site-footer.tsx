@@ -14,7 +14,7 @@ export function SiteFooter() {
         <div>
           <p className="font-display text-3xl font-bold">{brand.name}</p>
           <p className="mt-3 max-w-md text-sm leading-6 text-white/60">
-            {brand.secondaryTagline} A premium community for solo travelers, trekkers, bikers,
+            {brand.secondaryTagline} A premium community for solo travellers, trekkers, bikers,
             photographers, spiritual explorers, and curious people ready for the road.
           </p>
         </div>

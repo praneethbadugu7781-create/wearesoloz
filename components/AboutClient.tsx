@@ -38,7 +38,7 @@ const uniqueOfferings = [
     color: "hover:border-emerald-200 hover:bg-emerald-50/20 hover:shadow-emerald-100/30"
   },
   {
-    title: "Solo Traveler Meetups",
+    title: "Solo Traveller Meetups",
     desc: "Set out alone but join a welcoming, close-knit community of like-minded solo explorers to form your new travel family.",
     emoji: "🤝",
     color: "hover:border-purple-200 hover:bg-purple-50/20 hover:shadow-purple-100/30"
@@ -113,13 +113,13 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
 
             <div className="space-y-6 mt-8 text-stone-600 leading-relaxed font-body text-base md:text-lg">
               <p className="font-medium text-stone-850 text-lg md:text-xl leading-snug">
-                I am a passionate traveler with 7+ years of travel experience across 12 countries and countless destinations throughout India.
+                I am a passionate traveller with 7+ years of travel experience across 12 countries and countless destinations throughout India.
               </p>
               <p>
                 Travel has taught me lessons that no classroom ever could. It helped me discover new cultures, build meaningful connections, gain confidence, and understand the true value of life. 
               </p>
               <p>
-                That&apos;s why I created this community—to bring solo travelers together in one positive space where people can connect, share experiences, inspire one another, and explore the world without limits.
+                That&apos;s why I created this community—to bring solo travellers together in one positive space where people can connect, share experiences, inspire one another, and explore the world without limits.
               </p>
             </div>
 
@@ -209,7 +209,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
               Unique <span className="gradient-text">Experiences</span> Every Month.
             </h2>
             <p className="text-stone-500 mt-6 max-w-xl mx-auto leading-relaxed font-body text-base">
-              Every month, we curate and organize customized journeys designed to bring families, friends, and solo travelers closer together.
+              Every month, we curate and organize customized journeys designed to bring families, friends, and solo travellers closer together.
             </p>
           </Reveal>
 
@@ -268,7 +268,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                 From the freezing heights of the Himalayas down to the backwaters of Kerala and the pristine trails of Sri Lanka, I have spent the last seven years exploring the diverse terrains of our subcontinent.
               </p>
               <p className="text-stone-600 font-body text-base leading-relaxed">
-                This map highlights the routes traveled, connections forged, and the regions where WeAreSoloz brings solo travelers together. Click on any of the active hubs to see the highlights of my expeditions.
+                This map highlights the routes traveled, connections forged, and the regions where WeAreSoloz brings solo travellers together. Click on any of the active hubs to see the highlights of my expeditions.
               </p>
             </Reveal>
 

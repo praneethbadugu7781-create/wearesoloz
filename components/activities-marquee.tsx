@@ -21,7 +21,7 @@ const lines = [
   "Whether you seek adventure,",
   "culture, or calm — we’ve got the",
   "perfect experience for every kind",
-  "of traveler."
+  "of traveller."
 ];
 
 export function ActivitiesMarquee({ items }: ActivitiesMarqueeProps) {
@@ -64,7 +64,7 @@ export function ActivitiesMarquee({ items }: ActivitiesMarqueeProps) {
 
           {/* Mobile Fallback Heading */}
           <h2 className="activities-title text-center text-2xl font-extrabold text-white leading-tight font-display md:hidden px-4">
-            Whether you seek adventure, culture, or calm — we’ve got the perfect experience for every kind of traveler.
+            Whether you seek adventure, culture, or calm — we’ve got the perfect experience for every kind of traveller.
           </h2>
         </div>
 

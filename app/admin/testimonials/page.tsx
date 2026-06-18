@@ -18,7 +18,7 @@ interface TestimonialData {
 
 const emptyForm: TestimonialData = {
   name: "",
-  role: "Traveler",
+  role: "Traveller",
   quote: "",
   image: "",
   rating: 5
@@ -105,7 +105,7 @@ export default function AdminTestimonialsPage() {
             <MessageSquareQuote className="text-soloz-ember" size={28} />
             Manage Testimonials
           </h1>
-          <p className="text-xs text-soloz-ash/75 mt-1">Configure traveler reviews appearing on the homepage.</p>
+          <p className="text-xs text-soloz-ash/75 mt-1">Configure traveller reviews appearing on the homepage.</p>
         </div>
 
         {view === "list" ? (
@@ -190,7 +190,7 @@ export default function AdminTestimonialsPage() {
 
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Traveler Name</label>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Traveller Name</label>
               <input
                 type="text"
                 required
@@ -231,7 +231,7 @@ export default function AdminTestimonialsPage() {
           </div>
 
           <div>
-            <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Traveler Quote / Feedback</label>
+            <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Traveller Quote / Feedback</label>
             <textarea
               required
               rows={4}
@@ -246,7 +246,7 @@ export default function AdminTestimonialsPage() {
             <CloudinaryUpload
               value={formData.image || ""}
               onChange={(url) => setFormData({ ...formData, image: url })}
-              label="Traveler Photo (Optional)"
+              label="Traveller Photo (Optional)"
             />
           </div>
 
