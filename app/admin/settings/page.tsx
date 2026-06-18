@@ -51,8 +51,11 @@ export default function AdminSettingsPage() {
   const [emailSaving, setEmailSaving] = useState(false);
   const [emailSuccess, setEmailSuccess] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [emailOtp, setEmailOtp] = useState("");
+  const [emailVerificationSaving, setEmailVerificationSaving] = useState(false);
 
-  const handleEmailChange = async (e: React.FormEvent) => {
+  const handleEmailChangeRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError("");
     setEmailSuccess("");
@@ -67,19 +70,46 @@ export default function AdminSettingsPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to update email");
+      if (!res.ok) throw new Error(data.error || "Failed to initiate email change");
 
-      setEmailSuccess("Admin email updated successfully! Redirecting to login page...");
+      setOtpSent(true);
+      setEmailSuccess("A 6-digit verification code has been sent to your new email. Please verify below.");
+    } catch (err: any) {
+      setEmailError(err.message || "Error updating email.");
+    } finally {
+      setEmailSaving(false);
+    }
+  };
+
+  const handleVerifyEmailChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailError("");
+    setEmailSuccess("");
+
+    setEmailVerificationSaving(true);
+
+    try {
+      const res = await fetch(`${API_URL}/auth/verify-change-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        body: JSON.stringify({ otp: emailOtp })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Verification failed");
+
+      setEmailSuccess("Email updated successfully! Redirecting to login page...");
       setNewAdminEmail("");
       setEmailConfirmPassword("");
+      setEmailOtp("");
       setTimeout(() => {
         localStorage.removeItem("token");
         window.location.href = "/admin/login";
       }, 2500);
     } catch (err: any) {
-      setEmailError(err.message || "Error updating email.");
+      setEmailError(err.message || "Error verifying code.");
     } finally {
-      setEmailSaving(false);
+      setEmailVerificationSaving(false);
     }
   };
 
@@ -387,7 +417,8 @@ export default function AdminSettingsPage() {
       </form>
 
       {/* CHANGE ADMIN EMAIL PANEL */}
-      <form onSubmit={handleEmailChange} className="space-y-6 max-w-4xl pt-4">
+      {/* CHANGE ADMIN EMAIL PANEL */}
+      <div className="space-y-6 max-w-4xl pt-4">
         <div className="rounded-xl border border-white/10 bg-[#14110d] p-6 sm:p-8 space-y-6">
           <h3 className="font-display text-xl font-bold text-white border-b border-white/5 pb-3 flex items-center gap-2">
             <Settings className="text-soloz-amber" size={18} />
@@ -406,44 +437,89 @@ export default function AdminSettingsPage() {
             </div>
           )}
 
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div>
-              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">New Admin Email Address</label>
-              <input
-                type="email"
-                required
-                placeholder="new-email@example.com"
-                value={newAdminEmail}
-                onChange={(e) => setNewAdminEmail(e.target.value)}
-                className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Confirm Current Passcode</label>
-              <input
-                type="password"
-                required
-                placeholder="••••••••"
-                value={emailConfirmPassword}
-                onChange={(e) => setEmailConfirmPassword(e.target.value)}
-                className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
-              />
-            </div>
-          </div>
+          {!otpSent ? (
+            <form onSubmit={handleEmailChangeRequest} className="space-y-6">
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">New Admin Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="new-email@example.com"
+                    value={newAdminEmail}
+                    onChange={(e) => setNewAdminEmail(e.target.value)}
+                    className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Confirm Current Passcode</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    value={emailConfirmPassword}
+                    onChange={(e) => setEmailConfirmPassword(e.target.value)}
+                    className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+                  />
+                </div>
+              </div>
 
-          <div className="flex justify-end pt-4 border-t border-white/5">
-            <Button type="submit" disabled={emailSaving}>
-              {emailSaving ? (
-                <>
-                  <Loader2 className="animate-spin mr-2" size={15} /> Updating Email...
-                </>
-              ) : (
-                "Update Admin Email"
-              )}
-            </Button>
-          </div>
+              <div className="flex justify-end pt-4 border-t border-white/5">
+                <Button type="submit" disabled={emailSaving}>
+                  {emailSaving ? (
+                    <>
+                      <Loader2 className="animate-spin mr-2" size={15} /> Sending Verification OTP...
+                    </>
+                  ) : (
+                    "Send Verification Code"
+                  )}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyEmailChange} className="space-y-6">
+              <div className="max-w-md">
+                <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Enter 6-Digit Verification Code</label>
+                <div className="flex gap-4">
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    placeholder="123456"
+                    value={emailOtp}
+                    onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, ""))}
+                    className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-center text-lg font-mono tracking-widest text-white focus:border-soloz-ember/50 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOtpSent(false);
+                      setEmailSuccess("");
+                      setEmailError("");
+                    }}
+                    className="h-10 px-4 rounded-lg border border-white/10 hover:border-white/20 text-xs font-semibold text-soloz-ash/80 hover:text-white transition-all"
+                  >
+                    Change Email
+                  </button>
+                </div>
+                <p className="text-[10px] text-soloz-ash/50 mt-1.5">We sent a verification code to your pending email address. Check your spam folder if you do not receive it in a few minutes.</p>
+              </div>
+
+              <div className="flex justify-end pt-4 border-t border-white/5">
+                <Button type="submit" disabled={emailVerificationSaving}>
+                  {emailVerificationSaving ? (
+                    <>
+                      <Loader2 className="animate-spin mr-2" size={15} /> Verifying...
+                    </>
+                  ) : (
+                    "Verify & Change Email"
+                  )}
+                </Button>
+              </div>
+            </form>
+          )}
         </div>
-      </form>
+      </div>
 
       {/* CHANGE PASSWORD PANEL */}
       <form onSubmit={handlePasswordChange} className="space-y-6 max-w-4xl pt-4">

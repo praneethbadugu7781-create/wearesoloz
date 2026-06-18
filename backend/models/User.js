@@ -7,7 +7,10 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true, select: false },
     role: { type: String, default: "admin" },
     otpCode: { type: String },
-    otpExpiresAt: { type: Date }
+    otpExpiresAt: { type: Date },
+    pendingEmail: { type: String },
+    pendingOtpCode: { type: String },
+    pendingOtpExpiresAt: { type: Date }
   },
   { timestamps: true }
 );

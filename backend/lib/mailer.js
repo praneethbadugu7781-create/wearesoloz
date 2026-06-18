@@ -145,4 +145,20 @@ async function sendOtpEmail(email, otpCode) {
   return sendResendEmail({ to: email, subject, text, html });
 }
 
-module.exports = { sendContactEmail, sendCareerEmail, sendOtpEmail };
+async function sendEmailChangeOtp(email, otpCode) {
+  const subject = "Verify Your New Admin Email Address";
+  const text = `Your OTP code to verify and update your admin email address is: ${otpCode}. It is valid for 10 minutes.`;
+  const html = `
+    <h3>Admin Email Verification Request</h3>
+    <p>You requested to change your admin email address. Use the following One-Time Password (OTP) to verify that you own this email address and complete the update:</p>
+    <h2 style="letter-spacing: 4px; font-size: 32px; color: #ea580c; font-family: monospace; background: #f9f9f9; padding: 12px; display: inline-block; border-radius: 8px; border: 1px solid #eee;">${otpCode}</h2>
+    <p>This code is valid for <strong>10 minutes</strong>.</p>
+    <p>If you did not request this, you can safely ignore this email.</p>
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
+    <p style="font-size: 11px; color: #888;">Sent automatically by WeAreSoloz Server.</p>
+  `;
+
+  return sendResendEmail({ to: email, subject, text, html });
+}
+
+module.exports = { sendContactEmail, sendCareerEmail, sendOtpEmail, sendEmailChangeOtp };

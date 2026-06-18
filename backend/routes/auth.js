@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const { connectDB } = require("../lib/db");
 const User = require("../models/User");
 const { requireAuth } = require("../middleware/auth");
-const { sendOtpEmail } = require("../lib/mailer");
+const { sendOtpEmail, sendEmailChangeOtp } = require("../lib/mailer");
 
 const router = express.Router();
 
@@ -125,7 +125,7 @@ router.post("/change-email", requireAuth, async (req, res) => {
 
     await connectDB();
 
-    const user = await User.findOne({ email: currentEmail }).select("+password");
+    let user = await User.findOne({ email: currentEmail }).select("+password");
 
     let isPasswordCorrect = false;
 
@@ -148,31 +148,83 @@ router.post("/change-email", requireAuth, async (req, res) => {
 
     // Check if new email is already taken by another user
     const existing = await User.findOne({ email: emailLower });
-    if (existing && existing._id.toString() !== (user ? user._id.toString() : "")) {
+    if (existing && (!user || existing._id.toString() !== user._id.toString())) {
       return res.status(400).json({ error: "Email is already in use by another account" });
     }
 
+    // Generate 6-digit OTP verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
     if (user) {
-      user.email = emailLower;
+      user.pendingEmail = emailLower;
+      user.pendingOtpCode = verificationCode;
+      user.pendingOtpExpiresAt = otpExpiresAt;
       await user.save();
     } else {
-      // Create user record in DB with new email and hashed password
+      // Create user record in DB with temporary credentials so we can save pending OTP details
       const fallbackPassword = process.env.ADMIN_PASSWORD || "change-me";
       const hashedPassword = fallbackPassword.startsWith("$2")
         ? fallbackPassword
         : await bcrypt.hash(fallbackPassword, 10);
         
-      await User.create({
+      user = await User.create({
         name: "Akhil",
-        email: emailLower,
+        email: currentEmail,
         password: hashedPassword,
-        role: "admin"
+        role: "admin",
+        pendingEmail: emailLower,
+        pendingOtpCode: verificationCode,
+        pendingOtpExpiresAt: otpExpiresAt
       });
     }
 
-    res.json({ success: true, message: "Admin email updated successfully. Please log in again with your new email." });
+    // Send verification code to the new email address
+    await sendEmailChangeOtp(emailLower, verificationCode);
+
+    res.json({ success: true, message: "A verification code has been sent to your new email address." });
   } catch (error) {
     console.error("Change email error:", error);
+    res.status(500).json({ error: error.message || "Internal server error" });
+  }
+});
+
+// POST /api/auth/verify-change-email
+router.post("/verify-change-email", requireAuth, async (req, res) => {
+  try {
+    const { otp } = req.body;
+    if (!otp) {
+      return res.status(400).json({ error: "Verification code is required" });
+    }
+
+    const currentEmail = req.user.email.toLowerCase();
+
+    await connectDB();
+
+    const user = await User.findOne({ email: currentEmail });
+    if (!user || !user.pendingEmail) {
+      return res.status(400).json({ error: "No pending email change request found" });
+    }
+
+    if (!user.pendingOtpCode || user.pendingOtpCode !== otp.trim()) {
+      return res.status(400).json({ error: "Invalid verification code" });
+    }
+
+    if (new Date() > user.pendingOtpExpiresAt) {
+      return res.status(400).json({ error: "Verification code has expired. Please request a new code." });
+    }
+
+    const newEmail = user.pendingEmail;
+
+    user.email = newEmail;
+    user.pendingEmail = undefined;
+    user.pendingOtpCode = undefined;
+    user.pendingOtpExpiresAt = undefined;
+    await user.save();
+
+    res.json({ success: true, message: "Admin email verified and updated successfully. Please log in again." });
+  } catch (error) {
+    console.error("Verify change email error:", error);
     res.status(500).json({ error: error.message || "Internal server error" });
   }
 });
