@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import Reveal, { SectionLabel } from "@/components/Reveal";
+import TermsModal from "./TermsModal";
 
 interface TripDetailClientProps {
   trip: any;
@@ -15,9 +16,26 @@ interface TripDetailClientProps {
 export default function TripDetailClient({ trip }: TripDetailClientProps) {
   const [form, setForm] = useState({ full_name: "", mobile: "", email: "", travelers: 1, message: "" });
   const [submitting, setSubmitting] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.full_name || form.full_name.length < 2) {
+      toast.error("Please enter your full name (minimum 2 characters)");
+      return;
+    }
+    if (!form.mobile || form.mobile.length < 7) {
+      toast.error("Please enter a valid mobile number");
+      return;
+    }
+    if (!form.email || !form.email.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    setShowTerms(true);
+  };
+
+  const handleActualSubmit = async () => {
     setSubmitting(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -265,6 +283,12 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
           </div>
         </div>
       </section>
+
+      <TermsModal
+        isOpen={showTerms}
+        onClose={() => setShowTerms(false)}
+        onAccept={handleActualSubmit}
+      />
     </div>
   );
 }

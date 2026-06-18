@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import Reveal, { SectionLabel } from "@/components/Reveal";
 import { getApiUrl } from "@/lib/api";
+import TermsModal from "./TermsModal";
 
 export default function FarmerRegistrationClient() {
   const [form, setForm] = useState({
@@ -25,6 +26,7 @@ export default function FarmerRegistrationClient() {
     whyJoin: "",
   });
   const [busy, setBusy] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   const farmingTypes = ["Crop Farming", "Organic Farming", "Dairy Farming", "Horticulture", "Poultry Farming", "Mixed Farming", "Other"];
   const landSizes = ["Less than 2 acres", "2 to 5 acres", "More than 5 acres"];
@@ -81,6 +83,10 @@ export default function FarmerRegistrationClient() {
       return;
     }
 
+    setShowTerms(true);
+  };
+
+  const handleActualSubmit = async () => {
     setBusy(true);
     try {
       const API_URL = getApiUrl();
@@ -397,6 +403,12 @@ export default function FarmerRegistrationClient() {
           </Reveal>
         </div>
       </section>
+
+      <TermsModal
+        isOpen={showTerms}
+        onClose={() => setShowTerms(false)}
+        onAccept={handleActualSubmit}
+      />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import Reveal, { SectionLabel } from "@/components/Reveal";
 import { getApiUrl } from "@/lib/api";
+import TermsModal from "./TermsModal";
 
 interface CareersClientProps {
   settings: any;
@@ -30,6 +31,7 @@ export default function CareersClient({ settings = {} }: CareersClientProps) {
     whyJoin: "",
   });
   const [busy, setBusy] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +65,10 @@ export default function CareersClient({ settings = {} }: CareersClientProps) {
       return;
     }
 
+    setShowTerms(true);
+  };
+
+  const handleActualSubmit = async () => {
     setBusy(true);
     try {
       const API_URL = getApiUrl();
@@ -310,6 +316,12 @@ export default function CareersClient({ settings = {} }: CareersClientProps) {
 
         </div>
       </section>
+
+      <TermsModal
+        isOpen={showTerms}
+        onClose={() => setShowTerms(false)}
+        onAccept={handleActualSubmit}
+      />
     </div>
   );
 }

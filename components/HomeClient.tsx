@@ -26,6 +26,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { HomeHero } from "@/components/home-hero";
 import Card3D from "@/components/Card3D";
+import TermsModal from "./TermsModal";
+import WriteReviewModal from "./WriteReviewModal";
 
 const WHY = [
   { icon: Users, title: "Travel Together", text: "Solo at start. Family by the end of every trip." },
@@ -76,6 +78,15 @@ export default function HomeClient({
   const [form, setForm] = useState({ full_name: "", mobile: "", email: "", destination: "", message: "" });
   const [selectedState, setSelectedState] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+
+  // Testimonials State
+  const [allTestimonials, setAllTestimonials] = useState(testimonials);
+  const [showWriteReview, setShowWriteReview] = useState(false);
+
+  const handleNewReview = (newReview: any) => {
+    setAllTestimonials([newReview, ...allTestimonials]);
+  };
 
   // Extract unique states from active trips, falling back to default states
   const statesList = Array.from(new Set(trips.map(t => t.state || "Andhra Pradesh").filter(Boolean)));
@@ -107,6 +118,35 @@ export default function HomeClient({
 
   const submitContactForm = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.full_name || form.full_name.length < 2) {
+      toast.error("Please enter your full name (minimum 2 characters)");
+      return;
+    }
+    if (!form.mobile || form.mobile.length < 7) {
+      toast.error("Please enter a valid mobile number");
+      return;
+    }
+    if (!form.email || !form.email.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    if (!selectedState) {
+      toast.error("Please select a state of interest");
+      return;
+    }
+    if (!form.destination) {
+      toast.error("Please select a destination of interest");
+      return;
+    }
+    if (!form.message || form.message.length < 5) {
+      toast.error("Please enter a message (minimum 5 characters)");
+      return;
+    }
+
+    setShowTerms(true);
+  };
+
+  const handleActualSubmit = async () => {
     setBusy(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -269,17 +309,23 @@ export default function HomeClient({
       {/* ⭐ SECTION 7 — Testimonials */}
       <section data-testid="testimonials-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-stone-50/50">
         <div className="max-w-5xl mx-auto">
-          <Reveal className="text-center mb-16">
+          <Reveal className="text-center mb-16 flex flex-col items-center">
             <SectionLabel>⭐ Voices of Soloz</SectionLabel>
             <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">Real travellers. Real stories.</h2>
+            <button
+              onClick={() => setShowWriteReview(true)}
+              className="mt-6 inline-flex items-center gap-2 border border-stone-300 hover:bg-stone-50 text-stone-700 font-bold uppercase tracking-wider text-[11px] px-6 py-3 rounded-full transition-all duration-300"
+            >
+              Write a Review
+            </button>
           </Reveal>
-          {testimonials.length === 0 ? (
+          {allTestimonials.length === 0 ? (
             <div className="text-center py-16 glass rounded-3xl text-soloz-textSecondary border border-stone-200 bg-white">
               Testimonials coming from real Soloz travellers.
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {testimonials.slice(0, 4).map((t) => (
+              {allTestimonials.slice(0, 4).map((t) => (
                 <motion.div
                   key={t.id || t._id || t.name}
                   initial={{ opacity: 0, y: 30 }}
@@ -290,7 +336,18 @@ export default function HomeClient({
                   <Card3D maxRotate={5} scale={1.01} className="h-full">
                     <div className="bg-white rounded-2xl p-6 sm:p-8 border border-stone-200 shadow-sm h-full flex flex-col justify-between">
                       <div>
-                        <Quote className="w-7 h-7 text-soloz-primary mb-4" />
+                        <div className="flex items-center justify-between mb-4">
+                          <Quote className="w-7 h-7 text-soloz-primary" />
+                          <div className="flex items-center gap-0.5">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                size={14}
+                                className={i < (t.rating || 5) ? "fill-amber-400 text-amber-400" : "text-stone-200"}
+                              />
+                            ))}
+                          </div>
+                        </div>
                         <p className="font-display text-lg sm:text-xl font-light leading-relaxed text-stone-900">{t.quote || t.message}</p>
                       </div>
                       <div className="flex items-center gap-3 mt-6">
@@ -494,6 +551,18 @@ export default function HomeClient({
           </div>
         </div>
       </section>
+
+      <TermsModal
+        isOpen={showTerms}
+        onClose={() => setShowTerms(false)}
+        onAccept={handleActualSubmit}
+      />
+
+      <WriteReviewModal
+        isOpen={showWriteReview}
+        onClose={() => setShowWriteReview(false)}
+        onSuccess={handleNewReview}
+      />
     </div>
   );
 }

@@ -79,6 +79,28 @@ router.get("/testimonials", async (req, res) => {
   }
 });
 
+router.post("/testimonials", async (req, res) => {
+  try {
+    const { name, quote, rating, location, role } = req.body;
+    if (!name || name.length < 2) return res.status(400).json({ error: "Name must be at least 2 characters" });
+    if (!quote || quote.length < 5) return res.status(400).json({ error: "Feedback must be at least 5 characters" });
+
+    await connectDB();
+    const newTestimonial = await Testimonial.create({
+      name,
+      quote,
+      rating: Number(rating) || 5,
+      location: location || "",
+      role: role || "Solo Traveller",
+      avatar: ""
+    });
+
+    res.status(201).json(newTestimonial);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // --- Gallery ---
 router.get("/gallery", async (req, res) => {
   try {

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import Reveal, { SectionLabel } from "@/components/Reveal";
+import TermsModal from "./TermsModal";
 
 interface ContactClientProps {
   settings: any;
@@ -52,8 +53,39 @@ export default function ContactClient({ settings = {}, trips = [] }: ContactClie
     destinationsForState.push(...(fallbackMap[selectedState] || []));
   }
 
+  const [showTerms, setShowTerms] = useState(false);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.full_name || form.full_name.length < 2) {
+      toast.error("Please enter your full name (minimum 2 characters)");
+      return;
+    }
+    if (!form.mobile || form.mobile.length < 7) {
+      toast.error("Please enter a valid mobile number");
+      return;
+    }
+    if (!form.email || !form.email.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    if (!selectedState) {
+      toast.error("Please select a state of interest");
+      return;
+    }
+    if (!form.destination) {
+      toast.error("Please select a destination of interest");
+      return;
+    }
+    if (!form.message || form.message.length < 5) {
+      toast.error("Please enter a message (minimum 5 characters)");
+      return;
+    }
+
+    setShowTerms(true);
+  };
+
+  const handleActualSubmit = async () => {
     setBusy(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -320,6 +352,12 @@ export default function ContactClient({ settings = {}, trips = [] }: ContactClie
           </Reveal>
         </div>
       </section>
+
+      <TermsModal
+        isOpen={showTerms}
+        onClose={() => setShowTerms(false)}
+        onAccept={handleActualSubmit}
+      />
     </div>
   );
 }
