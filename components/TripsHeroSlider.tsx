@@ -191,13 +191,13 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               </div>
 
               {/* Split Title (Cropped Reveal) - resized to prevent height overflow on wrapping */}
-              <div className="trips-slider-title font-display leading-[0.95] tracking-tight font-black text-3xl sm:text-4xl md:text-[48px] lg:text-[54px] uppercase select-text mb-3 md:mb-4">
+              <div className="trips-slider-title font-display leading-[1.15] tracking-tight font-black text-3xl sm:text-4xl md:text-[48px] lg:text-[58px] uppercase select-text mb-3 md:mb-4">
                 <div className="overflow-hidden py-1">
                   <motion.div variants={textRevealVariants} className="text-white/95">
                     {title1}
                   </motion.div>
                 </div>
-                <div className="overflow-hidden py-1 mt-1">
+                <div className="overflow-hidden py-1 mt-2">
                   <motion.div variants={textRevealVariants} className="text-[#ea580c]">
                     {title2}
                   </motion.div>
