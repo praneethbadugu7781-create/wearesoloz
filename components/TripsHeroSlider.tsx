@@ -67,11 +67,27 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
     }
   };
 
-  // Helper to split destination into two words
-  const words = activeTrip.destination.split(" ");
-  const title1 = words[0].toUpperCase();
-  const title2 = words.slice(1).join(" ").toUpperCase() || activeTrip.state.toUpperCase();
   const tripSlug = activeTrip.slug || activeTrip.destination?.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+  // Helper to split destination into clean lines based on structure
+  const getTitleLines = (dest: string) => {
+    if (dest.includes(" - ")) {
+      return dest.split(" - ").map(s => s.trim().toUpperCase());
+    }
+    if (dest.toLowerCase().includes(" to ")) {
+      const parts = dest.split(/ to /i);
+      return [parts[0].trim().toUpperCase(), `TO ${parts.slice(1).join(" TO ").trim().toUpperCase()}`];
+    }
+    if (dest.includes(" & ")) {
+      const parts = dest.split(" & ");
+      return [parts[0].trim().toUpperCase(), `& ${parts.slice(1).join(" & ").trim().toUpperCase()}`];
+    }
+    const wordsList = dest.split(" ");
+    if (wordsList.length > 1) {
+      return [wordsList[0].toUpperCase(), wordsList.slice(1).join(" ").toUpperCase()];
+    }
+    return [dest.toUpperCase()];
+  };
 
   // Animation variants for text reveal crop transition
   const containerVariants = {
@@ -163,7 +179,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
         </div>
 
         {/* 4. Details Box (Left Aligned) with stagger text slide reveals */}
-        <div className="trips-slider-details-box absolute left-6 md:left-20 top-20 xl:top-[16%] max-w-md md:max-w-lg xl:max-w-xl z-20 text-white flex flex-col justify-center">
+        <div className="trips-slider-details-box absolute left-6 md:left-20 top-20 xl:top-[16%] max-w-md md:max-w-xl xl:max-w-3xl z-20 text-white flex flex-col justify-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeIndex}
@@ -191,17 +207,18 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               </div>
 
               {/* Split Title (Cropped Reveal) - resized to prevent height overflow on wrapping */}
-              <div className="trips-slider-title font-display leading-[1.15] tracking-tight font-black text-3xl sm:text-4xl md:text-[48px] lg:text-[58px] uppercase select-text mb-3 md:mb-4">
-                <div className="overflow-hidden py-1">
-                  <motion.div variants={textRevealVariants} className="text-white/95">
-                    {title1}
-                  </motion.div>
-                </div>
-                <div className="overflow-hidden py-1 mt-2">
-                  <motion.div variants={textRevealVariants} className="text-[#ea580c]">
-                    {title2}
-                  </motion.div>
-                </div>
+              <div className="trips-slider-title font-display leading-[1.3] tracking-[0.02em] font-black text-3xl sm:text-4xl md:text-[52px] lg:text-[62px] uppercase select-text mb-4 md:mb-5">
+                {getTitleLines(activeTrip.destination).map((line, idx) => (
+                  <div key={idx} className={`overflow-hidden py-1.5 ${idx > 0 ? "mt-3 md:mt-4" : ""}`}>
+                    <motion.div
+                      variants={textRevealVariants}
+                      className={idx === 0 ? "text-white/95" : "text-[#ea580c]"}
+                      style={{ paddingBottom: "2px" }}
+                    >
+                      {line}
+                    </motion.div>
+                  </div>
+                ))}
               </div>
 
               {/* Trip Specs (Cropped Reveal) */}
