@@ -483,6 +483,35 @@ async function sendCareerReviewedEmail(careerData) {
   return sendResendEmail({ to: careerData.email, subject, text, html });
 }
 
+async function sendContactStatusEmail(contactData, status) {
+  let subject, title, content;
+  
+  if (status === "contacted") {
+    subject = `WeAreSoloz - Update on your travel enquiry`;
+    title = "Let's Plan Your Travel!";
+    content = `
+      Hi ${contactData.fullName},<br><br>
+      Akhil here from WeAreSoloz! I've reviewed your enquiry for <strong>${contactData.destination || "General/Other Trips"}</strong>.<br><br>
+      I will be reaching out to you on WhatsApp (${contactData.mobile}) or email shortly to discuss your travel plans, customize your itinerary, and help book your slots.<br><br>
+      Looking forward to traveling together!
+    `;
+  } else {
+    subject = `Your WeAreSoloz Enquiry is Closed`;
+    title = "Enquiry Closed";
+    content = `
+      Hi ${contactData.fullName},<br><br>
+      Thank you for coordinating with us! We have closed your travel enquiry regarding <strong>${contactData.destination || "General/Other Trips"}</strong>.<br><br>
+      If you have any further questions or want to start a new adventure, feel free to reach out to us anytime.<br><br>
+      See you on the road!
+    `;
+  }
+  
+  const html = wrapPremiumEmail(title, content, "Visit WeAreSoloz", "https://wearesoloz.com");
+  const text = `Hi ${contactData.fullName}, your enquiry status has been updated to ${status}. We will be in touch.`;
+
+  return sendResendEmail({ to: contactData.email, subject, text, html });
+}
+
 module.exports = {
   sendContactEmail,
   sendCareerEmail,
@@ -495,5 +524,6 @@ module.exports = {
   sendCareerReceiptEmail,
   sendFarmerReceiptEmail,
   sendFarmerApprovalEmail,
-  sendCareerReviewedEmail
+  sendCareerReviewedEmail,
+  sendContactStatusEmail
 };

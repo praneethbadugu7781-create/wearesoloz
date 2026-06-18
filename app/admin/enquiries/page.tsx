@@ -22,6 +22,7 @@ export default function AdminEnquiriesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [selectedEnquiry, setSelectedEnquiry] = useState<EnquiryData | null>(null);
 
   useEffect(() => {
     fetchEnquiries();
@@ -217,7 +218,14 @@ export default function AdminEnquiriesPage() {
                   </button>
                 </div>
 
-                <div className="flex gap-2 w-full sm:w-auto justify-end">
+                <div className="flex gap-2 w-full sm:w-auto justify-end items-center">
+                  <button
+                    onClick={() => setSelectedEnquiry(enq)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-[#ea580c] px-4 py-2 hover:bg-[#ff7a1a] transition text-xs font-bold text-white shadow-sm"
+                  >
+                    View Details
+                  </button>
+
                   {/* WhatsApp contact helper */}
                   <a
                     href={`https://wa.me/${enq.mobile.replace(/[^\d]/g, "")}`}
@@ -239,6 +247,142 @@ export default function AdminEnquiriesPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+      {/* Enquiry Detail Modal */}
+      {selectedEnquiry && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-[#14110d] border border-white/10 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl p-6 md:p-8 space-y-6 relative max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex justify-between items-start border-b border-white/5 pb-4">
+              <div>
+                <span
+                  className={`inline-block rounded px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                    selectedEnquiry.status === "new"
+                      ? "bg-soloz-ember/15 border border-soloz-ember/25 text-soloz-amber"
+                      : selectedEnquiry.status === "contacted"
+                      ? "bg-blue-500/15 border border-blue-500/25 text-blue-400"
+                      : "bg-emerald-500/15 border border-emerald-500/25 text-emerald-400"
+                  }`}
+                >
+                  {selectedEnquiry.status}
+                </span>
+                <h2 className="font-display text-2xl font-bold text-white mt-2">Enquiry Details</h2>
+              </div>
+              <button
+                onClick={() => setSelectedEnquiry(null)}
+                className="text-stone-400 hover:text-white text-xl p-1 bg-white/5 hover:bg-white/10 rounded-lg transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+              <div className="space-y-1">
+                <span className="text-white/40 block uppercase tracking-wider text-[9px]">Customer Name</span>
+                <p className="text-white font-bold text-base">{selectedEnquiry.fullName}</p>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-white/40 block uppercase tracking-wider text-[9px]">Interested Destination</span>
+                <p className="text-soloz-amber font-bold text-base">{selectedEnquiry.destination || "General Enquiry"}</p>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-white/40 block uppercase tracking-wider text-[9px]">Email Address</span>
+                <p className="text-white font-medium text-sm select-all">{selectedEnquiry.email}</p>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-white/40 block uppercase tracking-wider text-[9px]">Mobile / WhatsApp</span>
+                <p className="text-white font-medium text-sm select-all">{selectedEnquiry.mobile}</p>
+              </div>
+
+              <div className="space-y-1 md:col-span-2">
+                <span className="text-white/40 block uppercase tracking-wider text-[9px]">Submitted On</span>
+                <p className="text-white/70">{new Date(selectedEnquiry.createdAt).toLocaleString()}</p>
+              </div>
+            </div>
+
+            {/* Message Block */}
+            <div className="space-y-2">
+              <span className="text-white/40 block uppercase tracking-wider text-[9px]">Enquiry Message:</span>
+              <div className="rounded-lg bg-black/40 p-4 border border-white/5 text-xs text-white/95 leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto">
+                {selectedEnquiry.message}
+              </div>
+            </div>
+
+            {/* Actions Panel */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-6 border-t border-white/5">
+              <div className="flex flex-wrap gap-2 text-xs">
+                <span className="text-white/40 flex items-center mr-2">Change Status:</span>
+                <button
+                  onClick={async () => {
+                    await handleStatusChange(selectedEnquiry._id, "new");
+                    setSelectedEnquiry({ ...selectedEnquiry, status: "new" });
+                  }}
+                  className={`px-3 py-1 rounded transition border ${
+                    selectedEnquiry.status === "new"
+                      ? "bg-soloz-ember/20 border-soloz-ember text-soloz-amber font-bold"
+                      : "border-white/10 text-white/65 hover:bg-white/5"
+                  }`}
+                >
+                  New
+                </button>
+                <button
+                  onClick={async () => {
+                    await handleStatusChange(selectedEnquiry._id, "contacted");
+                    setSelectedEnquiry({ ...selectedEnquiry, status: "contacted" });
+                  }}
+                  className={`px-3 py-1 rounded transition border ${
+                    selectedEnquiry.status === "contacted"
+                      ? "bg-blue-500/20 border-blue-500 text-blue-400 font-bold"
+                      : "border-white/10 text-white/65 hover:bg-white/5"
+                  }`}
+                >
+                  Contacted
+                </button>
+                <button
+                  onClick={async () => {
+                    await handleStatusChange(selectedEnquiry._id, "closed");
+                    setSelectedEnquiry({ ...selectedEnquiry, status: "closed" });
+                  }}
+                  className={`px-3 py-1 rounded transition border ${
+                    selectedEnquiry.status === "closed"
+                      ? "bg-emerald-500/20 border-emerald-500 text-emerald-400 font-bold"
+                      : "border-white/10 text-white/65 hover:bg-white/5"
+                  }`}
+                >
+                  Closed
+                </button>
+              </div>
+
+              <div className="flex gap-2 w-full sm:w-auto justify-end">
+                <a
+                  href={`https://wa.me/${selectedEnquiry.mobile.replace(/[^\d]/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10 transition text-xs font-bold text-white"
+                >
+                  Chat WhatsApp <ExternalLink size={13} />
+                </a>
+
+                <button
+                  onClick={async () => {
+                    if (confirm("Are you sure you want to delete this enquiry? This action is permanent.")) {
+                      await handleDelete(selectedEnquiry._id);
+                      setSelectedEnquiry(null);
+                    }
+                  }}
+                  className="grid size-9 place-items-center rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                  title="Delete lead"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </main>
