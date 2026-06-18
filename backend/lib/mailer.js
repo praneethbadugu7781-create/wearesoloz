@@ -161,4 +161,71 @@ async function sendEmailChangeOtp(email, otpCode) {
   return sendResendEmail({ to: email, subject, text, html });
 }
 
-module.exports = { sendContactEmail, sendCareerEmail, sendOtpEmail, sendEmailChangeOtp };
+async function sendEmailChangeInitiatedAlert(oldEmail, newEmail) {
+  const subject = "Security Alert: Admin Email Change Initiated";
+  const text = `An email change request has been initiated for your admin account. The proposed new email is: ${newEmail}. If you did not request this change, please contact support and update your passcode immediately.`;
+  const html = `
+    <h3 style="color: #ea580c;">Security Alert: Email Change Initiated</h3>
+    <p>An email change request was initiated for your WeAreSoloz admin account.</p>
+    <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-family: sans-serif; font-size: 14px;">
+      <tr>
+        <td style="padding: 6px 0; color: #666;">Current Email:</td>
+        <td style="padding: 6px 0; font-weight: bold;">${oldEmail}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 0; color: #666;">Requested New Email:</td>
+        <td style="padding: 6px 0; font-weight: bold; color: #ea580c;">${newEmail}</td>
+      </tr>
+    </table>
+    <p>A 6-digit verification code has been sent to the new email address to complete this request.</p>
+    <div style="background: #fff5eb; border-left: 4px solid #ea580c; padding: 12px; border-radius: 4px; margin: 15px 0;">
+      <p style="margin: 0; font-size: 13px; color: #c2410c; font-weight: 500;">
+        <strong>Important:</strong> If you did not authorize this request, please change your admin passcode immediately to secure your account.
+      </p>
+    </div>
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
+    <p style="font-size: 11px; color: #888;">Sent automatically by WeAreSoloz Server.</p>
+  `;
+
+  return sendResendEmail({ to: oldEmail, subject, text, html });
+}
+
+async function sendEmailChangeCompletedAlert(oldEmail, newEmail) {
+  const subject = "Security Alert: Admin Email Change Completed";
+  const text = `The email address associated with your admin account has been successfully changed from ${oldEmail} to ${newEmail}. If you did not make this change, please contact support immediately.`;
+  const html = `
+    <h3 style="color: #16a34a;">Security Alert: Email Change Completed</h3>
+    <p>The email address associated with your WeAreSoloz admin account has been successfully updated.</p>
+    <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-family: sans-serif; font-size: 14px;">
+      <tr>
+        <td style="padding: 6px 0; color: #666;">Previous Email:</td>
+        <td style="padding: 6px 0; font-weight: bold; text-decoration: line-through;">${oldEmail}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 0; color: #666;">New Active Email:</td>
+        <td style="padding: 6px 0; font-weight: bold; color: #16a34a;">${newEmail}</td>
+      </tr>
+    </table>
+    <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 12px; border-radius: 4px; margin: 15px 0;">
+      <p style="margin: 0; font-size: 13px; color: #15803d; font-weight: 500;">
+        You will need to use this new email address to log in to the admin console in the future.
+      </p>
+    </div>
+    <p style="color: #dc2626; font-size: 13px; font-weight: bold; margin-top: 15px;">
+      If you did not authorize this change, please contact support immediately to recover your account.
+    </p>
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
+    <p style="font-size: 11px; color: #888;">Sent automatically by WeAreSoloz Server.</p>
+  `;
+
+  return sendResendEmail({ to: oldEmail, subject, text, html });
+}
+
+module.exports = {
+  sendContactEmail,
+  sendCareerEmail,
+  sendOtpEmail,
+  sendEmailChangeOtp,
+  sendEmailChangeInitiatedAlert,
+  sendEmailChangeCompletedAlert
+};

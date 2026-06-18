@@ -18,6 +18,20 @@ const allowedOrigins = [
   "http://localhost:3001",
 ].filter(Boolean);
 
+// Automatically support both www and apex versions of FRONTEND_URL
+if (process.env.FRONTEND_URL) {
+  try {
+    const url = new URL(process.env.FRONTEND_URL);
+    if (!url.hostname.startsWith("www.")) {
+      allowedOrigins.push(`${url.protocol}//www.${url.hostname}`);
+    } else {
+      allowedOrigins.push(`${url.protocol}//${url.hostname.replace(/^www\./, "")}`);
+    }
+  } catch (err) {
+    console.error("CORS config: Invalid FRONTEND_URL in env configuration:", err);
+  }
+}
+
 app.use(
   cors({
     origin: function (origin, callback) {

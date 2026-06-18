@@ -4,7 +4,12 @@ const jwt = require("jsonwebtoken");
 const { connectDB } = require("../lib/db");
 const User = require("../models/User");
 const { requireAuth } = require("../middleware/auth");
-const { sendOtpEmail, sendEmailChangeOtp } = require("../lib/mailer");
+const {
+  sendOtpEmail,
+  sendEmailChangeOtp,
+  sendEmailChangeInitiatedAlert,
+  sendEmailChangeCompletedAlert
+} = require("../lib/mailer");
 
 const router = express.Router();
 
@@ -146,6 +151,18 @@ router.post("/change-email", requireAuth, async (req, res) => {
       return res.status(400).json({ error: "Incorrect passcode" });
     }
 
+    // Check request cooldown to prevent spamming
+    if (user && user.pendingOtpSentAt) {
+      const timeSinceLastOtp = Date.now() - user.pendingOtpSentAt.getTime();
+      const cooldownMs = 60 * 1000; // 60 seconds
+      if (timeSinceLastOtp < cooldownMs) {
+        const remainingSeconds = Math.ceil((cooldownMs - timeSinceLastOtp) / 1000);
+        return res.status(429).json({
+          error: `Please wait ${remainingSeconds} second(s) before requesting another verification code.`
+        });
+      }
+    }
+
     // Check if new email is already taken by another user
     const existing = await User.findOne({ email: emailLower });
     if (existing && (!user || existing._id.toString() !== user._id.toString())) {
@@ -160,6 +177,8 @@ router.post("/change-email", requireAuth, async (req, res) => {
       user.pendingEmail = emailLower;
       user.pendingOtpCode = verificationCode;
       user.pendingOtpExpiresAt = otpExpiresAt;
+      user.pendingOtpAttempts = 0;
+      user.pendingOtpSentAt = new Date();
       await user.save();
     } else {
       // Create user record in DB with temporary credentials so we can save pending OTP details
@@ -175,9 +194,14 @@ router.post("/change-email", requireAuth, async (req, res) => {
         role: "admin",
         pendingEmail: emailLower,
         pendingOtpCode: verificationCode,
-        pendingOtpExpiresAt: otpExpiresAt
+        pendingOtpExpiresAt: otpExpiresAt,
+        pendingOtpAttempts: 0,
+        pendingOtpSentAt: new Date()
       });
     }
+
+    // Send security alert notification to the current admin email address
+    await sendEmailChangeInitiatedAlert(currentEmail, emailLower);
 
     // Send verification code to the new email address
     await sendEmailChangeOtp(emailLower, verificationCode);
@@ -206,21 +230,53 @@ router.post("/verify-change-email", requireAuth, async (req, res) => {
       return res.status(400).json({ error: "No pending email change request found" });
     }
 
-    if (!user.pendingOtpCode || user.pendingOtpCode !== otp.trim()) {
-      return res.status(400).json({ error: "Invalid verification code" });
-    }
-
-    if (new Date() > user.pendingOtpExpiresAt) {
+    // 1. Check expiration
+    if (user.pendingOtpExpiresAt && new Date() > user.pendingOtpExpiresAt) {
+      user.pendingEmail = undefined;
+      user.pendingOtpCode = undefined;
+      user.pendingOtpExpiresAt = undefined;
+      user.pendingOtpAttempts = 0;
+      user.pendingOtpSentAt = undefined;
+      await user.save();
       return res.status(400).json({ error: "Verification code has expired. Please request a new code." });
     }
 
+    // 2. Check code match
+    if (!user.pendingOtpCode || user.pendingOtpCode !== otp.trim()) {
+      user.pendingOtpAttempts = (user.pendingOtpAttempts || 0) + 1;
+      
+      if (user.pendingOtpAttempts >= 3) {
+        user.pendingEmail = undefined;
+        user.pendingOtpCode = undefined;
+        user.pendingOtpExpiresAt = undefined;
+        user.pendingOtpAttempts = 0;
+        user.pendingOtpSentAt = undefined;
+        await user.save();
+        return res.status(400).json({
+          error: "Too many incorrect verification attempts. The verification request has been invalidated. Please start the process again."
+        });
+      } else {
+        await user.save();
+        return res.status(400).json({
+          error: `Invalid verification code. You have ${3 - user.pendingOtpAttempts} attempt(s) remaining.`
+        });
+      }
+    }
+
+    const oldEmail = user.email;
     const newEmail = user.pendingEmail;
 
+    // 3. Apply changes and clear pending fields
     user.email = newEmail;
     user.pendingEmail = undefined;
     user.pendingOtpCode = undefined;
     user.pendingOtpExpiresAt = undefined;
+    user.pendingOtpAttempts = 0;
+    user.pendingOtpSentAt = undefined;
     await user.save();
+
+    // 4. Send email alert to old/previous email address
+    await sendEmailChangeCompletedAlert(oldEmail, newEmail);
 
     res.json({ success: true, message: "Admin email verified and updated successfully. Please log in again." });
   } catch (error) {

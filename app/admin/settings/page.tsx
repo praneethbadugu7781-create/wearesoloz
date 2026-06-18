@@ -108,6 +108,13 @@ export default function AdminSettingsPage() {
       }, 2500);
     } catch (err: any) {
       setEmailError(err.message || "Error verifying code.");
+      
+      // If the OTP was invalidated due to too many failed attempts,
+      // automatically bring the user back to the email input stage
+      if (err.message && err.message.toLowerCase().includes("invalidated")) {
+        setOtpSent(false);
+        setEmailOtp("");
+      }
     } finally {
       setEmailVerificationSaving(false);
     }
@@ -499,10 +506,13 @@ export default function AdminSettingsPage() {
                     }}
                     className="h-10 px-4 rounded-lg border border-white/10 hover:border-white/20 text-xs font-semibold text-soloz-ash/80 hover:text-white transition-all"
                   >
-                    Change Email
+                    Cancel & Edit Email
                   </button>
                 </div>
                 <p className="text-[10px] text-soloz-ash/50 mt-1.5">We sent a verification code to your pending email address. Check your spam folder if you do not receive it in a few minutes.</p>
+                <p className="text-[10px] text-soloz-amber/70 mt-1 flex items-center gap-1 font-medium">
+                  <AlertCircle size={10} className="inline" /> For security, this code expires in 10 minutes. A maximum of 3 incorrect verification attempts are allowed.
+                </p>
               </div>
 
               <div className="flex justify-end pt-4 border-t border-white/5">

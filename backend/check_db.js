@@ -12,7 +12,7 @@ async function check() {
     console.log("Total users in DB:", userCount);
 
     const users = await User.find().select("+password");
-    console.log("Users:", users.map(u => ({ email: u.email, name: u.name, role: u.role })));
+    console.log("Users Detail:", users);
 
     const settingsCount = await SiteSetting.countDocuments();
     console.log("Total settings in DB:", settingsCount);

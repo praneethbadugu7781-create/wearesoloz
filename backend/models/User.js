@@ -10,7 +10,9 @@ const userSchema = new mongoose.Schema(
     otpExpiresAt: { type: Date },
     pendingEmail: { type: String },
     pendingOtpCode: { type: String },
-    pendingOtpExpiresAt: { type: Date }
+    pendingOtpExpiresAt: { type: Date },
+    pendingOtpAttempts: { type: Number, default: 0 },
+    pendingOtpSentAt: { type: Date }
   },
   { timestamps: true }
 );
