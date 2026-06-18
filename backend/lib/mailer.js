@@ -1,4 +1,19 @@
 // backend/lib/mailer.js
+const { connectDB } = require("./db");
+const User = require("../models/User");
+
+async function getAdminEmail() {
+  try {
+    await connectDB();
+    const admin = await User.findOne({ role: "admin" }).lean();
+    if (admin && admin.email) {
+      return admin.email;
+    }
+  } catch (error) {
+    console.error("Failed to fetch admin email from DB:", error);
+  }
+  return process.env.ADMIN_EMAIL || "praneethbadugu7781@gmail.com";
+}
 
 async function sendResendEmail({ to, subject, text, html }) {
   const apiKey = process.env.RESEND_API_KEY;
@@ -39,7 +54,7 @@ async function sendResendEmail({ to, subject, text, html }) {
 }
 
 async function sendContactEmail(contactData) {
-  const adminEmail = process.env.ADMIN_EMAIL || "praneethbadugu7781@gmail.com";
+  const adminEmail = await getAdminEmail();
   
   const subject = `New Contact/Booking Enquiry from ${contactData.fullName}`;
   const text = `
@@ -71,7 +86,7 @@ Sent automatically by WeAreSoloz Server.
 }
 
 async function sendCareerEmail(careerData) {
-  const adminEmail = process.env.ADMIN_EMAIL || "praneethbadugu7781@gmail.com";
+  const adminEmail = await getAdminEmail();
 
   const subject = `New Careers Application from ${careerData.fullName}`;
   const text = `

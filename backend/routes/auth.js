@@ -112,6 +112,71 @@ router.post("/change-password", requireAuth, async (req, res) => {
   }
 });
 
+// POST /api/auth/change-email
+router.post("/change-email", requireAuth, async (req, res) => {
+  try {
+    const { newEmail, password } = req.body;
+    if (!newEmail || !password) {
+      return res.status(400).json({ error: "Missing fields" });
+    }
+
+    const emailLower = newEmail.toLowerCase().trim();
+    const currentEmail = req.user.email.toLowerCase();
+
+    await connectDB();
+
+    const user = await User.findOne({ email: currentEmail }).select("+password");
+
+    let isPasswordCorrect = false;
+
+    if (user) {
+      isPasswordCorrect = await bcrypt.compare(password, user.password);
+    } else {
+      const fallbackPassword = process.env.ADMIN_PASSWORD;
+      if (fallbackPassword) {
+        if (fallbackPassword.startsWith("$2")) {
+          isPasswordCorrect = await bcrypt.compare(password, fallbackPassword);
+        } else {
+          isPasswordCorrect = password === fallbackPassword;
+        }
+      }
+    }
+
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ error: "Incorrect passcode" });
+    }
+
+    // Check if new email is already taken by another user
+    const existing = await User.findOne({ email: emailLower });
+    if (existing && existing._id.toString() !== (user ? user._id.toString() : "")) {
+      return res.status(400).json({ error: "Email is already in use by another account" });
+    }
+
+    if (user) {
+      user.email = emailLower;
+      await user.save();
+    } else {
+      // Create user record in DB with new email and hashed password
+      const fallbackPassword = process.env.ADMIN_PASSWORD || "change-me";
+      const hashedPassword = fallbackPassword.startsWith("$2")
+        ? fallbackPassword
+        : await bcrypt.hash(fallbackPassword, 10);
+        
+      await User.create({
+        name: "Akhil",
+        email: emailLower,
+        password: hashedPassword,
+        role: "admin"
+      });
+    }
+
+    res.json({ success: true, message: "Admin email updated successfully. Please log in again with your new email." });
+  } catch (error) {
+    console.error("Change email error:", error);
+    res.status(500).json({ error: error.message || "Internal server error" });
+  }
+});
+
 // POST /api/auth/forgot-password
 router.post("/forgot-password", async (req, res) => {
   try {

@@ -45,6 +45,44 @@ export default function AdminSettingsPage() {
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
+  // Email change states
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [emailConfirmPassword, setEmailConfirmPassword] = useState("");
+  const [emailSaving, setEmailSaving] = useState(false);
+  const [emailSuccess, setEmailSuccess] = useState("");
+  const [emailError, setEmailError] = useState("");
+
+  const handleEmailChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailError("");
+    setEmailSuccess("");
+
+    setEmailSaving(true);
+
+    try {
+      const res = await fetch(`${API_URL}/auth/change-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        body: JSON.stringify({ newEmail: newAdminEmail, password: emailConfirmPassword })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update email");
+
+      setEmailSuccess("Admin email updated successfully! Redirecting to login page...");
+      setNewAdminEmail("");
+      setEmailConfirmPassword("");
+      setTimeout(() => {
+        localStorage.removeItem("token");
+        window.location.href = "/admin/login";
+      }, 2500);
+    } catch (err: any) {
+      setEmailError(err.message || "Error updating email.");
+    } finally {
+      setEmailSaving(false);
+    }
+  };
+
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordError("");
@@ -345,6 +383,65 @@ export default function AdminSettingsPage() {
               "Save Configurations"
             )}
           </Button>
+        </div>
+      </form>
+
+      {/* CHANGE ADMIN EMAIL PANEL */}
+      <form onSubmit={handleEmailChange} className="space-y-6 max-w-4xl pt-4">
+        <div className="rounded-xl border border-white/10 bg-[#14110d] p-6 sm:p-8 space-y-6">
+          <h3 className="font-display text-xl font-bold text-white border-b border-white/5 pb-3 flex items-center gap-2">
+            <Settings className="text-soloz-amber" size={18} />
+            Admin Email Address Settings
+          </h3>
+
+          {emailError && (
+            <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3.5 text-xs font-semibold text-red-400 flex items-center gap-2">
+              <AlertCircle size={14} /> {emailError}
+            </div>
+          )}
+
+          {emailSuccess && (
+            <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3.5 text-xs font-semibold text-emerald-400 flex items-center gap-2">
+              <Check size={14} /> {emailSuccess}
+            </div>
+          )}
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">New Admin Email Address</label>
+              <input
+                type="email"
+                required
+                placeholder="new-email@example.com"
+                value={newAdminEmail}
+                onChange={(e) => setNewAdminEmail(e.target.value)}
+                className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Confirm Current Passcode</label>
+              <input
+                type="password"
+                required
+                placeholder="••••••••"
+                value={emailConfirmPassword}
+                onChange={(e) => setEmailConfirmPassword(e.target.value)}
+                className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-4 border-t border-white/5">
+            <Button type="submit" disabled={emailSaving}>
+              {emailSaving ? (
+                <>
+                  <Loader2 className="animate-spin mr-2" size={15} /> Updating Email...
+                </>
+              ) : (
+                "Update Admin Email"
+              )}
+            </Button>
+          </div>
         </div>
       </form>
 
