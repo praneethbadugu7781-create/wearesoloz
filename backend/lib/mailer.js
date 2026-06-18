@@ -61,6 +61,8 @@ async function sendContactEmail(contactData) {
 You have received a new inquiry on WeAreSoloz:
 
 Name: ${contactData.fullName}
+Age: ${contactData.age}
+Blood Group: ${contactData.bloodGroup}
 Mobile (WhatsApp): ${contactData.mobile}
 Email: ${contactData.email}
 Destination of Interest: ${contactData.destination || "General / Other"}
@@ -73,6 +75,8 @@ Sent automatically by WeAreSoloz Server.
   const html = `
     <h3>New Inquiry Received</h3>
     <p><strong>Name:</strong> ${contactData.fullName}</p>
+    <p><strong>Age:</strong> ${contactData.age}</p>
+    <p><strong>Blood Group:</strong> ${contactData.bloodGroup}</p>
     <p><strong>Mobile (WhatsApp):</strong> ${contactData.mobile}</p>
     <p><strong>Email:</strong> ${contactData.email}</p>
     <p><strong>Destination:</strong> ${contactData.destination || "General / Other"}</p>
@@ -95,6 +99,7 @@ You have received a new Careers application on WeAreSoloz:
 Name: ${careerData.fullName}
 Gender: ${careerData.gender}
 Age: ${careerData.age}
+Blood Group: ${careerData.bloodGroup}
 Mobile (WhatsApp): ${careerData.mobile}
 Email: ${careerData.email}
 Instagram: ${careerData.instagram || "Not provided"}
@@ -113,6 +118,7 @@ Sent automatically by WeAreSoloz Server.
     <p><strong>Name:</strong> ${careerData.fullName}</p>
     <p><strong>Gender:</strong> ${careerData.gender}</p>
     <p><strong>Age:</strong> ${careerData.age}</p>
+    <p><strong>Blood Group:</strong> ${careerData.bloodGroup}</p>
     <p><strong>Mobile (WhatsApp):</strong> ${careerData.mobile}</p>
     <p><strong>Email:</strong> ${careerData.email}</p>
     <p><strong>Instagram:</strong> ${careerData.instagram || "Not provided"}</p>

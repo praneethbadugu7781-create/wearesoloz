@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import Reveal, { SectionLabel } from "@/components/Reveal";
 import { getApiUrl } from "@/lib/api";
 import TermsModal from "./TermsModal";
+import SuccessModal from "./SuccessModal";
 
 export default function FarmerRegistrationClient() {
   const [form, setForm] = useState({
@@ -27,6 +28,8 @@ export default function FarmerRegistrationClient() {
   });
   const [busy, setBusy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [waUrl, setWaUrl] = useState("");
 
   const farmingTypes = ["Crop Farming", "Organic Farming", "Dairy Farming", "Horticulture", "Poultry Farming", "Mixed Farming", "Other"];
   const landSizes = ["Less than 2 acres", "2 to 5 acres", "More than 5 acres"];
@@ -100,14 +103,13 @@ export default function FarmerRegistrationClient() {
         throw new Error("Failed to submit");
       }
 
-      toast.success("Application submitted! Akhil will contact you shortly.");
-
       // Open WhatsApp chat prefilled with form data
       const waText = encodeURIComponent(
         `Hi Akhil, my name is ${form.fullName}. I just applied for the Free Farmer Trip initiative on WeAreSoloz.\nFarming: ${form.farmingType} (${form.cropType})\nLocation: ${form.district}, ${form.state}\nBlood Group: ${form.bloodGroup}\nThank you for this beautiful initiative!`
       );
-      const waUrl = `https://wa.me/919966085310?text=${waText}`;
-      window.open(waUrl, "_blank");
+      const generatedWaUrl = `https://wa.me/919966085310?text=${waText}`;
+      setWaUrl(generatedWaUrl);
+      window.open(generatedWaUrl, "_blank");
 
       // Reset Form
       setForm({
@@ -124,6 +126,7 @@ export default function FarmerRegistrationClient() {
         landSize: "",
         whyJoin: "",
       });
+      setShowSuccess(true);
     } catch {
       toast.error("Couldn't submit application. Please try again.");
     }
@@ -408,6 +411,13 @@ export default function FarmerRegistrationClient() {
         isOpen={showTerms}
         onClose={() => setShowTerms(false)}
         onAccept={handleActualSubmit}
+      />
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        title="Application Submitted Successfully!"
+        message="Thank you for your interest! Akhil will contact you shortly to verify your details."
+        whatsappUrl={waUrl}
       />
     </div>
   );

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import SuccessModal from "./SuccessModal";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -75,10 +76,12 @@ export default function HomeClient({
         ).slice(0, 3);
 
   // Contact Form States
-  const [form, setForm] = useState({ full_name: "", mobile: "", email: "", destination: "", message: "" });
+  const [form, setForm] = useState({ full_name: "", mobile: "", email: "", destination: "", message: "", age: "", bloodGroup: "" });
   const [selectedState, setSelectedState] = useState("");
   const [busy, setBusy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [waUrl, setWaUrl] = useState("");
 
   // Testimonials State
   const [allTestimonials, setAllTestimonials] = useState(testimonials);
@@ -122,6 +125,15 @@ export default function HomeClient({
       toast.error("Please enter your full name (minimum 2 characters)");
       return;
     }
+    const ageNum = Number(form.age);
+    if (!form.age || isNaN(ageNum) || ageNum < 18 || ageNum > 100) {
+      toast.error("Please enter a valid age (18 or older)");
+      return;
+    }
+    if (!form.bloodGroup) {
+      toast.error("Please select your blood group");
+      return;
+    }
     if (!form.mobile || form.mobile.length < 7) {
       toast.error("Please enter a valid mobile number");
       return;
@@ -159,6 +171,8 @@ export default function HomeClient({
           fullName: form.full_name,
           mobile: form.mobile,
           email: form.email,
+          age: Number(form.age),
+          bloodGroup: form.bloodGroup,
           destination: combinedDestination,
           message: form.message,
         }),
@@ -168,15 +182,15 @@ export default function HomeClient({
         throw new Error("API error");
       }
 
-      toast.success("Inquiry sent! Akhil will get back to you soon.");
-
       // Open WhatsApp chat prefilled with form data
-      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${form.full_name}. Mobile: ${form.mobile}. Email: ${form.email}. Interested in: ${combinedDestination}. Message: ${form.message}`);
-      const waUrl = `https://wa.me/919966085310?text=${waText}`;
-      window.open(waUrl, "_blank");
+      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${form.full_name}.\nAge: ${form.age}\nBlood Group: ${form.bloodGroup}\nMobile: ${form.mobile}\nEmail: ${form.email}\nInterested in: ${combinedDestination}\nMessage: ${form.message}`);
+      const generatedWaUrl = `https://wa.me/919966085310?text=${waText}`;
+      setWaUrl(generatedWaUrl);
+      window.open(generatedWaUrl, "_blank");
 
-      setForm({ full_name: "", mobile: "", email: "", destination: "", message: "" });
+      setForm({ full_name: "", mobile: "", email: "", destination: "", message: "", age: "", bloodGroup: "" });
       setSelectedState("");
+      setShowSuccess(true);
     } catch {
       toast.error("Couldn't send. Try again.");
     }
@@ -461,6 +475,42 @@ export default function HomeClient({
                   </div>
                 </div>
 
+                {/* Age & Blood Group */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Age</label>
+                    <Input
+                      required
+                      type="number"
+                      value={form.age}
+                      onChange={(e) => setForm({ ...form, age: e.target.value })}
+                      placeholder="Your Age"
+                      className="border-stone-200 focus-visible:ring-orange-500 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Blood Group</label>
+                    <div className="relative">
+                      <select
+                        required
+                        value={form.bloodGroup}
+                        onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}
+                        className="w-full h-10 px-3 pr-10 rounded-lg border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-stone-800 appearance-none cursor-pointer"
+                      >
+                        <option value="" disabled>Select Blood</option>
+                        {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bg) => (
+                          <option key={bg} value={bg}>{bg}</option>
+                        ))}
+                      </select>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Email Address</label>
                   <Input
@@ -556,6 +606,14 @@ export default function HomeClient({
         isOpen={showTerms}
         onClose={() => setShowTerms(false)}
         onAccept={handleActualSubmit}
+      />
+
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        title="Enquiry Submitted Successfully!"
+        message="Thank you for your interest! Akhil will contact you shortly to plan your escape."
+        whatsappUrl={waUrl}
       />
 
       <WriteReviewModal

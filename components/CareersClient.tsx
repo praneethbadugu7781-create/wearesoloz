@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import Reveal, { SectionLabel } from "@/components/Reveal";
 import { getApiUrl } from "@/lib/api";
 import TermsModal from "./TermsModal";
+import SuccessModal from "./SuccessModal";
 
 interface CareersClientProps {
   settings: any;
@@ -24,6 +25,7 @@ export default function CareersClient({ settings = {} }: CareersClientProps) {
     fullName: "",
     gender: "",
     age: "",
+    bloodGroup: "",
     email: "",
     mobile: "",
     instagram: "",
@@ -32,6 +34,8 @@ export default function CareersClient({ settings = {} }: CareersClientProps) {
   });
   const [busy, setBusy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [waUrl, setWaUrl] = useState("");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +50,10 @@ export default function CareersClient({ settings = {} }: CareersClientProps) {
     const ageNum = Number(form.age);
     if (!form.age || isNaN(ageNum) || ageNum < 18 || ageNum > 100) {
       toast.error("Please enter a valid age (18 or older)");
+      return;
+    }
+    if (!form.bloodGroup) {
+      toast.error("Please select your blood group");
       return;
     }
     if (!form.email) {
@@ -82,26 +90,27 @@ export default function CareersClient({ settings = {} }: CareersClientProps) {
         throw new Error("Failed to submit");
       }
 
-      toast.success("Application submitted! Akhil will review it soon.");
-
       // Open WhatsApp chat prefilled with form data
       const waText = encodeURIComponent(
-        `Hi Akhil, my name is ${form.fullName}. I just submitted my travel careers application on WeAreSoloz.\nAge: ${form.age}\nGender: ${form.gender}\nInstagram: ${form.instagram || "N/A"}\nLooking forward to co-hosting and traveling together!`
+        `Hi Akhil, my name is ${form.fullName}. I just submitted my travel careers application on WeAreSoloz.\nAge: ${form.age}\nBlood Group: ${form.bloodGroup}\nGender: ${form.gender}\nInstagram: ${form.instagram || "N/A"}\nLooking forward to co-hosting and traveling together!`
       );
-      const waUrl = `https://wa.me/919966085310?text=${waText}`;
-      window.open(waUrl, "_blank");
+      const generatedWaUrl = `https://wa.me/919966085310?text=${waText}`;
+      setWaUrl(generatedWaUrl);
+      window.open(generatedWaUrl, "_blank");
 
       // Reset Form
       setForm({
         fullName: "",
         gender: "",
         age: "",
+        bloodGroup: "",
         email: "",
         mobile: "",
         instagram: "",
         experience: "",
         whyJoin: "",
       });
+      setShowSuccess(true);
     } catch {
       toast.error("Couldn't submit application. Please try again.");
     }
@@ -183,7 +192,7 @@ export default function CareersClient({ settings = {} }: CareersClientProps) {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Gender */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
@@ -224,6 +233,31 @@ export default function CareersClient({ settings = {} }: CareersClientProps) {
                     placeholder="Min 18"
                     className="glass border-stone-200 bg-white/90 h-12 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c]"
                   />
+                </div>
+
+                {/* Blood Group */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                    Blood Group
+                  </label>
+                  <div className="relative">
+                    <select
+                      required
+                      value={form.bloodGroup}
+                      onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}
+                      className="w-full glass border border-stone-200 bg-white/90 h-12 text-stone-900 focus-visible:ring-soloz-primary text-sm px-3 pr-10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]/20 focus:border-[#ea580c] appearance-none cursor-pointer"
+                    >
+                      <option value="" disabled className="text-stone-400">Select Blood</option>
+                      {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bg) => (
+                        <option key={bg} value={bg}>{bg}</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -321,6 +355,13 @@ export default function CareersClient({ settings = {} }: CareersClientProps) {
         isOpen={showTerms}
         onClose={() => setShowTerms(false)}
         onAccept={handleActualSubmit}
+      />
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        title="Application Submitted Successfully!"
+        message="Thank you for your application! Akhil will review your profile shortly and connect with you."
+        whatsappUrl={waUrl}
       />
     </div>
   );

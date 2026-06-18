@@ -8,20 +8,32 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import Reveal, { SectionLabel } from "@/components/Reveal";
 import TermsModal from "./TermsModal";
+import SuccessModal from "./SuccessModal";
 
 interface TripDetailClientProps {
   trip: any;
 }
 
 export default function TripDetailClient({ trip }: TripDetailClientProps) {
-  const [form, setForm] = useState({ full_name: "", mobile: "", email: "", travelers: 1, message: "" });
+  const [form, setForm] = useState({ full_name: "", mobile: "", email: "", travelers: 1, message: "", age: "", bloodGroup: "" });
   const [submitting, setSubmitting] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [waUrl, setWaUrl] = useState("");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.full_name || form.full_name.length < 2) {
       toast.error("Please enter your full name (minimum 2 characters)");
+      return;
+    }
+    const ageNum = Number(form.age);
+    if (!form.age || isNaN(ageNum) || ageNum < 18 || ageNum > 100) {
+      toast.error("Please enter a valid age (18 or older)");
+      return;
+    }
+    if (!form.bloodGroup) {
+      toast.error("Please select your blood group");
       return;
     }
     if (!form.mobile || form.mobile.length < 7) {
@@ -46,6 +58,8 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
           fullName: form.full_name,
           mobile: form.mobile,
           email: form.email,
+          age: Number(form.age),
+          bloodGroup: form.bloodGroup,
           destination: trip.destination,
           message: `Trip booking request for: "${trip.title || trip.destination}" (${trip.duration}). Travellers: ${form.travelers}. Additional Message: ${form.message}`
         })
@@ -55,14 +69,14 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
         throw new Error("API error");
       }
 
-      toast.success("Request sent. Akhil will reach out shortly.");
-
       // Open WhatsApp chat prefilled with booking data
-      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${form.full_name}. Mobile: ${form.mobile}. Email: ${form.email}. I want to book a seat for the trip: "${trip.title || trip.destination}" (${trip.duration}). Travellers: ${form.travelers}. Message: ${form.message}`);
-      const waUrl = `https://wa.me/919966085310?text=${waText}`;
-      window.open(waUrl, "_blank");
+      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${form.full_name}.\nAge: ${form.age}\nBlood Group: ${form.bloodGroup}\nMobile: ${form.mobile}\nEmail: ${form.email}\nI want to book a seat for the trip: "${trip.title || trip.destination}" (${trip.duration}). Travellers: ${form.travelers}.\nMessage: ${form.message}`);
+      const generatedWaUrl = `https://wa.me/919966085310?text=${waText}`;
+      setWaUrl(generatedWaUrl);
+      window.open(generatedWaUrl, "_blank");
 
-      setForm({ full_name: "", mobile: "", email: "", travelers: 1, message: "" });
+      setForm({ full_name: "", mobile: "", email: "", travelers: 1, message: "", age: "", bloodGroup: "" });
+      setShowSuccess(true);
     } catch (e) {
       toast.error("Couldn't send. Please try again.");
     }
@@ -196,6 +210,47 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                 />
               </div>
 
+              {/* Age & Blood Group */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                    Age
+                  </label>
+                  <Input
+                    required
+                    type="number"
+                    value={form.age}
+                    onChange={(e) => setForm({ ...form, age: e.target.value })}
+                    placeholder="Your Age"
+                    className="glass border-stone-200 bg-white/90 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                    Blood Group
+                  </label>
+                  <div className="relative">
+                    <select
+                      required
+                      value={form.bloodGroup}
+                      onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}
+                      className="w-full glass border border-stone-200 bg-white/90 h-10 text-stone-900 text-sm px-3 pr-10 rounded-md focus:outline-none focus:ring-1 focus:ring-[#ea580c]/20 focus:border-[#ea580c] appearance-none cursor-pointer"
+                    >
+                      <option value="" disabled className="text-stone-400">Select Blood</option>
+                      {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bg) => (
+                        <option key={bg} value={bg}>{bg}</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Mobile Number */}
               <div className="space-y-1">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
@@ -288,6 +343,13 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
         isOpen={showTerms}
         onClose={() => setShowTerms(false)}
         onAccept={handleActualSubmit}
+      />
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        title="Request Submitted Successfully!"
+        message="Thank you! Akhil will contact you shortly via WhatsApp or email to confirm your booking."
+        whatsappUrl={waUrl}
       />
     </div>
   );

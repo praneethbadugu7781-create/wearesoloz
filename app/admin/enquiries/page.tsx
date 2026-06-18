@@ -11,6 +11,8 @@ interface EnquiryData {
   fullName: string;
   mobile: string;
   email: string;
+  age?: number;
+  bloodGroup?: string;
   destination?: string;
   message: string;
   status: "new" | "contacted" | "closed";
@@ -161,7 +163,12 @@ export default function AdminEnquiriesPage() {
                   >
                     {enq.status}
                   </span>
-                  <h3 className="font-bold text-white text-base mt-2">{enq.fullName}</h3>
+                  <h3 className="font-bold text-white text-base mt-2 flex items-center gap-2">
+                    {enq.fullName}
+                    {enq.age && (
+                      <span className="text-xs font-normal text-soloz-ash/60">({enq.age} yrs • Blood: {enq.bloodGroup})</span>
+                    )}
+                  </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 text-xs text-soloz-ash/80 mt-3 bg-black/20 p-3 rounded-lg border border-white/5">
                     <div>
                       <span className="text-white/40 block mb-0.5 uppercase tracking-wider text-[9px]">Interested Destination</span>
@@ -282,6 +289,13 @@ export default function AdminEnquiriesPage() {
               <div className="space-y-1">
                 <span className="text-white/40 block uppercase tracking-wider text-[9px]">Customer Name</span>
                 <p className="text-white font-bold text-base">{selectedEnquiry.fullName}</p>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-white/40 block uppercase tracking-wider text-[9px]">Age & Blood Group</span>
+                <p className="text-white font-bold text-sm">
+                  {selectedEnquiry.age ? `${selectedEnquiry.age} yrs` : "N/A"} • Blood: {selectedEnquiry.bloodGroup || "N/A"}
+                </p>
               </div>
 
               <div className="space-y-1">

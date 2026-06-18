@@ -12,6 +12,7 @@ interface CareerData {
   fullName: string;
   gender: string;
   age: number;
+  bloodGroup?: string;
   mobile: string;
   email: string;
   instagram?: string;
@@ -171,7 +172,7 @@ export default function AdminCareersPage() {
                       {/* Name / Age / Gender */}
                       <td className="px-6 py-4 space-y-1 min-w-[150px]">
                         <p className="font-bold text-white text-sm">{app.fullName}</p>
-                        <p className="text-[10px] text-white/50">{app.gender} • {app.age} yrs old</p>
+                        <p className="text-[10px] text-white/50">{app.gender} • {app.age} yrs old • Blood: {app.bloodGroup || "N/A"}</p>
                         <p className="text-[9px] text-white/30">{new Date(app.createdAt).toLocaleDateString()}</p>
                       </td>
 

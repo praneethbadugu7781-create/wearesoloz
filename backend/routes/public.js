@@ -135,17 +135,19 @@ const {
 
 router.post("/contacts", async (req, res) => {
   try {
-    const { fullName, mobile, email, destination, message } = req.body;
+    const { fullName, mobile, email, age, bloodGroup, destination, message } = req.body;
     if (!fullName || fullName.length < 2) return res.status(400).json({ error: "Full name must be at least 2 characters" });
     if (!mobile || mobile.length < 7) return res.status(400).json({ error: "Invalid mobile number" });
     if (!email) return res.status(400).json({ error: "Email is required" });
+    if (!age || isNaN(Number(age)) || Number(age) < 18 || Number(age) > 100) return res.status(400).json({ error: "Please enter a valid age (18 or older)" });
+    if (!bloodGroup) return res.status(400).json({ error: "Blood group is required" });
     if (!message || message.length < 5) return res.status(400).json({ error: "Message must be at least 5 characters" });
 
     await connectDB();
-    const contact = await Contact.create({ fullName, mobile, email, destination, message });
+    const contact = await Contact.create({ fullName, mobile, email, age: Number(age), bloodGroup, destination, message });
 
     // Send email notifications asynchronously
-    sendContactEmail({ fullName, mobile, email, destination, message }).catch(console.error);
+    sendContactEmail({ fullName, mobile, email, age: Number(age), bloodGroup, destination, message }).catch(console.error);
     sendContactReceiptEmail({ fullName, email, destination }).catch(console.error);
 
     res.status(201).json(contact);
@@ -157,10 +159,11 @@ router.post("/contacts", async (req, res) => {
 // --- Careers (public submit) ---
 router.post("/careers", async (req, res) => {
   try {
-    const { fullName, gender, age, email, mobile, instagram, experience, whyJoin } = req.body;
+    const { fullName, gender, age, bloodGroup, email, mobile, instagram, experience, whyJoin } = req.body;
     if (!fullName || fullName.length < 2) return res.status(400).json({ error: "Full name must be at least 2 characters" });
     if (!gender || !["Male", "Female", "Other"].includes(gender)) return res.status(400).json({ error: "Please select a valid gender" });
     if (!age || isNaN(Number(age)) || Number(age) < 18 || Number(age) > 100) return res.status(400).json({ error: "Please enter a valid age (18 or older)" });
+    if (!bloodGroup) return res.status(400).json({ error: "Blood group is required" });
     if (!email) return res.status(400).json({ error: "Email is required" });
     if (!mobile || mobile.length < 7) return res.status(400).json({ error: "Please enter a valid mobile number" });
     if (!experience || experience.length < 10) return res.status(400).json({ error: "Travel experience must be at least 10 characters" });
@@ -171,6 +174,7 @@ router.post("/careers", async (req, res) => {
       fullName,
       gender,
       age: Number(age),
+      bloodGroup,
       email,
       mobile,
       instagram: instagram || "",
@@ -183,6 +187,7 @@ router.post("/careers", async (req, res) => {
       fullName,
       gender,
       age: Number(age),
+      bloodGroup,
       email,
       mobile,
       instagram: instagram || "",

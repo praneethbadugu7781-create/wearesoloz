@@ -5,6 +5,7 @@ const careerSchema = new mongoose.Schema(
     fullName: { type: String, required: true },
     gender: { type: String, required: true, enum: ["Male", "Female", "Other"] },
     age: { type: Number, required: true },
+    bloodGroup: { type: String, required: true },
     email: { type: String, required: true },
     mobile: { type: String, required: true },
     instagram: { type: String, default: "" },
