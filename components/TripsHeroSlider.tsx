@@ -163,7 +163,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
         </div>
 
         {/* 4. Details Box (Left Aligned) with stagger text slide reveals */}
-        <div className="trips-slider-details-box absolute left-6 md:left-20 top-24 xl:top-[20%] max-w-md md:max-w-lg xl:max-w-xl z-20 text-white flex flex-col justify-center">
+        <div className="trips-slider-details-box absolute left-6 md:left-20 top-20 xl:top-[16%] max-w-md md:max-w-lg xl:max-w-xl z-20 text-white flex flex-col justify-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeIndex}
@@ -191,7 +191,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               </div>
 
               {/* Split Title (Cropped Reveal) - resized to prevent height overflow on wrapping */}
-              <div className="trips-slider-title font-display leading-[0.95] tracking-tight font-black text-3xl sm:text-5xl md:text-[54px] lg:text-[64px] uppercase select-text mb-3 md:mb-4">
+              <div className="trips-slider-title font-display leading-[0.95] tracking-tight font-black text-3xl sm:text-4xl md:text-[48px] lg:text-[54px] uppercase select-text mb-3 md:mb-4">
                 <div className="overflow-hidden py-1">
                   <motion.div variants={textRevealVariants} className="text-white/95">
                     {title1}
@@ -223,7 +223,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               <div className="trips-slider-description overflow-hidden mb-4 md:mb-5 max-w-lg">
                 <motion.p
                   variants={textRevealVariants}
-                  className="text-stone-200/90 font-body text-xs sm:text-[13px] md:text-[14px] lg:text-[15px] leading-relaxed select-text font-normal"
+                  className="text-stone-200/90 font-body text-xs sm:text-[13px] md:text-[14px] leading-relaxed select-text font-normal"
                 >
                   Explore the untouched beauty of {activeTrip.destination}. This curated solo-friendly journey includes comfortable sharing accommodations, AC or Non-AC transportation, breakfasts and dinners, alongside guidance from Akhil.
                 </motion.p>

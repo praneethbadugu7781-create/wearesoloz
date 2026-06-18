@@ -1043,36 +1043,9 @@ body {
 }
 
 /* ==========================================
-   Trips Hero Slider Height Responsiveness
+   Trips Hero Slider Height Responsiveness (Emergency Fallbacks)
    ========================================== */
-@media (max-height: 900px) {
-  .trips-slider-details-box {
-    top: 15% !important;
-  }
-}
-
-@media (max-height: 800px) {
-  .trips-slider-details-box {
-    top: 12% !important;
-  }
-  .trips-slider-title {
-    font-size: 2.75rem !important; /* ~44px */
-    line-height: 0.95 !important;
-    margin-bottom: 0.75rem !important;
-  }
-  .trips-slider-specs {
-    margin-bottom: 0.75rem !important;
-  }
-  .trips-slider-description {
-    margin-bottom: 1rem !important;
-  }
-  .trips-slider-description p {
-    font-size: 13px !important;
-    line-height: 1.5 !important;
-  }
-}
-
-@media (max-height: 700px) {
+@media (max-height: 680px) {
   .trips-slider-details-box {
     top: 10% !important;
   }
@@ -1091,14 +1064,14 @@ body {
     line-height: 1.4 !important;
   }
   .trips-slider-actions a {
-    padding: 10px 24px !important; /* Slightly smaller button sizing */
+    padding: 10px 24px !important;
     font-size: 9px !important;
   }
 }
 
-@media (max-height: 600px) {
+@media (max-height: 580px) {
   .trips-slider-details-box {
-    top: 8% !important;
+    top: 6% !important;
   }
   .trips-slider-title {
     font-size: 1.85rem !important; /* ~30px */
@@ -1123,6 +1096,7 @@ body {
     font-size: 8px !important;
   }
 }
+
 
 
 
