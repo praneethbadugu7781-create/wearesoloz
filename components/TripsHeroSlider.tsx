@@ -163,7 +163,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
         </div>
 
         {/* 4. Details Box (Left Aligned) with stagger text slide reveals */}
-        <div className="absolute left-6 md:left-20 top-24 xl:top-1/4 max-w-md md:max-w-lg xl:max-w-xl z-20 text-white flex flex-col justify-center">
+        <div className="trips-slider-details-box absolute left-6 md:left-20 top-24 xl:top-[20%] max-w-md md:max-w-lg xl:max-w-xl z-20 text-white flex flex-col justify-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeIndex}
@@ -173,7 +173,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               exit="hidden"
             >
               {/* Small State Badge (Cropped Reveal) */}
-              <div className="overflow-hidden mb-2 md:mb-4 h-6 flex items-center">
+              <div className="overflow-hidden mb-2 md:mb-3 h-6 flex items-center">
                 <motion.div
                   variants={textRevealVariants}
                   className="flex items-center gap-2"
@@ -190,8 +190,8 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
                 </motion.div>
               </div>
 
-              {/* Split Title (Cropped Reveal) */}
-              <div className="font-display leading-[0.95] tracking-tight font-black text-3xl sm:text-6xl md:text-7xl uppercase select-text mb-4 md:mb-6">
+              {/* Split Title (Cropped Reveal) - resized to prevent height overflow on wrapping */}
+              <div className="trips-slider-title font-display leading-[0.95] tracking-tight font-black text-3xl sm:text-5xl md:text-[54px] lg:text-[64px] uppercase select-text mb-3 md:mb-4">
                 <div className="overflow-hidden py-1">
                   <motion.div variants={textRevealVariants} className="text-white/95">
                     {title1}
@@ -205,7 +205,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               </div>
 
               {/* Trip Specs (Cropped Reveal) */}
-              <div className="overflow-hidden mb-4 md:mb-6 py-1">
+              <div className="trips-slider-specs overflow-hidden mb-3 md:mb-4 py-1">
                 <motion.div
                   variants={textRevealVariants}
                   className="flex flex-wrap gap-2 md:gap-4 text-[10px] md:text-xs font-semibold text-stone-250 uppercase tracking-wider bg-white/5 border border-white/10 backdrop-blur-md px-3 py-1.5 md:px-4 md:py-2.5 rounded-xl w-fit"
@@ -220,17 +220,17 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               </div>
 
               {/* Description (Cropped Reveal) */}
-              <div className="overflow-hidden mb-5 md:mb-8 max-w-lg">
+              <div className="trips-slider-description overflow-hidden mb-4 md:mb-5 max-w-lg">
                 <motion.p
                   variants={textRevealVariants}
-                  className="text-stone-200/90 font-body text-xs sm:text-sm md:text-base leading-relaxed select-text font-normal"
+                  className="text-stone-200/90 font-body text-xs sm:text-[13px] md:text-[14px] lg:text-[15px] leading-relaxed select-text font-normal"
                 >
                   Explore the untouched beauty of {activeTrip.destination}. This curated solo-friendly journey includes comfortable sharing accommodations, AC or Non-AC transportation, breakfasts and dinners, alongside guidance from Akhil.
                 </motion.p>
               </div>
 
               {/* Action CTAs (Cropped Reveal) */}
-              <div className="overflow-hidden py-1">
+              <div className="trips-slider-actions overflow-hidden py-1">
                 <motion.div
                   variants={textRevealVariants}
                   className="flex flex-wrap items-center gap-4"
