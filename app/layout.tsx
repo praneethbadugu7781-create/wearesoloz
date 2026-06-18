@@ -26,7 +26,14 @@ export const metadata: Metadata = {
     type: "website",
     images: ["/og-image.jpg"]
   },
-  keywords: ["solo travel", "solo trips", "Kedarnath", "travel community", "WeAreSoloz", "Akhil"]
+  keywords: ["solo travel", "solo trips", "Kedarnath", "travel community", "WeAreSoloz", "Akhil"],
+  icons: {
+    icon: [
+      { url: "/logo.png", type: "image/png" }
+    ],
+    shortcut: "/logo.png",
+    apple: "/logo.png"
+  }
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
