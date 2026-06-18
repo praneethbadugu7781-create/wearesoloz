@@ -8,6 +8,7 @@ const Testimonial = require("../models/Testimonial");
 const Contact = require("../models/Contact");
 const SiteSetting = require("../models/SiteSetting");
 const Career = require("../models/Career");
+const Farmer = require("../models/Farmer");
 
 const router = express.Router();
 
@@ -101,7 +102,14 @@ router.get("/settings/:key", async (req, res) => {
 });
 
 // --- Contacts (public submit) ---
-const { sendContactEmail, sendCareerEmail } = require("../lib/mailer");
+const { 
+  sendContactEmail, 
+  sendCareerEmail, 
+  sendFarmerApplicationEmail,
+  sendContactReceiptEmail,
+  sendCareerReceiptEmail,
+  sendFarmerReceiptEmail
+} = require("../lib/mailer");
 
 router.post("/contacts", async (req, res) => {
   try {
@@ -114,8 +122,9 @@ router.post("/contacts", async (req, res) => {
     await connectDB();
     const contact = await Contact.create({ fullName, mobile, email, destination, message });
 
-    // Send email notification asynchronously
+    // Send email notifications asynchronously
     sendContactEmail({ fullName, mobile, email, destination, message }).catch(console.error);
+    sendContactReceiptEmail({ fullName, email, destination }).catch(console.error);
 
     res.status(201).json(contact);
   } catch (e) {
@@ -147,7 +156,7 @@ router.post("/careers", async (req, res) => {
       whyJoin,
     });
 
-    // Send email notification asynchronously
+    // Send email notifications asynchronously
     sendCareerEmail({
       fullName,
       gender,
@@ -158,8 +167,62 @@ router.post("/careers", async (req, res) => {
       experience,
       whyJoin,
     }).catch(console.error);
+    sendCareerReceiptEmail({ fullName, email }).catch(console.error);
 
     res.status(201).json(career);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- Farmers (public submit) ---
+router.post("/farmers", async (req, res) => {
+  try {
+    const { fullName, gender, age, email, mobile, state, district, farmingType, cropType, landSize, whyJoin } = req.body;
+    if (!fullName || fullName.length < 2) return res.status(400).json({ error: "Full name must be at least 2 characters" });
+    if (!gender || !["Male", "Female", "Other"].includes(gender)) return res.status(400).json({ error: "Please select a valid gender" });
+    if (!age || isNaN(Number(age)) || Number(age) < 18 || Number(age) > 100) return res.status(400).json({ error: "Please enter a valid age (18 or older)" });
+    if (!email) return res.status(400).json({ error: "Email is required" });
+    if (!mobile || mobile.length < 7) return res.status(400).json({ error: "Please enter a valid mobile number" });
+    if (!state) return res.status(400).json({ error: "State is required" });
+    if (!district) return res.status(400).json({ error: "District is required" });
+    if (!farmingType) return res.status(400).json({ error: "Farming type is required" });
+    if (!cropType) return res.status(400).json({ error: "Crop type is required" });
+    if (!landSize) return res.status(400).json({ error: "Land size is required" });
+    if (!whyJoin || whyJoin.length < 10) return res.status(400).json({ error: "Explanation must be at least 10 characters" });
+
+    await connectDB();
+    const farmer = await Farmer.create({
+      fullName,
+      gender,
+      age: Number(age),
+      email,
+      mobile,
+      state,
+      district,
+      farmingType,
+      cropType,
+      landSize,
+      whyJoin
+    });
+
+    // Send email notifications asynchronously
+    sendFarmerApplicationEmail({
+      fullName,
+      gender,
+      age: Number(age),
+      email,
+      mobile,
+      state,
+      district,
+      farmingType,
+      cropType,
+      landSize,
+      whyJoin
+    }).catch(console.error);
+    sendFarmerReceiptEmail({ fullName, email, mobile }).catch(console.error);
+
+    res.status(201).json(farmer);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

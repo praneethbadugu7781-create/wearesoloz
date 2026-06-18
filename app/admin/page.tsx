@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Compass, MapPin, BookOpen, Image as ImageIcon, MessageSquareQuote, MailQuestion, AlertCircle, Loader2, Briefcase } from "lucide-react";
+import { Compass, MapPin, BookOpen, Image as ImageIcon, MessageSquareQuote, MailQuestion, AlertCircle, Loader2, Briefcase, HeartHandshake } from "lucide-react";
 import { getAuthHeaders } from "@/lib/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -18,7 +18,7 @@ export default function AdminDashboardPage() {
       try {
         const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
 
-        const [trips, dests, blogs, gallery, testimonials, contacts, careers] = await Promise.all([
+        const [trips, dests, blogs, gallery, testimonials, contacts, careers, farmers] = await Promise.all([
           fetch(`${API_URL}/admin/trips`, { headers }).then(r => r.ok ? r.json() : []),
           fetch(`${API_URL}/admin/destinations`, { headers }).then(r => r.ok ? r.json() : []),
           fetch(`${API_URL}/admin/blogs`, { headers }).then(r => r.ok ? r.json() : []),
@@ -26,6 +26,7 @@ export default function AdminDashboardPage() {
           fetch(`${API_URL}/admin/testimonials`, { headers }).then(r => r.ok ? r.json() : []),
           fetch(`${API_URL}/admin/contacts`, { headers }).then(r => r.ok ? r.json() : []),
           fetch(`${API_URL}/admin/careers`, { headers }).then(r => r.ok ? r.json() : []),
+          fetch(`${API_URL}/admin/farmers`, { headers }).then(r => r.ok ? r.json() : []),
         ]);
 
         setStats([
@@ -36,6 +37,7 @@ export default function AdminDashboardPage() {
           { label: "Testimonials", value: testimonials.length, icon: MessageSquareQuote, color: "text-sky-400 bg-sky-500/15 border-sky-500/20" },
           { label: "Enquiries", value: contacts.length, icon: MailQuestion, color: "text-violet-400 bg-violet-500/15 border-violet-500/20" },
           { label: "Careers", value: careers.length, icon: Briefcase, color: "text-orange-400 bg-orange-500/15 border-orange-500/20" },
+          { label: "Farmer Apps", value: farmers.length, icon: HeartHandshake, color: "text-rose-400 bg-rose-500/15 border-rose-500/20" },
         ]);
 
         setRecentEnquiries(contacts.slice(0, 5));
@@ -75,7 +77,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Cards Grid */}
-      <div className="grid gap-6 grid-cols-2 lg:grid-cols-6">
+      <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {stats.map((stat, idx) => {
           const Icon = stat.icon;
           return (

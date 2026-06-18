@@ -79,7 +79,10 @@ export const destinations = [
 export const trips = [
   { destination: "Ananthagiri Hills Trek", state: "Telangana", category: "Treks", date: "2026-07-04", duration: "1 Day", price: "₹1,499", seats: 15, image: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80", slug: "ananthagiri-hills-trek" },
   { destination: "Srisailam & Nallamala Forest", state: "Andhra Pradesh", category: "Temples", date: "2026-07-11", duration: "2 Days", price: "₹4,999", seats: 12, image: "/images/trips/srisailamimage.png", slug: "srisailam-nallamala-forest" },
-  { destination: "Hampi Heritage Trip", state: "Karnataka", category: "Adventure", date: "2026-07-24", duration: "4 Days", price: "₹7,999", seats: 12, image: "https://images.unsplash.com/photo-1600100397608-f010e45fa674?auto=format&fit=crop&w=1200&q=80", slug: "hampi-heritage-trip" }
+  { destination: "Hampi Heritage Trip", state: "Karnataka", category: "Adventure", date: "2026-07-24", duration: "4 Days", price: "₹7,999", seats: 12, image: "https://images.unsplash.com/photo-1600100397608-f010e45fa674?auto=format&fit=crop&w=1200&q=80", slug: "hampi-heritage-trip" },
+  { destination: "Kochin - Sabarimala - Guruvayur", state: "Kerala", category: "Temples", date: "2026-07-15", duration: "3 Days", price: "₹4,999", seats: 15, image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80", slug: "kochin-sabarimala-guruvayur" },
+  { destination: "Kochin to Sabarimala", state: "Kerala", category: "Temples", date: "2026-07-18", duration: "2 Days", price: "₹2,999", seats: 12, image: "https://images.unsplash.com/photo-1608958415714-d02f50b2c1ef?auto=format&fit=crop&w=1200&q=80", slug: "kochin-to-sabarimala" },
+  { destination: "Thiruvananthapuram to Sabarimala", state: "Kerala", category: "Temples", date: "2026-07-22", duration: "2 Days", price: "₹3,499", seats: 12, image: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=1200&q=80", slug: "thiruvananthapuram-to-sabarimala" }
 ];
 
 export const whyUs = [
@@ -126,6 +129,7 @@ export const adminModules = [
   "Community Links",
   "Homepage Content",
   "Contact Enquiries",
+  "Farmer Applications",
   "Analytics"
 ];
 

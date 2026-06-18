@@ -16,7 +16,8 @@ import {
   ChevronRight,
   Menu,
   X,
-  Briefcase
+  Briefcase,
+  HeartHandshake
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -29,7 +30,8 @@ const sidebarLinks = [
   { href: "/admin/testimonials", label: "Testimonials", icon: MessageSquareQuote },
   { href: "/admin/settings", label: "Site Settings", icon: Settings },
   { href: "/admin/enquiries", label: "Enquiries", icon: MailQuestion },
-  { href: "/admin/careers", label: "Careers", icon: Briefcase }
+  { href: "/admin/careers", label: "Careers", icon: Briefcase },
+  { href: "/admin/farmers", label: "Farmers", icon: HeartHandshake }
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

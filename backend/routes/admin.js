@@ -11,6 +11,9 @@ const Testimonial = require("../models/Testimonial");
 const Contact = require("../models/Contact");
 const SiteSetting = require("../models/SiteSetting");
 const Career = require("../models/Career");
+const Farmer = require("../models/Farmer");
+
+const { sendFarmerApprovalEmail, sendCareerReviewedEmail } = require("../lib/mailer");
 
 const models = {
   trips: Trip,
@@ -21,6 +24,7 @@ const models = {
   contacts: Contact,
   site_settings: SiteSetting,
   careers: Career,
+  farmers: Farmer,
 };
 
 const router = express.Router();
@@ -90,8 +94,21 @@ router.patch("/:resource/:id", async (req, res) => {
     const Model = models[req.params.resource];
     if (!Model) return res.status(404).json({ error: "Unknown resource" });
     await connectDB();
+
+    const prevRecord = await Model.findById(req.params.id).lean();
+    if (!prevRecord) return res.status(404).json({ error: "Not found" });
+
     const record = await Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!record) return res.status(404).json({ error: "Not found" });
+
+    // Send emails on status change to Approved/Reviewed
+    if (req.params.resource === "farmers" && prevRecord.status !== "Approved" && record.status === "Approved") {
+      sendFarmerApprovalEmail(record).catch(console.error);
+    }
+    if (req.params.resource === "careers" && prevRecord.status !== "Reviewed" && record.status === "Reviewed") {
+      sendCareerReviewedEmail(record).catch(console.error);
+    }
+
     res.json(record);
   } catch (e) {
     res.status(500).json({ error: e.message });
