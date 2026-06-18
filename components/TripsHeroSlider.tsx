@@ -137,7 +137,9 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
             style={{ backgroundImage: `url(${activeTrip.image})` }}
             transition={{ type: "spring", stiffness: 120, damping: 22 }}
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-900/50 to-black/35" />
+            {/* Dual gradient overlays for perfect text readability and contrast */}
+            <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/70 to-black/25" />
+            <div className="absolute inset-0 bg-gradient-to-r from-stone-950/85 via-stone-950/30 to-transparent" />
           </motion.div>
         </div>
 
@@ -153,7 +155,9 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               className="absolute inset-0 w-full h-full bg-cover bg-center"
               style={{ backgroundImage: `url(${activeTrip.image})` }}
             >
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-900/50 to-black/35" />
+              {/* Dual gradient overlays for mobile */}
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/70 to-black/25" />
+              <div className="absolute inset-0 bg-gradient-to-r from-stone-950/85 via-stone-950/30 to-transparent" />
             </motion.div>
           </AnimatePresence>
         </div>
@@ -187,7 +191,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               </div>
 
               {/* Split Title (Cropped Reveal) */}
-              <div className="font-display leading-none tracking-tight font-black text-3xl sm:text-6xl md:text-7xl uppercase select-text mb-4 md:mb-6">
+              <div className="font-display leading-[0.95] tracking-tight font-black text-3xl sm:text-6xl md:text-7xl uppercase select-text mb-4 md:mb-6">
                 <div className="overflow-hidden py-1">
                   <motion.div variants={textRevealVariants} className="text-white/95">
                     {title1}
@@ -204,7 +208,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               <div className="overflow-hidden mb-4 md:mb-6 py-1">
                 <motion.div
                   variants={textRevealVariants}
-                  className="flex flex-wrap gap-2 md:gap-4 text-[10px] md:text-xs font-semibold text-stone-200 uppercase tracking-wider bg-white/5 border border-white/10 backdrop-blur-md px-3 py-1.5 md:px-4 md:py-2.5 rounded-xl w-fit"
+                  className="flex flex-wrap gap-2 md:gap-4 text-[10px] md:text-xs font-semibold text-stone-250 uppercase tracking-wider bg-white/5 border border-white/10 backdrop-blur-md px-3 py-1.5 md:px-4 md:py-2.5 rounded-xl w-fit"
                 >
                   <span className="flex items-center gap-1.5 border-r border-white/10 pr-3 md:pr-4">
                     <Clock className="w-3.5 h-3.5 text-orange-400 shrink-0" /> {activeTrip.duration}
@@ -219,7 +223,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               <div className="overflow-hidden mb-5 md:mb-8 max-w-lg">
                 <motion.p
                   variants={textRevealVariants}
-                  className="text-white/80 font-body text-xs sm:text-base leading-relaxed select-text"
+                  className="text-stone-200/90 font-body text-xs sm:text-sm md:text-base leading-relaxed select-text font-normal"
                 >
                   Explore the untouched beauty of {activeTrip.destination}. This curated solo-friendly journey includes comfortable sharing accommodations, AC or Non-AC transportation, breakfasts and dinners, alongside guidance from Akhil.
                 </motion.p>
@@ -229,19 +233,19 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               <div className="overflow-hidden py-1">
                 <motion.div
                   variants={textRevealVariants}
-                  className="flex items-center gap-4"
+                  className="flex flex-wrap items-center gap-4"
                 >
                   <Link
                     href={`/upcoming-trips/${tripSlug}`}
-                    className="inline-flex items-center justify-center bg-white text-stone-950 hover:bg-stone-100 px-6 py-2.5 md:px-8 md:py-3.5 rounded-full font-bold text-[10px] md:text-xs tracking-widest active:scale-95 transition-all shadow-lg pointer-events-auto"
+                    className="inline-flex items-center justify-center bg-[#ea580c] hover:bg-[#ff7a1a] text-white px-7 py-3 md:px-9 md:py-3.5 rounded-full font-bold text-[10px] md:text-xs tracking-widest active:scale-95 hover:-translate-y-0.5 transition-all shadow-lg shadow-orange-600/30 duration-200 pointer-events-auto"
                   >
                     Book Now
                   </Link>
                   <Link
                     href="/contact"
-                    className="inline-flex items-center justify-center bg-white/10 border border-white/20 hover:bg-white/20 text-white px-6 py-2.5 md:px-8 md:py-3.5 rounded-full font-bold text-[10px] md:text-xs tracking-widest active:scale-95 transition-all pointer-events-auto"
+                    className="inline-flex items-center justify-center bg-white text-stone-950 hover:bg-stone-100 px-7 py-3 md:px-9 md:py-3.5 rounded-full font-bold text-[10px] md:text-xs tracking-widest active:scale-95 hover:-translate-y-0.5 transition-all shadow-md duration-200 pointer-events-auto"
                   >
-                    Inquire
+                    Enquire
                   </Link>
                 </motion.div>
               </div>
