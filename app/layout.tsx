@@ -13,26 +13,39 @@ const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfa
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://wearesoloz.com"),
   title: {
-    default: `${brand.name} | ${brand.tagline}`,
+    default: `Best Solo Trips & Budget Tour Packages at Lowest Prices | ${brand.name}`,
     template: `%s | ${brand.name}`
   },
   description:
-    "A premium solo travel community for curated expeditions, treks, spiritual journeys, road trips, and lifelong travel friendships.",
+    "Join the best solo travel community in India. Book curated tour packages, treks, and spiritual journeys at the lowest prices. Travel safe, connect with amazing people, and save money.",
   openGraph: {
-    title: `${brand.name} | ${brand.tagline}`,
-    description: "Start solo, travel together with India's growing premium travel community.",
+    title: `Best Solo Trips & Budget Tour Packages at Lowest Prices | ${brand.name}`,
+    description: "Start solo, travel together with India's growing premium travel community. Book best trips at low prices.",
     type: "website",
     images: ["/og-image.jpg"]
   },
-  keywords: ["solo travel", "solo trips", "Kedarnath", "travel community", "WeAreSoloz", "Akhil"],
+  keywords: [
+    "best trips at low prices",
+    "lowest price tour packages",
+    "budget solo travel India",
+    "cheap trips",
+    "best budget treks",
+    "solo travel community India",
+    "affordable travel packages",
+    "WeAreSoloz",
+    "travel solo you are not alone"
+  ],
   icons: {
     icon: [
       { url: "/logo.png", type: "image/png" }
     ],
     shortcut: "/logo.png",
     apple: "/logo.png"
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || ""
   }
 };
 

@@ -3,9 +3,35 @@ import { trips as defaultTrips } from "@/lib/data";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { fetchPublic } from "@/lib/api";
+import { Metadata } from "next";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const trip = await getTrip(slug);
+  if (!trip) {
+    return {
+      title: "Trip Not Found | WeAreSoloz"
+    };
+  }
+  const destination = trip.destination || "Trip Detail";
+  const price = trip.price || "";
+  const duration = trip.duration || "";
+  
+  return {
+    title: `${destination} Trip | Best Tour Package at Lowest Price of ${price}`,
+    description: `Book the best ${destination} budget tour package for ${duration} at lowest price of ${price} with WeAreSoloz solo travel community. Safe, curated, and highly reviewed.`,
+    keywords: [
+      `${destination.toLowerCase()} trip at low price`,
+      `best ${destination.toLowerCase()} trip package`,
+      `cheapest ${destination.toLowerCase()} tour`,
+      `WeAreSoloz ${destination.toLowerCase()}`,
+      `budget ${destination.toLowerCase()} tour`
+    ]
+  };
 }
 
 async function getTrip(slug: string) {

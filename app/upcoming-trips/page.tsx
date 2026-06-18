@@ -1,6 +1,20 @@
 import TripsClient from "@/components/TripsClient";
 import { trips as defaultTrips } from "@/lib/data";
 import { fetchPublic } from "@/lib/api";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Upcoming Solo Trips & Best Tour Packages at Lowest Prices",
+  description: "Explore the best upcoming solo trips, treks, and spiritual tours at low prices. Book budget-friendly travel packages for Hampi, Munnar, Kerala, Coorg, Araku, and more.",
+  keywords: [
+    "best trips at low prices",
+    "lowest price trips",
+    "upcoming budget trips",
+    "cheap solo trips India",
+    "upcoming tours",
+    "budget friendly travel packages"
+  ]
+};
 
 async function getTrips() {
   try {
