@@ -157,7 +157,7 @@ export default function WriteReviewModal({ isOpen, onClose, onSuccess }: WriteRe
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {/* Trip Taken / Location */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">

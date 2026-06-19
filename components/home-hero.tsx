@@ -27,7 +27,7 @@ export function HomeHero({ title, subheading, heroImage }: HomeHeroProps) {
   const words = displayTitle.split(" ");
 
   return (
-    <section ref={containerRef} className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-black">
+    <section ref={containerRef} className="relative min-h-screen md:h-screen w-full flex items-center justify-center py-28 md:py-0 overflow-hidden bg-black">
       {/* Background Image - Cinematic Parallax Zoom */}
       <motion.div style={{ y: yBg }} className="absolute inset-0 z-0 overflow-hidden">
         <motion.img
@@ -79,12 +79,12 @@ export function HomeHero({ title, subheading, heroImage }: HomeHeroProps) {
       >
         <div className="flex flex-col items-center space-y-4">
           {/* Small Tagline */}
-          <div className="overflow-hidden">
+          <div className="overflow-hidden py-1">
             <motion.span
               initial={{ y: "100%", opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="inline-block text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.25em] text-white/95"
+              className="inline-block text-[9px] sm:text-xs font-extrabold uppercase tracking-[0.18em] sm:tracking-[0.25em] text-white/95"
             >
               {displayTagline}
             </motion.span>
