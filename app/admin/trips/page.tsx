@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Compass, Plus, Edit2, Trash2, Check, Loader2, Calendar, Users, Sparkles, X, FileSpreadsheet, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CloudinaryUpload } from "@/components/cloudinary-upload";
-import { exportToCSV, exportToPDF } from "@/lib/export";
+import { exportToCSV, exportToPDF, formatPriceForExport } from "@/lib/export";
 
 interface ItineraryItem {
   day: string;
@@ -165,7 +165,8 @@ export default function AdminTripsPage() {
 
     const dataToExport = trips.map(t => ({
       ...t,
-      date: t.date ? new Date(t.date).toLocaleDateString() : ""
+      date: t.date ? new Date(t.date).toLocaleDateString() : "",
+      price: formatPriceForExport(t.price)
     }));
 
     exportToCSV(dataToExport, headersMap, `trips_export_${new Date().toISOString().split("T")[0]}.csv`);
@@ -180,7 +181,7 @@ export default function AdminTripsPage() {
       t.category || "Adventure",
       t.date ? new Date(t.date).toLocaleDateString() : "",
       t.duration,
-      t.price,
+      formatPriceForExport(t.price),
       t.seats,
       t.status
     ]);

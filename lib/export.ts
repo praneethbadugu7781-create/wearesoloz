@@ -73,6 +73,25 @@ export function exportToCSV(
   }
 }
 
+export function formatPriceForExport(priceStr: any): string {
+  if (priceStr === null || priceStr === undefined) return "";
+  let cleaned = String(priceStr).trim();
+  if (cleaned.startsWith("₹")) {
+    cleaned = cleaned.replace("₹", "Rs. ").trim();
+  } else if (/^\d+$/.test(cleaned)) {
+    // If it's a pure number, format it with Rs. and commas
+    const num = parseInt(cleaned, 10);
+    cleaned = "Rs. " + num.toLocaleString("en-IN");
+  } else {
+    // Clean any weird quotes or symbols but keep numbers and commas
+    const digitsAndCommas = cleaned.replace(/[^0-9,]/g, "");
+    if (digitsAndCommas) {
+      cleaned = "Rs. " + digitsAndCommas;
+    }
+  }
+  return cleaned;
+}
+
 export async function exportToPDF(
   title: string,
   headers: string[],
@@ -89,15 +108,30 @@ export async function exportToPDF(
     format: 'a4',
   });
 
+  let titleX = 14;
+  try {
+    const logoImg = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = '/logo.png';
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+    });
+    doc.addImage(logoImg, 'PNG', 14, 8, 12, 12);
+    titleX = 30;
+  } catch (e) {
+    console.error('Failed to load logo for PDF export:', e);
+  }
+
   // Add Document Title
   doc.setFontSize(18);
   doc.setTextColor(234, 88, 12); // #ea580c (brand orange)
-  doc.text(title, 14, 15);
+  doc.text(title, titleX, 15);
 
   // Add Date subtitle
   doc.setFontSize(10);
   doc.setTextColor(100, 116, 139); // slate-500
-  doc.text(`Exported on: ${new Date().toLocaleString()}`, 14, 21);
+  doc.text(`Exported on: ${new Date().toLocaleString()}`, titleX, 21);
 
   // Render Table
   autoTable(doc, {
@@ -128,3 +162,4 @@ export async function exportToPDF(
 
   doc.save(filename);
 }
+
