@@ -27,7 +27,7 @@ export function HomeHero({ title, subheading, heroImage }: HomeHeroProps) {
   const words = displayTitle.split(" ");
 
   return (
-    <section ref={containerRef} className="relative min-h-screen md:h-screen w-full flex items-center justify-center py-28 md:py-0 overflow-hidden bg-black">
+    <section ref={containerRef} className="relative min-h-screen md:h-screen w-full flex flex-col items-center justify-center pt-24 md:pt-32 pb-12 md:pb-20 overflow-hidden bg-black">
       {/* Background Image - Cinematic Parallax Zoom */}
       <motion.div style={{ y: yBg }} className="absolute inset-0 z-0 overflow-hidden">
         <motion.img
