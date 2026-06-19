@@ -61,7 +61,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       
       {/* India related background watermark */}
       <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.06] mix-blend-multiply"
+        className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-multiply"
         style={{ 
           backgroundImage: "url('/images/india_about_bg.png')",
           backgroundSize: "cover",
