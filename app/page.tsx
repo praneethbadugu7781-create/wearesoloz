@@ -9,7 +9,7 @@ async function getData() {
       fetchPublic("/destinations", []),
       fetchPublic("/trips", []),
       fetchPublic("/blogs", []),
-      fetchPublic("/testimonials", []),
+      fetchPublic("/testimonials", null),
       fetchPublic("/gallery", []),
     ]);
 
@@ -33,7 +33,7 @@ async function getData() {
       ? dbBlogs
       : defaultStories.map((s) => ({ ...s, _id: s.title, id: s.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"), slug: s.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") }));
 
-    const testimonials = dbTestimonials.length > 0 ? dbTestimonials : defaultTestimonials;
+    const testimonials = dbTestimonials !== null ? dbTestimonials : defaultTestimonials;
 
     let galleryItems: any[] = [];
     if (dbGallery.length > 0) {
