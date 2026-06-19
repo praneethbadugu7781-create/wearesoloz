@@ -100,6 +100,7 @@ export default function AdminTripsPage() {
   const [formData, setFormData] = useState<TripData>(emptyForm);
   const [editId, setEditId] = useState<string | null>(null);
   const [subView, setSubView] = useState<"all" | "months">("all");
+  const [isInternational, setIsInternational] = useState(false);
 
   // State for scheduling draft templates
   const [schedulingMonth, setSchedulingMonth] = useState<string | null>(null);
@@ -135,6 +136,8 @@ export default function AdminTripsPage() {
       images: trip.images || []
     });
     setEditId(trip._id || null);
+    const isInter = trip.state ? !indianStates.includes(trip.state) : false;
+    setIsInternational(isInter);
     setView("form");
   };
 
@@ -217,6 +220,7 @@ export default function AdminTripsPage() {
       setView("list");
       setFormData(emptyForm);
       setEditId(null);
+      setIsInternational(false);
       fetchTrips();
     } catch (err: any) {
       alert(err.message || "Error saving trip.");
@@ -380,6 +384,8 @@ export default function AdminTripsPage() {
     });
     setEditId(template._id || null);
     setSchedulingMonth(null);
+    const isInter = template.state ? !indianStates.includes(template.state) : false;
+    setIsInternational(isInter);
     setView("form");
   };
 
@@ -391,6 +397,7 @@ export default function AdminTripsPage() {
     });
     setEditId(null);
     setSchedulingMonth(null);
+    setIsInternational(false);
     setView("form");
   };
 
@@ -471,7 +478,7 @@ export default function AdminTripsPage() {
             <Button onClick={handleExportPDF} variant="secondary" className="pt-0.5 border-white/10 hover:bg-white/5 text-white">
               <FileText size={16} className="mr-2 text-red-500" /> Export PDF
             </Button>
-            <Button onClick={() => { setFormData(emptyForm); setEditId(null); setView("form"); }} className="pt-0.5">
+            <Button onClick={() => { setFormData(emptyForm); setEditId(null); setIsInternational(false); setView("form"); }} className="pt-0.5">
               <Plus size={16} className="mr-2" /> Create New Trip
             </Button>
           </div>
@@ -589,17 +596,47 @@ export default function AdminTripsPage() {
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">State / Region</label>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Region Type</label>
               <select
-                value={formData.state || "Telangana"}
-                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                className="h-10 w-full rounded-lg border border-white/10 bg-[#14110d] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+                value={isInternational ? "international" : "domestic"}
+                onChange={(e) => {
+                  const isInter = e.target.value === "international";
+                  setIsInternational(isInter);
+                  setFormData({ ...formData, state: isInter ? "" : "Telangana" });
+                }}
+                className="h-10 w-full rounded-lg border border-white/10 bg-[#14110d] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none mb-4"
               >
-                {indianStates.map((state) => (
-                  <option key={state} value={state}>{state}</option>
-                ))}
+                <option value="domestic">State-wise (India)</option>
+                <option value="international">International</option>
               </select>
             </div>
+            
+            {isInternational ? (
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Country / Region</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Sri Lanka"
+                  value={formData.state || ""}
+                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  className="h-10 w-full rounded-lg border border-white/10 bg-[#14110d] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">State / Region</label>
+                <select
+                  value={formData.state || "Telangana"}
+                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  className="h-10 w-full rounded-lg border border-white/10 bg-[#14110d] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+                >
+                  {indianStates.map((state) => (
+                    <option key={state} value={state}>{state}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Category</label>
               <select
