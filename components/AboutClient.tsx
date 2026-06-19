@@ -105,18 +105,23 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                 alt="Akhil - Founder of WeAreSoloz"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent opacity-85 pointer-events-none" />
-              <div className="absolute bottom-6 left-6 text-white z-10 bg-[#0c0a09]/75 backdrop-blur-lg px-6 py-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-4 transition-all duration-300 group-hover:bg-[#0c0a09]/90 group-hover:border-orange-500/30">
-                <div className="relative w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center border border-orange-500/30 shrink-0">
-                  <span className="w-2 h-2 rounded-full bg-orange-500 animate-ping absolute" />
-                  <span className="w-2 h-2 rounded-full bg-orange-500 relative" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-75 pointer-events-none" />
+            </div>
+
+            {/* Unique Founder Signature Card under the photo */}
+            <div className="mt-6 bg-white border border-stone-200/80 rounded-3xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 group hover:border-orange-300 hover:shadow-md transition-all duration-300">
+              <div className="flex items-center gap-4">
+                <div className="relative w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center border border-orange-500/20 shrink-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-ping absolute" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-orange-500 relative" />
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase font-bold tracking-widest text-orange-400">Founder of WeAreSoloZ</div>
-                  <h3 className="font-display text-2xl font-extrabold tracking-tight text-white mt-0.5 flex items-center gap-1.5">
-                    Akhil <span className="inline-block animate-bounce" style={{ animationDuration: '4s' }}>🌍</span>✈️
-                  </h3>
+                  <h4 className="font-display text-lg font-bold text-stone-900 leading-tight">Akhil</h4>
+                  <p className="text-xs uppercase tracking-wider text-orange-600 font-semibold mt-0.5">Founder of WeAreSoloZ</p>
                 </div>
+              </div>
+              <div className="text-stone-400 font-display italic text-sm group-hover:text-orange-500 transition-colors">
+                &ldquo;Travel Solo, You&apos;re Not Alone&rdquo;
               </div>
             </div>
           </Reveal>
