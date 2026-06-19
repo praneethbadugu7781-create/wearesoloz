@@ -189,7 +189,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
           <div className="absolute right-6 bottom-12 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-3.5 py-1.5 border border-white/10 select-none pointer-events-none flex items-center gap-1.5">
             <span>{activeImageIndex + 1} / {gallery.length} Photos</span>
             <span className="text-[#ea580c] font-black">•</span>
-            <span>Auto Scroll</span>
+            <span>Swipe ➜</span>
           </div>
         )}
       </section>
