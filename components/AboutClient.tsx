@@ -61,14 +61,12 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       
       {/* India related background watermark */}
       <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.1] mix-blend-multiply"
+        className="absolute inset-0 pointer-events-none opacity-[0.35]"
         style={{ 
           backgroundImage: "url('/images/india_about_bg.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          backgroundAttachment: "fixed",
-          WebkitMaskImage: "radial-gradient(circle at 50% 35%, transparent 25%, black 75%)",
-          maskImage: "radial-gradient(circle at 50% 35%, transparent 25%, black 75%)"
+          backgroundAttachment: "fixed"
         }}
       />
       {/* Background Decorative floating plane */}
