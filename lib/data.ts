@@ -102,10 +102,9 @@ export const stories = [
 ];
 
 export const testimonials = [
-  { name: "Priya S.", role: "Solo trekker", quote: "I joined alone and felt included from the first call. The trip had the right mix of freedom and care." },
-  { name: "Rahul K.", role: "Photographer", quote: "The group energy was premium, warm, and genuinely adventurous. Every day had a story worth keeping." },
-  { name: "Meghana R.", role: "Spiritual explorer", quote: "WeAreSoloz made Kedarnath feel safe, soulful, and deeply human. I came back with friends." }
+  { name: "Praneeth", role: "Solo Traveller", quote: "Fantastic experience with WeAreSoloz! Well-organized trip, great coordination, friendly group, and unforgettable memories. Highly recommended for solo travelers." }
 ];
+
 
 export const gallery = [
   { src: "/images/gallery/IMG-20260611-WA0046.jpg", category: "Treks", title: "Soloz Adventure 1" },
