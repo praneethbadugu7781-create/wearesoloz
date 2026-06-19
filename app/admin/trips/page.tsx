@@ -33,6 +33,45 @@ interface TripData {
   inclusions: string[];
 }
 
+const indianStates = [
+  "Andaman and Nicobar Islands",
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chandigarh",
+  "Chhattisgarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jammu and Kashmir",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Ladakh",
+  "Lakshadweep",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Puducherry",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal"
+];
+
 const emptyForm: TripData = {
   destination: "",
   state: "Telangana",
@@ -555,11 +594,9 @@ export default function AdminTripsPage() {
                 onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                 className="h-10 w-full rounded-lg border border-white/10 bg-[#14110d] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
               >
-                <option value="Telangana">Telangana</option>
-                <option value="Andhra Pradesh">Andhra Pradesh</option>
-                <option value="Karnataka">Karnataka</option>
-                <option value="Tamil Nadu">Tamil Nadu</option>
-                <option value="Kerala">Kerala</option>
+                {indianStates.map((state) => (
+                  <option key={state} value={state}>{state}</option>
+                ))}
               </select>
             </div>
             <div>
