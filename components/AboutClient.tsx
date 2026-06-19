@@ -242,7 +242,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
 
           {/* 3D Social Initiative Card for Farmers */}
           <Reveal className="mt-16">
-            <div className="relative overflow-hidden rounded-3xl border border-amber-250 bg-amber-50/45 p-8 md:p-12 shadow-xl shadow-amber-200/20 max-w-5xl mx-auto group cursor-pointer hover:shadow-2xl transition-all duration-300">
+            <div className="relative overflow-hidden rounded-3xl border border-amber-200 bg-amber-50 p-8 md:p-12 shadow-xl shadow-amber-200/20 max-w-5xl mx-auto group cursor-pointer hover:shadow-2xl transition-all duration-300">
               <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-48 h-48 bg-amber-200/20 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-300/35 transition-colors" />
               <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
                 <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center shrink-0">
@@ -254,7 +254,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                     Giving Back: Supporting Our Farmers
                   </h3>
                   <p className="text-stone-600 leading-relaxed font-body text-base max-w-3xl">
-                    We also believe in giving back to society. As a mark of respect for the people who feed our nation, **one deserving farmer** will receive a fully sponsored free trip every single month.
+                    We also believe in giving back to society. As a mark of respect for the people who feed our nation, <strong className="font-bold text-stone-900">one deserving farmer</strong> will receive a fully sponsored free trip every single month.
                   </p>
                 </div>
               </div>
