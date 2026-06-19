@@ -21,7 +21,6 @@ export const brand = {
 export const navItems = [
   { href: "/", label: "Home" },
   { href: "/upcoming-trips", label: "Upcoming Trips" },
-  { href: "/travel-stories", label: "Travel Stories" },
   { href: "/soloz-community", label: "Soloz Community" },
   { href: "/gallery", label: "Gallery" },
   { href: "/about-akhil", label: "About Akhil" },

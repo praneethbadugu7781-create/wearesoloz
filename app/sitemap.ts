@@ -9,7 +9,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "",
     "/about-akhil",
     "/upcoming-trips",
-    "/travel-stories",
     "/careers",
     "/contact",
     "/soloz-community",
@@ -41,24 +40,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("Sitemap dynamic trips generation error:", error);
   }
 
-  // Dynamic blog routes
-  let blogRoutes: any[] = [];
-  try {
-    const blogs = await fetchPublic("/blogs", []);
-    if (blogs && blogs.length > 0) {
-      blogRoutes = blogs.map((blog: any) => {
-        const slug = blog.slug || blog.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-        return {
-          url: `${baseUrl}/travel-stories/${slug}`,
-          lastModified: new Date(blog.updatedAt || new Date()),
-          changeFrequency: "monthly" as const,
-          priority: 0.6
-        };
-      });
-    }
-  } catch (error) {
-    console.error("Sitemap dynamic blogs generation error:", error);
-  }
-
-  return [...staticRoutes, ...tripRoutes, ...blogRoutes];
+  return [...staticRoutes, ...tripRoutes];
 }

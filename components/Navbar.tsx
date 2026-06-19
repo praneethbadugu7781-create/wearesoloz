@@ -9,7 +9,6 @@ import { motion, AnimatePresence } from "framer-motion";
 const links = [
   { href: "/", label: "Home" },
   { href: "/upcoming-trips", label: "Trips" },
-  { href: "/travel-stories", label: "Stories" },
   { href: "/soloz-community", label: "Community" },
   { href: "/gallery", label: "Gallery" },
   { href: "/about-akhil", label: "About" },
