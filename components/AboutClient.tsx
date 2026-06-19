@@ -59,6 +59,16 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
   return (
     <div data-testid="about-page" className="bg-white min-h-screen text-[#1c1917] pt-20 relative overflow-hidden">
       
+      {/* India related background watermark */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-[0.06] mix-blend-multiply"
+        style={{ 
+          backgroundImage: "url('/images/india_about_bg.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed"
+        }}
+      />
       {/* Background Decorative floating plane */}
       <div className="absolute top-48 left-10 opacity-[0.015] pointer-events-none hidden lg:block animate-bounce" style={{ animationDuration: '10s' }}>
         <svg className="w-56 h-56" fill="currentColor" viewBox="0 0 24 24">
@@ -88,20 +98,20 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       <section className="py-20 px-6 md:px-10">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           
-          {/* Left Panel: 3D Animated Image */}
+          {/* Left Panel: Image */}
           <Reveal className="w-full">
-            <Card3D className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-stone-400/20 bg-stone-100 group cursor-pointer" maxRotate={8} scale={1.02}>
+            <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-stone-400/20 bg-stone-100 group cursor-pointer">
               <img
                 src={founderImage}
                 alt="Akhil - Founder of WeAreSoloz"
-                className="w-full h-full object-cover transition-transform duration-75"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/70 via-stone-900/10 to-transparent opacity-75" />
-              <div style={{ transform: "translateZ(45px)", transformStyle: "preserve-3d" }} className="absolute bottom-8 left-8 text-white z-10">
-                <div className="text-[10px] uppercase font-bold tracking-widest opacity-80 text-orange-400">Founder of WeAreSoloz</div>
-                <h3 className="font-display text-3xl font-bold mt-2 tracking-tight">Akhil 🌍✈️</h3>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-80" />
+              <div className="absolute bottom-6 left-6 text-white z-10 bg-[#0c0a09]/75 backdrop-blur-md px-5 py-4 rounded-2xl border border-white/10 shadow-xl transition-all duration-300 group-hover:bg-[#0c0a09]/90">
+                <div className="text-[11px] uppercase font-extrabold tracking-widest text-orange-400">Founder of WeAreSoloz</div>
+                <h3 className="font-display text-2xl font-bold mt-1 tracking-tight text-white">Akhil 🌍✈️</h3>
               </div>
-            </Card3D>
+            </div>
           </Reveal>
 
           {/* Right Panel: Bio Text */}
