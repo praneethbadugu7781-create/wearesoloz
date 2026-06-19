@@ -137,13 +137,13 @@ export default function FarmerRegistrationClient() {
     <div data-testid="farmer-registration-page" className="relative min-h-screen text-[#1c1917] pt-20 overflow-hidden bg-stone-50">
       {/* Premium Farming Background Image */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-35"
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-75"
         style={{ 
           backgroundImage: `url('/images/farmer_bg.png')`,
         }}
       />
-      {/* Light Glassmorphic Overlay for Text Contrast */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-white/90 via-white/75 to-stone-50/90 backdrop-blur-[3px]" />
+      {/* Soft overlay to blend image and ensure text is perfectly legible */}
+      <div className="absolute inset-0 z-0 bg-white/50 backdrop-blur-[1.5px]" />
 
       <section className="relative z-10 pt-40 pb-24 px-6 md:px-10">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12">
