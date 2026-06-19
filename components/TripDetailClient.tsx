@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Calendar, Clock, Users, MapPin, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,45 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
   const [showTerms, setShowTerms] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [waUrl, setWaUrl] = useState("");
+
+  // Auto-scroll image slider states
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const gallery = [trip.image, ...(trip.images || [])].filter(Boolean);
+
+  useEffect(() => {
+    if (gallery.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveImageIndex((prev) => (prev + 1) % gallery.length);
+    }, 4500); // Cycle every 4.5 seconds
+    return () => clearInterval(interval);
+  }, [gallery.length]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd || gallery.length <= 1) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      setActiveImageIndex((prev) => (prev + 1) % gallery.length);
+    }
+    if (isRightSwipe) {
+      setActiveImageIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
+    }
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,8 +128,6 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
 
   const seatsVal = trip.seats ?? trip.seats_available ?? "—";
 
-  const gallery = [trip.image, ...(trip.images || [])].filter(Boolean);
-
   return (
     <div data-testid="trip-detail-page" className="bg-white min-h-screen text-[#1c1917]">
       <section className="relative h-[60vh] min-h-[480px] overflow-hidden bg-stone-950">
@@ -102,21 +139,43 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
           />
         ) : (
           <div 
-            className="flex h-full w-full overflow-x-auto snap-x snap-mandatory bg-stone-950"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            className="relative h-full w-full overflow-hidden bg-stone-950"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
-            {gallery.map((imgSrc, index) => (
-              <div
-                key={index}
-                className="relative h-full shrink-0 snap-center w-[85vw] md:w-[70vw] lg:w-[60vw]"
-              >
-                <img
-                  src={imgSrc}
-                  alt={`${trip.title} Gallery ${index + 1}`}
-                  className="w-full h-full object-cover border-r border-stone-900"
+            {/* Sliding Flex Container */}
+            <div 
+              className="flex h-full w-full transition-transform duration-700 ease-in-out"
+              style={{ transform: `translateX(-${activeImageIndex * 100}%)` }}
+            >
+              {gallery.map((imgSrc, index) => (
+                <div
+                  key={index}
+                  className="relative h-full w-full shrink-0"
+                >
+                  <img
+                    src={imgSrc}
+                    alt={`${trip.title} Gallery ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Slider Dots indicators */}
+            <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-20 flex gap-2 bg-black/30 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/5">
+              {gallery.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveImageIndex(index)}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    activeImageIndex === index ? "w-5 bg-[#ea580c]" : "w-1.5 bg-white/40 hover:bg-white"
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
                 />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-white via-white/15 to-transparent pointer-events-none" />
@@ -128,9 +187,9 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
         </div>
         {gallery.length > 1 && (
           <div className="absolute right-6 bottom-12 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-3.5 py-1.5 border border-white/10 select-none pointer-events-none flex items-center gap-1.5">
-            <span>{gallery.length} Photos</span>
+            <span>{activeImageIndex + 1} / {gallery.length} Photos</span>
             <span className="text-[#ea580c] font-black">•</span>
-            <span>Swipe ➜</span>
+            <span>Auto Scroll</span>
           </div>
         )}
       </section>
