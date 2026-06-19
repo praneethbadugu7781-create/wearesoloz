@@ -6,7 +6,6 @@ import { Youtube, Instagram, Phone, MessageCircle, ArrowRight, Leaf, Quote } fro
 import { motion } from "framer-motion";
 import Reveal, { SectionLabel } from "@/components/Reveal";
 import indiaMap from "@svg-maps/india";
-import Card3D from "@/components/Card3D";
 
 interface AboutClientProps {
   settings: any;
@@ -195,14 +194,14 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
               { label: "Grow", desc: "Expanding your comfort zone, building confidence, and discovering who you are.", emoji: "🚀", color: "from-purple-500/10 to-transparent", border: "group-hover:border-purple-300" }
             ].map((pillar) => (
               <Reveal key={pillar.label} className="h-full">
-                <Card3D className={`bg-white rounded-3xl p-8 border border-stone-200/60 h-full relative overflow-hidden flex flex-col justify-between hover:shadow-2xl hover:shadow-stone-300/30 transition-all duration-300 group cursor-pointer ${pillar.border}`}>
+                <div className={`bg-white rounded-3xl p-8 border border-stone-200/60 h-full relative overflow-hidden flex flex-col justify-between hover:shadow-2xl hover:shadow-stone-300/30 hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${pillar.border}`}>
                   <div className={`absolute inset-0 bg-gradient-to-br ${pillar.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                  <div className="relative z-10 space-y-4" style={{ transform: "translateZ(30px)", transformStyle: "preserve-3d" }}>
-                    <div style={{ transform: "translateZ(40px)" }} className="text-4xl">{pillar.emoji}</div>
-                    <h3 style={{ transform: "translateZ(35px)" }} className="font-display text-2xl font-bold text-stone-900 group-hover:text-[#ea580c] transition-colors">{pillar.label}</h3>
-                    <p style={{ transform: "translateZ(20px)" }} className="text-stone-500 font-body text-sm leading-relaxed">{pillar.desc}</p>
+                  <div className="relative z-10 space-y-4">
+                    <div className="text-4xl">{pillar.emoji}</div>
+                    <h3 className="font-display text-2xl font-bold text-stone-900 group-hover:text-[#ea580c] transition-colors">{pillar.label}</h3>
+                    <p className="text-stone-500 font-body text-sm leading-relaxed">{pillar.desc}</p>
                   </div>
-                </Card3D>
+                </div>
               </Reveal>
             ))}
           </div>
@@ -226,40 +225,40 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {uniqueOfferings.map((item, idx) => (
               <Reveal key={idx} className="h-full">
-                <Card3D className={`bg-white rounded-3xl p-8 border border-stone-200/60 shadow-sm transition-all duration-300 h-full flex flex-col justify-between group ${item.color} hover:shadow-2xl hover:shadow-stone-300/35 cursor-pointer`}>
-                  <div className="space-y-4" style={{ transform: "translateZ(25px)", transformStyle: "preserve-3d" }}>
-                    <div style={{ transform: "translateZ(40px)" }} className="text-4xl">{item.emoji}</div>
-                    <h3 style={{ transform: "translateZ(30px)" }} className="font-display text-xl font-bold text-stone-900 group-hover:text-[#ea580c] transition-colors">
+                <div className={`bg-white rounded-3xl p-8 border border-stone-200/60 shadow-sm hover:-translate-y-1 transition-all duration-300 h-full flex flex-col justify-between group ${item.color} hover:shadow-2xl hover:shadow-stone-300/35 cursor-pointer`}>
+                  <div className="space-y-4">
+                    <div className="text-4xl">{item.emoji}</div>
+                    <h3 className="font-display text-xl font-bold text-stone-900 group-hover:text-[#ea580c] transition-colors">
                       {item.title}
                     </h3>
-                    <p style={{ transform: "translateZ(20px)" }} className="text-stone-500 text-sm font-body leading-relaxed">
+                    <p className="text-stone-500 text-sm font-body leading-relaxed">
                       {item.desc}
                     </p>
                   </div>
-                </Card3D>
+                </div>
               </Reveal>
             ))}
           </div>
 
           {/* 3D Social Initiative Card for Farmers */}
           <Reveal className="mt-16">
-            <Card3D className="relative overflow-hidden rounded-3xl border border-amber-250 bg-amber-50/45 p-8 md:p-12 shadow-xl shadow-amber-200/20 max-w-5xl mx-auto group cursor-pointer" maxRotate={6} scale={1.015}>
+            <div className="relative overflow-hidden rounded-3xl border border-amber-250 bg-amber-50/45 p-8 md:p-12 shadow-xl shadow-amber-200/20 max-w-5xl mx-auto group cursor-pointer hover:shadow-2xl transition-all duration-300">
               <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-48 h-48 bg-amber-200/20 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-300/35 transition-colors" />
-              <div className="flex flex-col md:flex-row items-center gap-8 relative z-10" style={{ transform: "translateZ(30px)", transformStyle: "preserve-3d" }}>
-                <div style={{ transform: "translateZ(50px)" }} className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center shrink-0">
+              <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center shrink-0">
                   <Leaf className="w-8 h-8 text-amber-600 animate-pulse" />
                 </div>
                 <div className="space-y-3 text-center md:text-left">
-                  <div style={{ transform: "translateZ(35px)" }} className="text-[10px] uppercase font-bold tracking-widest text-amber-600">Social Initiative</div>
-                  <h3 style={{ transform: "translateZ(40px)" }} className="font-display text-2xl md:text-3xl font-bold text-stone-900 tracking-tight leading-tight">
+                  <div className="text-[10px] uppercase font-bold tracking-widest text-amber-600">Social Initiative</div>
+                  <h3 className="font-display text-2xl md:text-3xl font-bold text-stone-900 tracking-tight leading-tight">
                     Giving Back: Supporting Our Farmers
                   </h3>
-                  <p style={{ transform: "translateZ(20px)" }} className="text-stone-600 leading-relaxed font-body text-base max-w-3xl">
+                  <p className="text-stone-600 leading-relaxed font-body text-base max-w-3xl">
                     We also believe in giving back to society. As a mark of respect for the people who feed our nation, **one deserving farmer** will receive a fully sponsored free trip every single month.
                   </p>
                 </div>
               </div>
-            </Card3D>
+            </div>
           </Reveal>
 
         </div>
@@ -316,10 +315,10 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                     key={loc.id}
                     d={loc.path}
                     stroke="#ea580c"
-                    strokeWidth="1.2"
-                    strokeOpacity="0.15"
-                    fill="rgba(234,88,12,0.015)"
-                    className="transition-colors hover:fill-orange-500/10 hover:stroke-orange-500/40 cursor-default"
+                    strokeWidth="1.5"
+                    strokeOpacity="0.55"
+                    fill="rgba(234,88,12,0.02)"
+                    className="transition-colors hover:fill-orange-500/20 hover:stroke-orange-500/60 cursor-default"
                     initial={{ pathLength: 0 }}
                     whileInView={{ pathLength: 1 }}
                     viewport={{ once: true }}
@@ -355,7 +354,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                     x2={route.x2}
                     y2={route.y2}
                     stroke="url(#routeGradient)"
-                    strokeWidth="1.2"
+                    strokeWidth="1.8"
                     strokeDasharray="3 3"
                     initial={{ pathLength: 0 }}
                     whileInView={{ pathLength: 1 }}
@@ -367,11 +366,11 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                 {/* Definitions for Gradients */}
                 <defs>
                   <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#ea580c" stopOpacity="0.1" />
-                    <stop offset="100%" stopColor="#ea580c" stopOpacity="0.4" />
+                    <stop offset="0%" stopColor="#ea580c" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#ea580c" stopOpacity="0.85" />
                   </linearGradient>
                   <radialGradient id="glowGradient" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#ea580c" stopOpacity="0.3" />
+                    <stop offset="0%" stopColor="#ea580c" stopOpacity="0.6" />
                     <stop offset="100%" stopColor="#ea580c" stopOpacity="0" />
                   </radialGradient>
                 </defs>
@@ -429,8 +428,9 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                     <circle
                       cx={node.x}
                       cy={node.y}
-                      r="4"
-                      className="fill-[#ea580c] stroke-white stroke-[1.5px] transition-all group-hover:r-6 group-hover:fill-stone-900 group-hover:stroke-[#ea580c]"
+                      r="5"
+                      className="fill-[#ea580c] stroke-white stroke-[2px] transition-all group-hover:r-6 group-hover:fill-stone-900 group-hover:stroke-[#ea580c]"
+                      style={{ filter: "drop-shadow(0px 1px 2px rgba(0,0,0,0.2))" }}
                     />
                     
                     {/* Text Label */}
@@ -438,7 +438,8 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                       x={node.x + (node.dx || 0)}
                       y={node.y + (node.dy || 0)}
                       textAnchor={node.align}
-                      className="fill-stone-800 font-display text-[9px] font-bold tracking-wider opacity-85 group-hover:opacity-100 group-hover:fill-[#ea580c] transition-opacity select-none"
+                      className="fill-stone-950 font-display text-[10px] font-black tracking-wider opacity-90 group-hover:opacity-100 group-hover:fill-[#ea580c] transition-opacity select-none"
+                      style={{ filter: "drop-shadow(0px 1px 2px white) drop-shadow(0px 1px 1px white)" }}
                     >
                       {node.label}
                     </text>
@@ -447,7 +448,8 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                         x={node.x + (node.dx || 0)}
                         y={node.y + (node.dy || 0) + 8}
                         textAnchor={node.align}
-                        className="fill-stone-400 font-body text-[7px] tracking-wide select-none"
+                        className="fill-stone-600 font-body text-[8px] font-semibold tracking-wide select-none"
+                        style={{ filter: "drop-shadow(0px 1px 1.5px white)" }}
                       >
                         {node.sub}
                       </text>
