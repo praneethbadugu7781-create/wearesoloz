@@ -60,7 +60,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       
       {/* India related background watermark */}
       <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.35]"
+        className="absolute inset-0 pointer-events-none opacity-[0.35] z-0"
         style={{ 
           backgroundImage: "url('/images/india_about_bg.png')",
           backgroundSize: "cover",
@@ -83,7 +83,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       </div>
 
       {/* SECTION 1: Top Philosophy Quote Banner */}
-      <section className="pt-36 pb-12 px-6 md:px-10 text-center relative overflow-hidden">
+      <section className="pt-36 pb-12 px-6 md:px-10 text-center relative overflow-hidden z-10">
         <div className="absolute inset-0 bg-gradient-to-b from-orange-500/5 to-transparent pointer-events-none" />
         <Reveal className="max-w-4xl mx-auto">
           <Quote className="w-12 h-12 mx-auto text-orange-500/25 mb-6 rotate-180" />
@@ -94,7 +94,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       </section>
 
       {/* SECTION 2: Hero Intro - Founder Story */}
-      <section className="py-20 px-6 md:px-10">
+      <section className="py-20 px-6 md:px-10 relative z-10">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           
           {/* Left Panel: Image */}
@@ -174,7 +174,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       </section>
 
       {/* SECTION 3: The Mission pillars (Travel, Connect, Heal, Grow) with 3D Float */}
-      <section className="py-24 px-6 md:px-10 border-t border-stone-200 bg-stone-50/40">
+      <section className="py-24 px-6 md:px-10 border-t border-stone-200 bg-stone-50/40 relative z-10">
         <div className="max-w-6xl mx-auto">
           <Reveal className="text-center mb-16">
             <SectionLabel>Our Mission</SectionLabel>
@@ -209,7 +209,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       </section>
 
       {/* SECTION 4: Unique Monthly Travel Offerings Grid with 3D Tilt */}
-      <section className="py-24 px-6 md:px-10 border-t border-stone-200">
+      <section className="py-24 px-6 md:px-10 border-t border-stone-200 relative z-10">
         <div className="max-w-7xl mx-auto">
           
           <Reveal className="text-center mb-16">
@@ -265,7 +265,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       </section>
 
       {/* SECTION 5: India Exploration Map */}
-      <section className="py-24 px-6 md:px-10 border-t border-stone-200 bg-stone-50/30 overflow-hidden relative">
+      <section className="py-24 px-6 md:px-10 border-t border-stone-200 bg-stone-50/30 overflow-hidden relative z-10">
         <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-12 items-center">
           <div className="md:col-span-5 space-y-6">
             <Reveal>
@@ -463,7 +463,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       </section>
 
       {/* SECTION 6: Philosophy & Community Statement */}
-      <section className="py-24 px-6 md:px-10 border-t border-stone-200 bg-stone-50/40">
+      <section className="py-24 px-6 md:px-10 border-t border-stone-200 bg-stone-50/40 relative z-10">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <Reveal>
             <h2 className="font-display text-3xl md:text-5xl font-light tracking-tight text-stone-900 leading-tight">
@@ -477,7 +477,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       </section>
 
       {/* SECTION 7: CTA with final slogan quote */}
-      <section className="relative py-32 px-6 md:px-10 border-t border-stone-200 bg-[#0c0a09] text-white overflow-hidden text-center">
+      <section className="relative py-32 px-6 md:px-10 border-t border-stone-200 bg-[#0c0a09] text-white overflow-hidden text-center z-10">
         <div className="absolute inset-0 bg-gradient-to-t from-orange-500/10 to-transparent pointer-events-none" />
         <div className="relative max-w-4xl mx-auto space-y-12">
           
