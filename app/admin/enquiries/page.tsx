@@ -215,43 +215,43 @@ export default function AdminEnquiriesPage() {
       </div>
 
       {/* Visual Pipeline Guide */}
-      <div className="rounded-xl border border-white/10 bg-[#14110d]/60 p-5 backdrop-blur shadow-lg">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-soloz-amber mb-4">Enquiry & Booking Flow Pipeline</h4>
+      <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-soloz-ember mb-4">Enquiry & Booking Flow Pipeline</h4>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs">
-          <div className="relative p-4 rounded-lg bg-black/25 border border-white/5 space-y-1">
+          <div className="relative p-4 rounded-lg bg-stone-50 border border-stone-200/65 space-y-1">
             <span className="absolute -top-2 -left-2 flex h-5 w-5 items-center justify-center rounded-full bg-soloz-ember text-[10px] font-bold text-white shadow-md">1</span>
-            <div className="font-bold text-white mt-1">Lead Capture</div>
-            <p className="text-soloz-ash/70 text-[11px] leading-normal">Customer submits form on site. Customer receives automated receipt email.</p>
+            <div className="font-bold text-stone-900 mt-1">Lead Capture</div>
+            <p className="text-stone-600 text-[11px] leading-normal">Customer submits form on site. Customer receives automated receipt email.</p>
           </div>
-          <div className="relative p-4 rounded-lg bg-black/25 border border-white/5 space-y-1">
+          <div className="relative p-4 rounded-lg bg-stone-50 border border-stone-200/65 space-y-1">
             <span className="absolute -top-2 -left-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white shadow-md">2</span>
-            <div className="font-bold text-white mt-1">Review & Contact</div>
-            <p className="text-soloz-ash/70 text-[11px] leading-normal">Admin reviews info, changes status to **Contacted**, and/or chats via WhatsApp.</p>
+            <div className="font-bold text-stone-900 mt-1">Review & Contact</div>
+            <p className="text-stone-600 text-[11px] leading-normal">Admin reviews info, changes status to **Contacted**, and/or chats via WhatsApp.</p>
           </div>
-          <div className="relative p-4 rounded-lg bg-black/25 border border-white/5 space-y-1">
+          <div className="relative p-4 rounded-lg bg-stone-50 border border-stone-200/65 space-y-1">
             <span className="absolute -top-2 -left-2 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white shadow-md">3</span>
-            <div className="font-bold text-white mt-1">Approve & Price</div>
-            <p className="text-soloz-ash/70 text-[11px] leading-normal">Admin clicks **Approve** to enter pricing and traveler list. Customer and Admin receive detailed invoice receipts.</p>
+            <div className="font-bold text-stone-900 mt-1">Approve & Price</div>
+            <p className="text-stone-600 text-[11px] leading-normal">Admin clicks **Approve** to enter pricing and traveler list. Customer and Admin receive detailed invoice receipts.</p>
           </div>
-          <div className="relative p-4 rounded-lg bg-black/25 border border-white/5 space-y-1">
+          <div className="relative p-4 rounded-lg bg-stone-50 border border-stone-200/65 space-y-1">
             <span className="absolute -top-2 -left-2 flex h-5 w-5 items-center justify-center rounded-full bg-stone-500 text-[10px] font-bold text-white shadow-md">4</span>
-            <div className="font-bold text-white mt-1">Archive / Close</div>
-            <p className="text-soloz-ash/70 text-[11px] leading-normal">Once trip bookings are completed or finalized, admin sets status to **Closed**.</p>
+            <div className="font-bold text-stone-900 mt-1">Archive / Close</div>
+            <p className="text-stone-600 text-[11px] leading-normal">Once trip bookings are completed or finalized, admin sets status to **Closed**.</p>
           </div>
         </div>
       </div>
 
       {/* Filters Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-white/10 bg-black/40 p-4 backdrop-blur">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
         {/* Search */}
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-soloz-ash/60" size={15} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={15} />
           <input
             type="text"
             placeholder="Search leads..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-10 w-full rounded-lg border border-white/10 bg-white/5 pl-9 pr-4 text-xs text-white placeholder-white/30 focus:border-soloz-ember/50 focus:outline-none"
+            className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 pl-9 pr-4 text-xs text-stone-900 placeholder-stone-400 focus:border-soloz-ember/50 focus:outline-none"
           />
         </div>
 
@@ -263,8 +263,8 @@ export default function AdminEnquiriesPage() {
               onClick={() => setStatusFilter(s)}
               className={`rounded-full px-4 py-1.5 transition ${
                 statusFilter === s
-                  ? "bg-soloz-ember text-white"
-                  : "border border-white/10 bg-white/5 text-white/60 hover:bg-white/10"
+                  ? "bg-soloz-ember text-white shadow-sm font-bold"
+                  : "border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-600"
               }`}
             >
               {s}
