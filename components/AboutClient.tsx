@@ -105,10 +105,18 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                 alt="Akhil - Founder of WeAreSoloz"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-80" />
-              <div className="absolute bottom-6 left-6 text-white z-10 bg-[#0c0a09]/75 backdrop-blur-md px-5 py-4 rounded-2xl border border-white/10 shadow-xl transition-all duration-300 group-hover:bg-[#0c0a09]/90">
-                <div className="text-[11px] uppercase font-extrabold tracking-widest text-orange-400">Founder of WeAreSoloz</div>
-                <h3 className="font-display text-2xl font-bold mt-1 tracking-tight text-white">Akhil 🌍✈️</h3>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent opacity-85 pointer-events-none" />
+              <div className="absolute bottom-6 left-6 text-white z-10 bg-[#0c0a09]/75 backdrop-blur-lg px-6 py-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-4 transition-all duration-300 group-hover:bg-[#0c0a09]/90 group-hover:border-orange-500/30">
+                <div className="relative w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center border border-orange-500/30 shrink-0">
+                  <span className="w-2 h-2 rounded-full bg-orange-500 animate-ping absolute" />
+                  <span className="w-2 h-2 rounded-full bg-orange-500 relative" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-bold tracking-widest text-orange-400">Founder of WeAreSoloZ</div>
+                  <h3 className="font-display text-2xl font-extrabold tracking-tight text-white mt-0.5 flex items-center gap-1.5">
+                    Akhil <span className="inline-block animate-bounce" style={{ animationDuration: '4s' }}>🌍</span>✈️
+                  </h3>
+                </div>
               </div>
             </div>
           </Reveal>
