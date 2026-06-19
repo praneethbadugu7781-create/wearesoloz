@@ -3,8 +3,9 @@ import { getAuthHeaders } from "@/lib/api";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 import { useEffect, useState } from "react";
-import { MailQuestion, Trash2, CheckCircle, Clock, Loader2, Check, ExternalLink, Search } from "lucide-react";
+import { MailQuestion, Trash2, CheckCircle, Clock, Loader2, Check, ExternalLink, Search, FileSpreadsheet, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { exportToCSV, exportToPDF } from "@/lib/export";
 
 interface EnquiryData {
   _id: string;
@@ -25,6 +26,49 @@ export default function AdminEnquiriesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedEnquiry, setSelectedEnquiry] = useState<EnquiryData | null>(null);
+
+  const handleExportCSV = () => {
+    if (filtered.length === 0) return alert("No data to export.");
+    const headersMap = {
+      fullName: "Full Name",
+      mobile: "Mobile",
+      email: "Email",
+      age: "Age",
+      bloodGroup: "Blood Group",
+      destination: "Destination",
+      message: "Message",
+      status: "Status",
+      createdAt: "Submitted Date"
+    };
+
+    const dataToExport = filtered.map(e => ({
+      ...e,
+      createdAt: new Date(e.createdAt).toLocaleString()
+    }));
+
+    exportToCSV(dataToExport, headersMap, `enquiries_export_${new Date().toISOString().split("T")[0]}.csv`);
+  };
+
+  const handleExportPDF = async () => {
+    if (filtered.length === 0) return alert("No data to export.");
+    const headers = ["Full Name", "Mobile", "Email", "Age/Blood", "Destination", "Status", "Date"];
+    const rows = filtered.map(e => [
+      e.fullName,
+      e.mobile,
+      e.email,
+      `${e.age || "N/A"} / ${e.bloodGroup || "N/A"}`,
+      e.destination || "General Enquiry",
+      e.status,
+      new Date(e.createdAt).toLocaleDateString()
+    ]);
+
+    await exportToPDF(
+      "WeAreSoloz - Contact & Booking Enquiries",
+      headers,
+      rows,
+      `enquiries_report_${new Date().toISOString().split("T")[0]}.pdf`
+    );
+  };
 
   useEffect(() => {
     fetchEnquiries();
@@ -92,12 +136,22 @@ export default function AdminEnquiriesPage() {
   return (
     <main className="space-y-8">
       {/* Title */}
-      <div>
-        <h1 className="font-display text-3xl font-bold text-white flex items-center gap-2">
-          <MailQuestion className="text-soloz-ember" size={28} />
-          Contact & Booking Enquiries
-        </h1>
-        <p className="text-xs text-soloz-ash/75 mt-1">Review lead capture submissions and manage customer follow-ups.</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-bold text-white flex items-center gap-2">
+            <MailQuestion className="text-soloz-ember" size={28} />
+            Contact & Booking Enquiries
+          </h1>
+          <p className="text-xs text-soloz-ash/75 mt-1">Review lead capture submissions and manage customer follow-ups.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={handleExportCSV} variant="secondary" className="pt-0.5 border-white/10 hover:bg-white/5 text-white">
+            <FileSpreadsheet size={16} className="mr-2 text-emerald-500" /> Export Excel
+          </Button>
+          <Button onClick={handleExportPDF} variant="secondary" className="pt-0.5 border-white/10 hover:bg-white/5 text-white">
+            <FileText size={16} className="mr-2 text-red-500" /> Export PDF
+          </Button>
+        </div>
       </div>
 
       {/* Filters Bar */}

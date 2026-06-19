@@ -14,6 +14,7 @@ const tripSchema = new mongoose.Schema(
     itinerary: [{ day: String, title: String, description: String }],
     inclusions: [String],
     image: { type: String, required: true },
+    images: { type: [String], default: [] },
     featured: { type: Boolean, default: false },
     status: { type: String, enum: ["draft", "published"], default: "published" },
   },

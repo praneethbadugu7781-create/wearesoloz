@@ -89,21 +89,50 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
 
   const seatsVal = trip.seats ?? trip.seats_available ?? "—";
 
+  const gallery = [trip.image, ...(trip.images || [])].filter(Boolean);
+
   return (
     <div data-testid="trip-detail-page" className="bg-white min-h-screen text-[#1c1917]">
-      <section className="relative h-[60vh] min-h-[480px] overflow-hidden">
-        <img
-          src={trip.image || "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=2400&q=85"}
-          alt={trip.title}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/15 to-transparent" />
-        <div className="absolute bottom-12 left-0 right-0 max-w-7xl mx-auto px-6 md:px-10">
+      <section className="relative h-[60vh] min-h-[480px] overflow-hidden bg-stone-950">
+        {gallery.length <= 1 ? (
+          <img
+            src={trip.image || "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=2400&q=85"}
+            alt={trip.title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div 
+            className="flex h-full w-full overflow-x-auto snap-x snap-mandatory bg-stone-950"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {gallery.map((imgSrc, index) => (
+              <div
+                key={index}
+                className="relative h-full shrink-0 snap-center w-[85vw] md:w-[70vw] lg:w-[60vw]"
+              >
+                <img
+                  src={imgSrc}
+                  alt={`${trip.title} Gallery ${index + 1}`}
+                  className="w-full h-full object-cover border-r border-stone-900"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/15 to-transparent pointer-events-none" />
+        <div className="absolute bottom-12 left-0 right-0 max-w-7xl mx-auto px-6 md:px-10 pointer-events-none">
           <SectionLabel>{trip.destination}</SectionLabel>
           <h1 className="font-display text-5xl md:text-7xl font-light tracking-tighter mt-3 max-w-3xl text-stone-900">
             {trip.title || `${trip.destination} Expedition`}
           </h1>
         </div>
+        {gallery.length > 1 && (
+          <div className="absolute right-6 bottom-12 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-3.5 py-1.5 border border-white/10 select-none pointer-events-none flex items-center gap-1.5">
+            <span>{gallery.length} Photos</span>
+            <span className="text-[#ea580c] font-black">•</span>
+            <span>Swipe ➜</span>
+          </div>
+        )}
       </section>
 
       <section className="px-6 md:px-10 py-20">

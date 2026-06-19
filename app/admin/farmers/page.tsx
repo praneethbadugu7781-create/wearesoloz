@@ -3,7 +3,9 @@ import { getAuthHeaders } from "@/lib/api";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 import { useEffect, useState } from "react";
-import { HeartHandshake, Trash2, Loader2, ExternalLink, Search, User, MapPin, Sprout, Calendar } from "lucide-react";
+import { HeartHandshake, Trash2, Loader2, ExternalLink, Search, User, MapPin, Sprout, Calendar, FileSpreadsheet, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { exportToCSV, exportToPDF } from "@/lib/export";
 
 interface FarmerData {
   _id: string;
@@ -28,6 +30,54 @@ export default function AdminFarmersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+
+  const handleExportCSV = () => {
+    if (filtered.length === 0) return alert("No data to export.");
+    const headersMap = {
+      fullName: "Full Name",
+      gender: "Gender",
+      age: "Age",
+      bloodGroup: "Blood Group",
+      mobile: "Mobile",
+      email: "Email",
+      state: "State",
+      district: "District",
+      farmingType: "Farming Type",
+      cropType: "Crops Cultivated",
+      landSize: "Land Size (Acres)",
+      whyJoin: "Motivation Statement",
+      status: "Status",
+      createdAt: "Submitted Date"
+    };
+
+    const dataToExport = filtered.map(f => ({
+      ...f,
+      createdAt: new Date(f.createdAt).toLocaleString()
+    }));
+
+    exportToCSV(dataToExport, headersMap, `farmers_export_${new Date().toISOString().split("T")[0]}.csv`);
+  };
+
+  const handleExportPDF = async () => {
+    if (filtered.length === 0) return alert("No data to export.");
+    const headers = ["Full Name", "Location", "Farming Info", "Crops", "Mobile", "Land", "Status"];
+    const rows = filtered.map(f => [
+      f.fullName,
+      `${f.district}, ${f.state}`,
+      `${f.farmingType} Farming`,
+      f.cropType,
+      f.mobile,
+      `${f.landSize} Acres`,
+      f.status
+    ]);
+
+    await exportToPDF(
+      "WeAreSoloz - Farmers Free Trip Applications",
+      headers,
+      rows,
+      `farmers_report_${new Date().toISOString().split("T")[0]}.pdf`
+    );
+  };
 
   useEffect(() => {
     fetchFarmers();
@@ -98,12 +148,22 @@ export default function AdminFarmersPage() {
   return (
     <main className="space-y-8">
       {/* Title */}
-      <div>
-        <h1 className="font-display text-3xl font-bold text-white flex items-center gap-2">
-          <HeartHandshake className="text-soloz-ember" size={28} />
-          Farmer Free Trip Console
-        </h1>
-        <p className="text-xs text-soloz-ash/75 mt-1">Review and manage community initiative free trip applications submitted by farmers.</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-bold text-white flex items-center gap-2">
+            <HeartHandshake className="text-soloz-ember" size={28} />
+            Farmer Free Trip Console
+          </h1>
+          <p className="text-xs text-soloz-ash/75 mt-1">Review and manage community initiative free trip applications submitted by farmers.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={handleExportCSV} variant="secondary" className="pt-0.5 border-white/10 hover:bg-white/5 text-white">
+            <FileSpreadsheet size={16} className="mr-2 text-emerald-500" /> Export Excel
+          </Button>
+          <Button onClick={handleExportPDF} variant="secondary" className="pt-0.5 border-white/10 hover:bg-white/5 text-white">
+            <FileText size={16} className="mr-2 text-red-500" /> Export PDF
+          </Button>
+        </div>
       </div>
 
       {/* Filters Bar */}

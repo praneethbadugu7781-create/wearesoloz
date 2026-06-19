@@ -3,9 +3,10 @@ import { getAuthHeaders } from "@/lib/api";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 import { useEffect, useState } from "react";
-import { Compass, Plus, Edit2, Trash2, Check, Loader2, Calendar, Users, Sparkles, X } from "lucide-react";
+import { Compass, Plus, Edit2, Trash2, Check, Loader2, Calendar, Users, Sparkles, X, FileSpreadsheet, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CloudinaryUpload } from "@/components/cloudinary-upload";
+import { exportToCSV, exportToPDF } from "@/lib/export";
 
 interface ItineraryItem {
   day: string;
@@ -25,6 +26,7 @@ interface TripData {
   seats: number;
   description: string;
   image: string;
+  images: string[];
   featured: boolean;
   status: "draft" | "published";
   itinerary: ItineraryItem[];
@@ -42,6 +44,7 @@ const emptyForm: TripData = {
   seats: 10,
   description: "",
   image: "",
+  images: [],
   featured: false,
   status: "published",
   itinerary: [
@@ -89,7 +92,8 @@ export default function AdminTripsPage() {
     const formattedDate = trip.date ? new Date(trip.date).toISOString().split("T")[0] : "";
     setFormData({
       ...trip,
-      date: formattedDate
+      date: formattedDate,
+      images: trip.images || []
     });
     setEditId(trip._id || null);
     setView("form");
@@ -105,6 +109,49 @@ export default function AdminTripsPage() {
     } catch (err: any) {
       alert(err.message || "Error deleting trip.");
     }
+  };
+
+  const handleExportCSV = () => {
+    if (trips.length === 0) return alert("No data to export.");
+    const headersMap = {
+      destination: "Destination",
+      state: "State",
+      category: "Category",
+      date: "Departure Date",
+      duration: "Duration",
+      price: "Price",
+      seats: "Seats",
+      status: "Status"
+    };
+
+    const dataToExport = trips.map(t => ({
+      ...t,
+      date: t.date ? new Date(t.date).toLocaleDateString() : ""
+    }));
+
+    exportToCSV(dataToExport, headersMap, `trips_export_${new Date().toISOString().split("T")[0]}.csv`);
+  };
+
+  const handleExportPDF = async () => {
+    if (trips.length === 0) return alert("No data to export.");
+    const headers = ["Destination", "State", "Category", "Departure Date", "Duration", "Price", "Seats", "Status"];
+    const rows = trips.map(t => [
+      t.destination,
+      t.state || "Telangana",
+      t.category || "Adventure",
+      t.date ? new Date(t.date).toLocaleDateString() : "",
+      t.duration,
+      t.price,
+      t.seats,
+      t.status
+    ]);
+
+    await exportToPDF(
+      "WeAreSoloz - Group Trips Report",
+      headers,
+      rows,
+      `trips_report_${new Date().toISOString().split("T")[0]}.pdf`
+    );
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -377,9 +424,17 @@ export default function AdminTripsPage() {
         </div>
 
         {view === "list" ? (
-          <Button onClick={() => { setFormData(emptyForm); setEditId(null); setView("form"); }} className="pt-0.5">
-            <Plus size={16} className="mr-2" /> Create New Trip
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={handleExportCSV} variant="secondary" className="pt-0.5 border-white/10 hover:bg-white/5 text-white">
+              <FileSpreadsheet size={16} className="mr-2 text-emerald-500" /> Export Excel
+            </Button>
+            <Button onClick={handleExportPDF} variant="secondary" className="pt-0.5 border-white/10 hover:bg-white/5 text-white">
+              <FileText size={16} className="mr-2 text-red-500" /> Export PDF
+            </Button>
+            <Button onClick={() => { setFormData(emptyForm); setEditId(null); setView("form"); }} className="pt-0.5">
+              <Plus size={16} className="mr-2" /> Create New Trip
+            </Button>
+          </div>
         ) : (
           <Button onClick={() => setView("list")} variant="secondary" className="pt-0.5">
             Cancel Edit
@@ -620,6 +675,48 @@ export default function AdminTripsPage() {
                   </select>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Additional Gallery Images Section */}
+          <div className="space-y-4 pt-4 border-t border-white/5">
+            <div>
+              <h4 className="text-sm font-bold uppercase tracking-wider text-soloz-amber">Additional Gallery Images</h4>
+              <p className="text-xs text-soloz-ash/60 mt-1">Upload multiple photos. If two or more are added, they will scroll side-by-side in a slideshow on the website.</p>
+            </div>
+
+            {formData.images && formData.images.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {formData.images.map((imgUrl, index) => (
+                  <div key={index} className="relative aspect-video rounded-lg overflow-hidden border border-white/10 group bg-black/40">
+                    <img src={imgUrl} alt={`Gallery image ${index + 1}`} className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = formData.images.filter((_, idx) => idx !== index);
+                        setFormData({ ...formData, images: updated });
+                      }}
+                      className="absolute right-2 top-2 grid size-6 place-items-center rounded-full bg-red-500/90 text-white hover:bg-red-600 transition-colors"
+                      title="Remove Image"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="max-w-md">
+              <CloudinaryUpload
+                value=""
+                onChange={(url) => {
+                  if (url) {
+                    const currentImages = formData.images || [];
+                    setFormData({ ...formData, images: [...currentImages, url] });
+                  }
+                }}
+                label="Add Gallery Image"
+              />
             </div>
           </div>
 
