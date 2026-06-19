@@ -57,34 +57,22 @@ async function sendContactEmail(contactData) {
   const adminEmail = await getAdminEmail();
   
   const subject = `New Contact/Booking Enquiry from ${contactData.fullName}`;
-  const text = `
-You have received a new inquiry on WeAreSoloz:
-
-Name: ${contactData.fullName}
-Age: ${contactData.age}
-Blood Group: ${contactData.bloodGroup}
-Mobile (WhatsApp): ${contactData.mobile}
-Email: ${contactData.email}
-Destination of Interest: ${contactData.destination || "General / Other"}
-Message:
-${contactData.message}
-
----
-Sent automatically by WeAreSoloz Server.
-  `;
-  const html = `
-    <h3>New Inquiry Received</h3>
-    <p><strong>Name:</strong> ${contactData.fullName}</p>
-    <p><strong>Age:</strong> ${contactData.age}</p>
-    <p><strong>Blood Group:</strong> ${contactData.bloodGroup}</p>
-    <p><strong>Mobile (WhatsApp):</strong> ${contactData.mobile}</p>
-    <p><strong>Email:</strong> ${contactData.email}</p>
-    <p><strong>Destination:</strong> ${contactData.destination || "General / Other"}</p>
-    <p><strong>Message:</strong></p>
-    <blockquote style="background: #f9f9f9; border-left: 5px solid #ff7a1a; padding: 10px; margin: 10px 0;">
+  const title = "New Enquiry Received";
+  const content = `
+    You have received a new contact / booking inquiry on WeAreSoloz:<br><br>
+    <strong>Name:</strong> ${contactData.fullName}<br>
+    <strong>Age:</strong> ${contactData.age} (Blood Group: ${contactData.bloodGroup})<br>
+    <strong>Mobile (WhatsApp):</strong> ${contactData.mobile}<br>
+    <strong>Email:</strong> ${contactData.email}<br>
+    <strong>Destination of Interest:</strong> ${contactData.destination || "General / Other"}<br><br>
+    <strong>Message / Request:</strong>
+    <blockquote style="background: #f9f9f9; border-left: 5px solid #ea580c; padding: 12px; margin: 15px 0; font-style: italic; color: #443e38;">
       ${contactData.message.replace(/\n/g, "<br>")}
     </blockquote>
   `;
+  
+  const html = wrapPremiumEmail(title, content, "Open Admin Console", "https://wearesoloz.com/admin/enquiries");
+  const text = `New Enquiry from ${contactData.fullName} (${contactData.mobile}) regarding ${contactData.destination || "General / Other"}. Message: ${contactData.message}`;
 
   return sendResendEmail({ to: adminEmail, subject, text, html });
 }
@@ -93,86 +81,69 @@ async function sendCareerEmail(careerData) {
   const adminEmail = await getAdminEmail();
 
   const subject = `New Careers Application from ${careerData.fullName}`;
-  const text = `
-You have received a new Careers application on WeAreSoloz:
-
-Name: ${careerData.fullName}
-Gender: ${careerData.gender}
-Age: ${careerData.age}
-Blood Group: ${careerData.bloodGroup}
-Mobile (WhatsApp): ${careerData.mobile}
-Email: ${careerData.email}
-Instagram: ${careerData.instagram || "Not provided"}
-
-Travel Experience:
-${careerData.experience}
-
-Why they want to join/travel:
-${careerData.whyJoin}
-
----
-Sent automatically by WeAreSoloz Server.
-  `;
-  const html = `
-    <h3>New Careers Application Received</h3>
-    <p><strong>Name:</strong> ${careerData.fullName}</p>
-    <p><strong>Gender:</strong> ${careerData.gender}</p>
-    <p><strong>Age:</strong> ${careerData.age}</p>
-    <p><strong>Blood Group:</strong> ${careerData.bloodGroup}</p>
-    <p><strong>Mobile (WhatsApp):</strong> ${careerData.mobile}</p>
-    <p><strong>Email:</strong> ${careerData.email}</p>
-    <p><strong>Instagram:</strong> ${careerData.instagram || "Not provided"}</p>
-    <p><strong>Travel Experience:</strong></p>
-    <blockquote style="background: #f9f9f9; border-left: 5px solid #ff7a1a; padding: 10px; margin: 10px 0;">
+  const title = "New Careers Application Received";
+  const content = `
+    You have received a new Careers application on WeAreSoloz:<br><br>
+    <strong>Name:</strong> ${careerData.fullName}<br>
+    <strong>Gender / Age:</strong> ${careerData.gender} / ${careerData.age} yrs old (Blood Group: ${careerData.bloodGroup})<br>
+    <strong>Mobile (WhatsApp):</strong> ${careerData.mobile}<br>
+    <strong>Email:</strong> ${careerData.email}<br>
+    <strong>Instagram:</strong> ${careerData.instagram || "Not provided"}<br><br>
+    <strong>Travel Experience:</strong>
+    <blockquote style="background: #f9f9f9; border-left: 5px solid #ea580c; padding: 12px; margin: 15px 0; color: #443e38;">
       ${careerData.experience.replace(/\n/g, "<br>")}
     </blockquote>
-    <p><strong>Why they want to travel/work:</strong></p>
-    <blockquote style="background: #f9f9f9; border-left: 5px solid #ea580c; padding: 10px; margin: 10px 0;">
+    <strong>Why they want to travel/work:</strong>
+    <blockquote style="background: #f9f9f9; border-left: 5px solid #ff7a1a; padding: 12px; margin: 15px 0; color: #443e38;">
       ${careerData.whyJoin.replace(/\n/g, "<br>")}
     </blockquote>
   `;
+  
+  const html = wrapPremiumEmail(title, content, "Open Admin Console", "https://wearesoloz.com/admin/careers");
+  const text = `New Careers Application from ${careerData.fullName} (${careerData.mobile}). Experience: ${careerData.experience}`;
 
   return sendResendEmail({ to: adminEmail, subject, text, html });
 }
 
 async function sendOtpEmail(email, otpCode) {
   const subject = "Your Admin Password Reset OTP";
-  const text = `Your OTP code for resetting the admin password is: ${otpCode}. It is valid for 10 minutes.`;
-  const html = `
-    <h3>Admin Password Reset Request</h3>
-    <p>You requested to reset your admin passcode. Use the following One-Time Password (OTP) to complete the reset process:</p>
-    <h2 style="letter-spacing: 4px; font-size: 32px; color: #ea580c; font-family: monospace; background: #f9f9f9; padding: 12px; display: inline-block; border-radius: 8px; border: 1px solid #eee;">${otpCode}</h2>
-    <p>This code is valid for <strong>10 minutes</strong>.</p>
-    <p>If you did not request this, please secure your admin credentials.</p>
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
-    <p style="font-size: 11px; color: #888;">Sent automatically by WeAreSoloz Server.</p>
+  const title = "Admin Password Reset Request";
+  const content = `
+    You requested to reset your admin passcode. Use the following One-Time Password (OTP) to complete the reset process:<br><br>
+    <div style="text-align: center; margin: 20px 0;">
+      <h2 style="letter-spacing: 4px; font-size: 32px; color: #ea580c; font-family: monospace; background: #f9f9f9; padding: 12px; display: inline-block; border-radius: 8px; border: 1px solid #eee; margin: 0;">${otpCode}</h2>
+    </div>
+    This code is valid for <strong>10 minutes</strong>.<br><br>
+    If you did not request this, please secure your admin credentials.
   `;
+  const html = wrapPremiumEmail(title, content);
+  const text = `Your OTP code for resetting the admin password is: ${otpCode}. It is valid for 10 minutes.`;
 
   return sendResendEmail({ to: email, subject, text, html });
 }
 
 async function sendEmailChangeOtp(email, otpCode) {
   const subject = "Verify Your New Admin Email Address";
-  const text = `Your OTP code to verify and update your admin email address is: ${otpCode}. It is valid for 10 minutes.`;
-  const html = `
-    <h3>Admin Email Verification Request</h3>
-    <p>You requested to change your admin email address. Use the following One-Time Password (OTP) to verify that you own this email address and complete the update:</p>
-    <h2 style="letter-spacing: 4px; font-size: 32px; color: #ea580c; font-family: monospace; background: #f9f9f9; padding: 12px; display: inline-block; border-radius: 8px; border: 1px solid #eee;">${otpCode}</h2>
-    <p>This code is valid for <strong>10 minutes</strong>.</p>
-    <p>If you did not request this, you can safely ignore this email.</p>
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
-    <p style="font-size: 11px; color: #888;">Sent automatically by WeAreSoloz Server.</p>
+  const title = "Verify Your New Admin Email Address";
+  const content = `
+    You requested to change your admin email address. Use the following One-Time Password (OTP) to verify that you own this email address and complete the update:<br><br>
+    <div style="text-align: center; margin: 20px 0;">
+      <h2 style="letter-spacing: 4px; font-size: 32px; color: #ea580c; font-family: monospace; background: #f9f9f9; padding: 12px; display: inline-block; border-radius: 8px; border: 1px solid #eee; margin: 0;">${otpCode}</h2>
+    </div>
+    This code is valid for <strong>10 minutes</strong>.<br><br>
+    If you did not request this, you can safely ignore this email.
   `;
+  const html = wrapPremiumEmail(title, content);
+  const text = `Your OTP code to verify and update your admin email address is: ${otpCode}. It is valid for 10 minutes.`;
 
   return sendResendEmail({ to: email, subject, text, html });
 }
 
 async function sendEmailChangeInitiatedAlert(oldEmail, newEmail) {
   const subject = "Security Alert: Admin Email Change Initiated";
-  const text = `An email change request has been initiated for your admin account. The proposed new email is: ${newEmail}. If you did not request this change, please contact support and update your passcode immediately.`;
-  const html = `
-    <h3 style="color: #ea580c;">Security Alert: Email Change Initiated</h3>
-    <p>An email change request was initiated for your WeAreSoloz admin account.</p>
+  const title = "Security Alert: Email Change Initiated";
+  const content = `
+    An email change request was initiated for your WeAreSoloz admin account.<br><br>
     <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-family: sans-serif; font-size: 14px;">
       <tr>
         <td style="padding: 6px 0; color: #666;">Current Email:</td>
@@ -183,25 +154,24 @@ async function sendEmailChangeInitiatedAlert(oldEmail, newEmail) {
         <td style="padding: 6px 0; font-weight: bold; color: #ea580c;">${newEmail}</td>
       </tr>
     </table>
-    <p>A 6-digit verification code has been sent to the new email address to complete this request.</p>
+    A 6-digit verification code has been sent to the new email address to complete this request.<br><br>
     <div style="background: #fff5eb; border-left: 4px solid #ea580c; padding: 12px; border-radius: 4px; margin: 15px 0;">
       <p style="margin: 0; font-size: 13px; color: #c2410c; font-weight: 500;">
         <strong>Important:</strong> If you did not authorize this request, please change your admin passcode immediately to secure your account.
       </p>
     </div>
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
-    <p style="font-size: 11px; color: #888;">Sent automatically by WeAreSoloz Server.</p>
   `;
+  const html = wrapPremiumEmail(title, content);
+  const text = `An email change request has been initiated for your admin account. The proposed new email is: ${newEmail}.`;
 
   return sendResendEmail({ to: oldEmail, subject, text, html });
 }
 
 async function sendEmailChangeCompletedAlert(oldEmail, newEmail) {
   const subject = "Security Alert: Admin Email Change Completed";
-  const text = `The email address associated with your admin account has been successfully changed from ${oldEmail} to ${newEmail}. If you did not make this change, please contact support immediately.`;
-  const html = `
-    <h3 style="color: #16a34a;">Security Alert: Email Change Completed</h3>
-    <p>The email address associated with your WeAreSoloz admin account has been successfully updated.</p>
+  const title = "Security Alert: Email Change Completed";
+  const content = `
+    The email address associated with your WeAreSoloz admin account has been successfully updated.<br><br>
     <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-family: sans-serif; font-size: 14px;">
       <tr>
         <td style="padding: 6px 0; color: #666;">Previous Email:</td>
@@ -220,9 +190,9 @@ async function sendEmailChangeCompletedAlert(oldEmail, newEmail) {
     <p style="color: #dc2626; font-size: 13px; font-weight: bold; margin-top: 15px;">
       If you did not authorize this change, please contact support immediately to recover your account.
     </p>
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
-    <p style="font-size: 11px; color: #888;">Sent automatically by WeAreSoloz Server.</p>
   `;
+  const html = wrapPremiumEmail(title, content);
+  const text = `The email address associated with your admin account has been successfully changed from ${oldEmail} to ${newEmail}.`;
 
   return sendResendEmail({ to: oldEmail, subject, text, html });
 }
@@ -231,47 +201,25 @@ async function sendFarmerApplicationEmail(farmerData) {
   const adminEmail = await getAdminEmail();
 
   const subject = `New Farmer Free Trip Application from ${farmerData.fullName}`;
-  const text = `
-You have received a new Farmer Free-Trip application on WeAreSoloz:
-
-Name: ${farmerData.fullName}
-Gender: ${farmerData.gender}
-Blood Group: ${farmerData.bloodGroup}
-Age: ${farmerData.age}
-Mobile (WhatsApp): ${farmerData.mobile}
-State: ${farmerData.state}
-District: ${farmerData.district}
-
-Farming Profile:
-Type: ${farmerData.farmingType}
-Crops: ${farmerData.cropType}
-Land Size: ${farmerData.landSize}
-
-Why they want to join:
-${farmerData.whyJoin}
-
----
-Sent automatically by WeAreSoloz Server.
-  `;
-  const html = `
-    <h3>New Farmer Free-Trip Application Received</h3>
-    <p><strong>Name:</strong> ${farmerData.fullName}</p>
-    <p><strong>Gender:</strong> ${farmerData.gender}</p>
-    <p><strong>Blood Group:</strong> ${farmerData.bloodGroup}</p>
-    <p><strong>Age:</strong> ${farmerData.age}</p>
-    <p><strong>Mobile (WhatsApp):</strong> ${farmerData.mobile}</p>
-    <p><strong>Location:</strong> ${farmerData.district}, ${farmerData.state}</p>
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;"/>
-    <p><strong>Farming Type:</strong> ${farmerData.farmingType}</p>
-    <p><strong>Crops Grown:</strong> ${farmerData.cropType}</p>
-    <p><strong>Land Size:</strong> ${farmerData.landSize}</p>
-    <p><strong>Why they want to join:</strong></p>
-    <blockquote style="background: #f9f9f9; border-left: 5px solid #ff7a1a; padding: 10px; margin: 10px 0;">
+  const title = "New Farmer Free-Trip Application Received";
+  const content = `
+    You have received a new Farmer Free-Trip application on WeAreSoloz:<br><br>
+    <strong>Name:</strong> ${farmerData.fullName}<br>
+    <strong>Gender / Age:</strong> ${farmerData.gender} / ${farmerData.age} (Blood Group: ${farmerData.bloodGroup})<br>
+    <strong>Mobile (WhatsApp):</strong> ${farmerData.mobile}<br>
+    <strong>Location:</strong> ${farmerData.district}, ${farmerData.state}<br><br>
+    <strong>Farming Profile:</strong><br>
+    - Type of Farming: ${farmerData.farmingType}<br>
+    - Crops Grown: ${farmerData.cropType}<br>
+    - Land Size: ${farmerData.landSize} Acres<br><br>
+    <strong>Statement / Why Join:</strong>
+    <blockquote style="background: #f9f9f9; border-left: 5px solid #ea580c; padding: 12px; margin: 15px 0; color: #443e38;">
       ${farmerData.whyJoin.replace(/\n/g, "<br>")}
     </blockquote>
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
-    <p style="font-size: 11px; color: #888;">Sent automatically by WeAreSoloz Server.</p>
   `;
+  
+  const html = wrapPremiumEmail(title, content, "Open Admin Console", "https://wearesoloz.com/admin/farmers");
+  const text = `New Farmer Application from ${farmerData.fullName} (${farmerData.mobile}) from ${farmerData.district}, ${farmerData.state}`;
 
   return sendResendEmail({ to: adminEmail, subject, text, html });
 }
@@ -392,10 +340,16 @@ function wrapPremiumEmail(title, content, ctaText = null, ctaUrl = null) {
         ` : ''}
       </div>
       <div class="footer">
-        <div style="margin-bottom: 10px;">
+        <div style="margin-bottom: 10px; display: inline-block; margin-right: 15px;">
           <a href="https://instagram.com/wearesolozindia" class="social-link" target="_blank">
             <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" width="16" height="16" style="vertical-align: middle; margin-right: 6px; filter: grayscale(1) invert(0.35) sepia(1) saturate(20) hue-rotate(345deg);">
             @wearesolozindia on Instagram
+          </a>
+        </div>
+        <div style="margin-bottom: 10px; display: inline-block;">
+          <a href="https://youtube.com/@akhillrockstartravelstories?si=_c7w-zLBaUwBgMSi" class="social-link" style="color: #ef4444;" target="_blank">
+            <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" width="16" height="16" style="vertical-align: middle; margin-right: 6px; filter: grayscale(1) invert(0.35) sepia(1) saturate(20) hue-rotate(300deg);">
+            YouTube Channel
           </a>
         </div>
         <p class="footer-text">
@@ -520,6 +474,94 @@ async function sendContactStatusEmail(contactData, status) {
   return sendResendEmail({ to: contactData.email, subject, text, html });
 }
 
+async function sendContactApprovalEmail(contactData) {
+  const subject = `Your WeAreSoloz Booking Enquiry has been Approved! 🎉`;
+  const title = "Booking Enquiry Approved!";
+  
+  const content = `
+    Hi ${contactData.fullName},<br><br>
+    Great news! Your booking / travel enquiry for <strong>${contactData.destination || "General/Other Trips"}</strong> has been officially <strong>Approved</strong> by Akhil! 🎉🎒<br><br>
+    Here are your booking parameters and details:<br>
+    <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-family: sans-serif; font-size: 14px;">
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #eae8e5; color: #666; width: 120px;">Destination:</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eae8e5; font-weight: bold; color: #ea580c;">${contactData.destination || "General/Other Trips"}</td>
+      </tr>
+      ${contactData.travelerNames ? `
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #eae8e5; color: #666;">Travelers:</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eae8e5; font-weight: bold;">${contactData.travelerNames}</td>
+      </tr>
+      ` : ''}
+      ${contactData.pricePoints ? `
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #eae8e5; color: #666;">Pricing:</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eae8e5; font-weight: bold; color: #16a34a; font-size: 16px;">${contactData.pricePoints}</td>
+      </tr>
+      ` : ''}
+    </table>
+    
+    ${contactData.approvalNotes ? `
+    <strong>Tour Notes & Package Inclusions:</strong>
+    <blockquote style="background: #fdfaf7; border-left: 5px solid #ea580c; padding: 12px; margin: 15px 0; color: #443e38; line-height: 1.5;">
+      ${contactData.approvalNotes.replace(/\n/g, "<br>")}
+    </blockquote>
+    ` : ''}
+    
+    Akhil will connect with you shortly on WhatsApp (${contactData.mobile}) to share the onboarding guidelines, transport itinerary, assembly point locations, and answer any final questions you have.<br><br>
+    Welcome to the WeAreSoloz community! Let's hit the road together.
+  `;
+
+  const html = wrapPremiumEmail(title, content, "Chat with Akhil on WhatsApp", "https://wa.me/919966085310");
+  const text = `Hi ${contactData.fullName}, your booking enquiry for ${contactData.destination || "General/Other Trips"} has been Approved! Price: ${contactData.pricePoints || "Contact for Price"}.`;
+
+  // Send to Customer
+  const customerSent = await sendResendEmail({ to: contactData.email, subject, text, html });
+
+  // Send copy/detailed notification to Admin
+  const adminEmail = await getAdminEmail();
+  const adminSubject = `[Admin Notification] Booking Approved: ${contactData.fullName} - ${contactData.destination || "General/Other Trips"}`;
+  const adminTitle = "Booking Approved & Confirmed";
+  const adminContent = `
+    An enquiry booking has been approved and confirmed by you (or another administrator).<br><br>
+    <strong>Customer Details:</strong><br>
+    - Name: <strong>${contactData.fullName}</strong><br>
+    - Mobile (WhatsApp): <strong>${contactData.mobile}</strong><br>
+    - Email: <strong>${contactData.email}</strong><br>
+    - Original Message: <em>"${contactData.message || ''}"</em><br><br>
+    
+    <strong>Approval parameters sent to customer:</strong><br>
+    <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-family: sans-serif; font-size: 14px;">
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #eae8e5; color: #666; width: 120px;">Destination:</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eae8e5; font-weight: bold; color: #ea580c;">${contactData.destination || "General/Other Trips"}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #eae8e5; color: #666;">Travelers:</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eae8e5; font-weight: bold;">${contactData.travelerNames || contactData.fullName}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #eae8e5; color: #666;">Pricing:</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eae8e5; font-weight: bold; color: #16a34a; font-size: 16px;">${contactData.pricePoints || "N/A"}</td>
+      </tr>
+    </table>
+    
+    ${contactData.approvalNotes ? `
+    <strong>Tour Notes & Package Inclusions:</strong>
+    <blockquote style="background: #fdfaf7; border-left: 5px solid #ea580c; padding: 12px; margin: 15px 0; color: #443e38; line-height: 1.5;">
+      ${contactData.approvalNotes.replace(/\n/g, "<br>")}
+    </blockquote>
+    ` : ''}
+  `;
+  
+  const adminHtml = wrapPremiumEmail(adminTitle, adminContent, "Open Admin Console", "https://wearesoloz.com/admin/enquiries");
+  const adminText = `Booking approved for ${contactData.fullName} regarding ${contactData.destination || "General/Other Trips"}. Price: ${contactData.pricePoints || "N/A"}.`;
+  
+  const adminSent = await sendResendEmail({ to: adminEmail, subject: adminSubject, text: adminText, html: adminHtml });
+
+  return customerSent && adminSent;
+}
+
 module.exports = {
   sendContactEmail,
   sendCareerEmail,
@@ -533,5 +575,6 @@ module.exports = {
   sendFarmerReceiptEmail,
   sendFarmerApprovalEmail,
   sendCareerReviewedEmail,
-  sendContactStatusEmail
+  sendContactStatusEmail,
+  sendContactApprovalEmail
 };

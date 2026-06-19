@@ -16,7 +16,10 @@ interface EnquiryData {
   bloodGroup?: string;
   destination?: string;
   message: string;
-  status: "new" | "contacted" | "closed";
+  status: "new" | "contacted" | "closed" | "approved";
+  pricePoints?: string;
+  travelerNames?: string;
+  approvalNotes?: string;
   createdAt: string;
 }
 
@@ -26,6 +29,13 @@ export default function AdminEnquiriesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedEnquiry, setSelectedEnquiry] = useState<EnquiryData | null>(null);
+
+  // Approval modal states
+  const [approvingEnquiry, setApprovingEnquiry] = useState<EnquiryData | null>(null);
+  const [pricePoints, setPricePoints] = useState("");
+  const [travelerNames, setTravelerNames] = useState("");
+  const [approvalNotes, setApprovalNotes] = useState("");
+  const [submittingApproval, setSubmittingApproval] = useState(false);
 
   const handleExportCSV = () => {
     if (filtered.length === 0) return alert("No data to export.");
@@ -89,7 +99,7 @@ export default function AdminEnquiriesPage() {
     }
   };
 
-  const handleStatusChange = async (id: string, newStatus: "new" | "contacted" | "closed") => {
+  const handleStatusChange = async (id: string, newStatus: "new" | "contacted" | "closed" | "approved") => {
     try {
       const res = await fetch(`${API_URL}/admin/contacts/${id}`, {
         method: "PATCH",
@@ -98,11 +108,61 @@ export default function AdminEnquiriesPage() {
       });
       if (!res.ok) throw new Error("Failed to update status");
 
+      const data = await res.json();
+
       setEnquiries(
-        enquiries.map((e) => (e._id === id ? { ...e, status: newStatus } : e))
+        enquiries.map((e) => (e._id === id ? data : e))
       );
     } catch (err: any) {
       alert(err.message || "Error updating status.");
+    }
+  };
+
+  const handleOpenApprovalModal = (enq: EnquiryData) => {
+    setApprovingEnquiry(enq);
+    setPricePoints(enq.pricePoints || "");
+    setTravelerNames(enq.travelerNames || enq.fullName);
+    setApprovalNotes(
+      enq.approvalNotes ||
+      `Trip Date: ${enq.destination ? "As scheduled for package" : "TBA"}\nMeeting Point: Assembly location communicated prior to departure.\nAC or Non-AC transfers & shared accommodation included.`
+    );
+  };
+
+  const handleApproveSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!approvingEnquiry) return;
+    
+    setSubmittingApproval(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/contacts/${approvingEnquiry._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        body: JSON.stringify({
+          status: "approved",
+          pricePoints,
+          travelerNames,
+          approvalNotes
+        })
+      });
+
+      if (!res.ok) throw new Error("Failed to approve enquiry");
+      const updatedRecord = await res.json();
+
+      setEnquiries(
+        enquiries.map((e) => (e._id === approvingEnquiry._id ? updatedRecord : e))
+      );
+      
+      // Update selected/viewing modal enquiry if it's the same
+      if (selectedEnquiry && selectedEnquiry._id === approvingEnquiry._id) {
+        setSelectedEnquiry(updatedRecord);
+      }
+
+      setApprovingEnquiry(null);
+      alert("Enquiry successfully approved! Booking details and price points have been emailed to the customer.");
+    } catch (err: any) {
+      alert(err.message || "Error approving enquiry.");
+    } finally {
+      setSubmittingApproval(false);
     }
   };
 
@@ -154,6 +214,33 @@ export default function AdminEnquiriesPage() {
         </div>
       </div>
 
+      {/* Visual Pipeline Guide */}
+      <div className="rounded-xl border border-white/10 bg-[#14110d]/60 p-5 backdrop-blur shadow-lg">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-soloz-amber mb-4">Enquiry & Booking Flow Pipeline</h4>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs">
+          <div className="relative p-4 rounded-lg bg-black/25 border border-white/5 space-y-1">
+            <span className="absolute -top-2 -left-2 flex h-5 w-5 items-center justify-center rounded-full bg-soloz-ember text-[10px] font-bold text-white shadow-md">1</span>
+            <div className="font-bold text-white mt-1">Lead Capture</div>
+            <p className="text-soloz-ash/70 text-[11px] leading-normal">Customer submits form on site. Customer receives automated receipt email.</p>
+          </div>
+          <div className="relative p-4 rounded-lg bg-black/25 border border-white/5 space-y-1">
+            <span className="absolute -top-2 -left-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white shadow-md">2</span>
+            <div className="font-bold text-white mt-1">Review & Contact</div>
+            <p className="text-soloz-ash/70 text-[11px] leading-normal">Admin reviews info, changes status to **Contacted**, and/or chats via WhatsApp.</p>
+          </div>
+          <div className="relative p-4 rounded-lg bg-black/25 border border-white/5 space-y-1">
+            <span className="absolute -top-2 -left-2 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white shadow-md">3</span>
+            <div className="font-bold text-white mt-1">Approve & Price</div>
+            <p className="text-soloz-ash/70 text-[11px] leading-normal">Admin clicks **Approve** to enter pricing and traveler list. Customer and Admin receive detailed invoice receipts.</p>
+          </div>
+          <div className="relative p-4 rounded-lg bg-black/25 border border-white/5 space-y-1">
+            <span className="absolute -top-2 -left-2 flex h-5 w-5 items-center justify-center rounded-full bg-stone-500 text-[10px] font-bold text-white shadow-md">4</span>
+            <div className="font-bold text-white mt-1">Archive / Close</div>
+            <p className="text-soloz-ash/70 text-[11px] leading-normal">Once trip bookings are completed or finalized, admin sets status to **Closed**.</p>
+          </div>
+        </div>
+      </div>
+
       {/* Filters Bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-white/10 bg-black/40 p-4 backdrop-blur">
         {/* Search */}
@@ -170,7 +257,7 @@ export default function AdminEnquiriesPage() {
 
         {/* Status filters */}
         <div className="flex flex-wrap gap-2 text-xs font-semibold">
-          {["All", "New", "Contacted", "Closed"].map((s) => (
+          {["All", "New", "Contacted", "Approved", "Closed"].map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
@@ -212,7 +299,9 @@ export default function AdminEnquiriesPage() {
                         ? "bg-soloz-ember/15 border border-soloz-ember/25 text-soloz-amber"
                         : enq.status === "contacted"
                         ? "bg-blue-500/15 border border-blue-500/25 text-blue-400"
-                        : "bg-emerald-500/15 border border-emerald-500/25 text-emerald-400"
+                        : enq.status === "approved"
+                        ? "bg-emerald-500/15 border border-emerald-500/25 text-emerald-400"
+                        : "bg-stone-500/15 border border-stone-500/25 text-stone-400"
                     }`}
                   >
                     {enq.status}
@@ -249,12 +338,33 @@ export default function AdminEnquiriesPage() {
                 {enq.message}
               </div>
 
+              {/* Approved Details Block */}
+              {enq.status === "approved" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs mt-1 bg-emerald-950/15 p-4 rounded-lg border border-emerald-500/25">
+                  <div>
+                    <span className="text-emerald-400/60 block mb-0.5 uppercase tracking-wider text-[9px] font-bold">Approved Travelers</span>
+                    <span className="text-white font-semibold text-sm">{enq.travelerNames || enq.fullName}</span>
+                  </div>
+                  <div>
+                    <span className="text-emerald-400/60 block mb-0.5 uppercase tracking-wider text-[9px] font-bold">Price Points / Package Cost</span>
+                    <span className="text-emerald-400 font-bold text-sm">{enq.pricePoints || "Contact for price"}</span>
+                  </div>
+                  {enq.approvalNotes && (
+                    <div className="sm:col-span-2 pt-2 border-t border-white/5">
+                      <span className="text-white/40 block mb-0.5 uppercase tracking-wider text-[9px]">Approval Notes</span>
+                      <p className="text-white/80 italic text-[11px] leading-normal whitespace-pre-wrap">{enq.approvalNotes}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Bottom Row: Actions */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-white/5">
                 <div className="flex flex-wrap gap-2 text-xs">
                   <span className="text-white/40 flex items-center mr-2">Change Status:</span>
                   <button
                     onClick={() => handleStatusChange(enq._id, "new")}
+                    title="Mark lead as new/unread"
                     className={`px-3 py-1 rounded transition border ${
                       enq.status === "new" ? "bg-soloz-ember/20 border-soloz-ember text-soloz-amber font-bold" : "border-white/10 text-white/65 hover:bg-white/5"
                     }`}
@@ -263,6 +373,7 @@ export default function AdminEnquiriesPage() {
                   </button>
                   <button
                     onClick={() => handleStatusChange(enq._id, "contacted")}
+                    title="Mark as contacted (emails acknowledgement update to customer)"
                     className={`px-3 py-1 rounded transition border ${
                       enq.status === "contacted" ? "bg-blue-500/20 border-blue-500 text-blue-400 font-bold" : "border-white/10 text-white/65 hover:bg-white/5"
                     }`}
@@ -270,9 +381,19 @@ export default function AdminEnquiriesPage() {
                     Contacted
                   </button>
                   <button
-                    onClick={() => handleStatusChange(enq._id, "closed")}
+                    onClick={() => handleOpenApprovalModal(enq)}
+                    title="Open form to approve booking, enter pricing and email receipt invoice"
                     className={`px-3 py-1 rounded transition border ${
-                      enq.status === "closed" ? "bg-emerald-500/20 border-emerald-500 text-emerald-400 font-bold" : "border-white/10 text-white/65 hover:bg-white/5"
+                      enq.status === "approved" ? "bg-emerald-500/20 border-emerald-500 text-emerald-400 font-bold" : "border-white/10 text-white/65 hover:bg-white/5"
+                    }`}
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleStatusChange(enq._id, "closed")}
+                    title="Mark as closed (emails final closure notice to customer)"
+                    className={`px-3 py-1 rounded transition border ${
+                      enq.status === "closed" ? "bg-stone-500/20 border-stone-500 text-stone-400 font-bold" : "border-white/10 text-white/65 hover:bg-white/5"
                     }`}
                   >
                     Closed
@@ -310,6 +431,99 @@ export default function AdminEnquiriesPage() {
           ))}
         </div>
       )}
+      {/* Approval Form Modal */}
+      {approvingEnquiry && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#14110d] p-6 shadow-2xl relative space-y-4">
+            <button
+              onClick={() => setApprovingEnquiry(null)}
+              className="absolute right-4 top-4 text-soloz-ash/60 hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+
+            <div className="space-y-1">
+              <h3 className="font-display text-lg font-bold text-white flex items-center gap-2">
+                <CheckCircle className="text-emerald-500" size={20} />
+                Approve Enquiry & Send Details
+              </h3>
+              <p className="text-xs text-soloz-ash/60">
+                Confirm travel parameters to approve {approvingEnquiry.fullName}'s booking for <strong>{approvingEnquiry.destination || "General Enquiry"}</strong>. Submitting this will automatically email the traveler pricing and inclusions.
+              </p>
+            </div>
+
+            <form onSubmit={handleApproveSubmit} className="space-y-4 pt-2">
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block font-semibold">
+                  Approved Traveler Name(s)
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Rahul, Praneeth"
+                  value={travelerNames}
+                  onChange={(e) => setTravelerNames(e.target.value)}
+                  className="h-10 w-full rounded-lg border border-white/10 bg-[#1a1712] px-3 text-sm text-white focus:border-emerald-500/50 focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block font-semibold">
+                  Price Points / Package Cost
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. ₹4,999/- per head or Contact for pricing details"
+                  value={pricePoints}
+                  onChange={(e) => setPricePoints(e.target.value)}
+                  className="h-10 w-full rounded-lg border border-white/10 bg-[#1a1712] px-3 text-sm text-white focus:border-emerald-500/50 focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block font-semibold">
+                  Additional Notes, Inclusions & Guidelines
+                </label>
+                <textarea
+                  rows={4}
+                  placeholder="e.g. Inclusions: transfers, guides, accommodations. Meeting details, checklist..."
+                  value={approvalNotes}
+                  onChange={(e) => setApprovalNotes(e.target.value)}
+                  className="w-full rounded-lg border border-white/10 bg-[#1a1712] p-3 text-xs text-white focus:border-emerald-500/50 focus:outline-none resize-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setApprovingEnquiry(null)}
+                  className="h-10 px-4 rounded-lg border border-white/10 text-xs font-semibold text-white hover:bg-white/5 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingApproval}
+                  className="h-10 px-5 rounded-lg bg-emerald-600 text-xs font-bold text-white hover:bg-emerald-500 transition-colors inline-flex items-center gap-1.5"
+                >
+                  {submittingApproval ? (
+                    <>
+                      <Loader2 className="animate-spin" size={13} />
+                      Approving & Emailing...
+                    </>
+                  ) : (
+                    <>
+                      <Check size={13} />
+                      Approve & Email Details
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {/* Enquiry Detail Modal */}
       {selectedEnquiry && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -323,7 +537,9 @@ export default function AdminEnquiriesPage() {
                       ? "bg-soloz-ember/15 border border-soloz-ember/25 text-soloz-amber"
                       : selectedEnquiry.status === "contacted"
                       ? "bg-blue-500/15 border border-blue-500/25 text-blue-400"
-                      : "bg-emerald-500/15 border border-emerald-500/25 text-emerald-400"
+                      : selectedEnquiry.status === "approved"
+                      ? "bg-emerald-500/15 border border-emerald-500/25 text-emerald-400"
+                      : "bg-stone-500/15 border border-stone-500/25 text-stone-400"
                   }`}
                 >
                   {selectedEnquiry.status}
@@ -373,6 +589,26 @@ export default function AdminEnquiriesPage() {
               </div>
             </div>
 
+            {/* Approved details if status is approved */}
+            {selectedEnquiry.status === "approved" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs bg-emerald-950/15 p-4 rounded-xl border border-emerald-500/25">
+                <div className="space-y-1">
+                  <span className="text-emerald-400/60 block uppercase tracking-wider text-[9px] font-bold">Approved Travelers</span>
+                  <p className="text-white font-bold text-sm">{selectedEnquiry.travelerNames || selectedEnquiry.fullName}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-emerald-400/60 block uppercase tracking-wider text-[9px] font-bold">Price Points / Package Cost</span>
+                  <p className="text-emerald-400 font-bold text-sm">{selectedEnquiry.pricePoints || "Contact for price"}</p>
+                </div>
+                {selectedEnquiry.approvalNotes && (
+                  <div className="space-y-1 md:col-span-2 pt-2 border-t border-white/5">
+                    <span className="text-white/40 block uppercase tracking-wider text-[9px]">Approval Notes</span>
+                    <p className="text-white/80 italic text-xs leading-relaxed whitespace-pre-wrap">{selectedEnquiry.approvalNotes}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Message Block */}
             <div className="space-y-2">
               <span className="text-white/40 block uppercase tracking-wider text-[9px]">Enquiry Message:</span>
@@ -390,6 +626,7 @@ export default function AdminEnquiriesPage() {
                     await handleStatusChange(selectedEnquiry._id, "new");
                     setSelectedEnquiry({ ...selectedEnquiry, status: "new" });
                   }}
+                  title="Mark lead as new/unread"
                   className={`px-3 py-1 rounded transition border ${
                     selectedEnquiry.status === "new"
                       ? "bg-soloz-ember/20 border-soloz-ember text-soloz-amber font-bold"
@@ -403,6 +640,7 @@ export default function AdminEnquiriesPage() {
                     await handleStatusChange(selectedEnquiry._id, "contacted");
                     setSelectedEnquiry({ ...selectedEnquiry, status: "contacted" });
                   }}
+                  title="Mark as contacted (emails acknowledgement update to customer)"
                   className={`px-3 py-1 rounded transition border ${
                     selectedEnquiry.status === "contacted"
                       ? "bg-blue-500/20 border-blue-500 text-blue-400 font-bold"
@@ -412,10 +650,24 @@ export default function AdminEnquiriesPage() {
                   Contacted
                 </button>
                 <button
+                  onClick={() => {
+                    handleOpenApprovalModal(selectedEnquiry);
+                  }}
+                  title="Open form to approve booking, enter pricing and email receipt invoice"
+                  className={`px-3 py-1 rounded transition border ${
+                    selectedEnquiry.status === "approved"
+                      ? "bg-emerald-500/20 border-emerald-500 text-emerald-400 font-bold"
+                      : "border-white/10 text-white/65 hover:bg-white/5"
+                  }`}
+                >
+                  Approve
+                </button>
+                <button
                   onClick={async () => {
                     await handleStatusChange(selectedEnquiry._id, "closed");
                     setSelectedEnquiry({ ...selectedEnquiry, status: "closed" });
                   }}
+                  title="Mark as closed (emails final closure notice to customer)"
                   className={`px-3 py-1 rounded transition border ${
                     selectedEnquiry.status === "closed"
                       ? "bg-emerald-500/20 border-emerald-500 text-emerald-400 font-bold"

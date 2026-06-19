@@ -13,7 +13,7 @@ const SiteSetting = require("../models/SiteSetting");
 const Career = require("../models/Career");
 const Farmer = require("../models/Farmer");
 
-const { sendFarmerApprovalEmail, sendCareerReviewedEmail, sendContactStatusEmail } = require("../lib/mailer");
+const { sendFarmerApprovalEmail, sendCareerReviewedEmail, sendContactStatusEmail, sendContactApprovalEmail } = require("../lib/mailer");
 
 const models = {
   trips: Trip,
@@ -111,6 +111,8 @@ router.patch("/:resource/:id", async (req, res) => {
     if (req.params.resource === "contacts" && prevRecord.status !== record.status) {
       if (record.status === "contacted" || record.status === "closed") {
         sendContactStatusEmail(record, record.status).catch(console.error);
+      } else if (record.status === "approved") {
+        sendContactApprovalEmail(record).catch(console.error);
       }
     }
 
