@@ -12,7 +12,7 @@ async function seed() {
       heroTitle: "Start Solo. Travel Together.",
       heroSubheading: "Join solo travellers, explore new destinations, meet incredible people and create unforgettable memories together.",
       aboutHeading: "Travel Solo. You're Not Alone.",
-      aboutText: "WeAreSoloZ is a travel community founded by Akhil with a mission to bring solo travelers together in a safe and positive space. We believe travel heals, connects, and transforms lives. Through unforgettable adventures, meaningful friendships, and our commitment to sponsoring one free trip every month for a deserving farmer, we’re building more than a travel company—we’re building a family. 🌍❤️",
+      aboutText: "WeAreSoloZ is a travel community founded by Akhil with a mission to bring solo travellers together in a safe and positive space. We believe travel heals, connects, and transforms lives. Through unforgettable adventures, meaningful friendships, and our commitment to sponsoring one free trip every month for a deserving farmer, we’re building more than a travel company—we’re building a family. 🌍❤️",
       founderHeading: "Meet Akhil Pasupuleti",
       founderText: "Hi, I'm Akhil Pasupuleti, creator of Akhill Rockstar Travel Stories and founder of WeAreSoloZ.",
       founder_image: "/images/akhil.jpg"

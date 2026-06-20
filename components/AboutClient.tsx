@@ -14,19 +14,19 @@ interface AboutClientProps {
 const differences = [
   {
     title: "Safe & Supportive Community",
-    desc: "We prioritize safety and comfort, creating a positive space for all travelers.",
+    desc: "We prioritize safety and comfort, creating a positive space for all travellers.",
     emoji: "🛡️",
     color: "hover:border-orange-200 hover:bg-orange-50/20 hover:shadow-orange-100/30"
   },
   {
-    title: "Solo Travelers Always Welcome",
+    title: "Solo Travellers Always Welcome",
     desc: "Never worry about not having company. You'll join a warm and welcoming family.",
     emoji: "🎒",
     color: "hover:border-blue-200 hover:bg-blue-50/20 hover:shadow-blue-100/30"
   },
   {
     title: "Lifelong Friendships",
-    desc: "Connect with like-minded travelers who share your passions and build lasting bonds.",
+    desc: "Connect with like-minded travellers who share your passions and build lasting bonds.",
     emoji: "🤝",
     color: "hover:border-emerald-200 hover:bg-emerald-50/20 hover:shadow-emerald-100/30"
   },
@@ -163,7 +163,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
 
             <div className="space-y-6 mt-8 text-stone-600 leading-relaxed font-body text-base md:text-lg">
               <p className="font-medium text-stone-850 text-lg md:text-xl leading-snug">
-                Founded by Akhil, a passionate traveler with 7+ years of experience across 12 countries and countless destinations throughout India, WeAreSoloZ was born from a simple belief:
+                Founded by Akhil, a passionate traveller with 7+ years of experience across 12 countries and countless destinations throughout India, WeAreSoloZ was born from a simple belief:
               </p>
               
               <blockquote className="border-l-4 border-[#ea580c] pl-4 italic text-[#ea580c] font-medium my-4">
@@ -171,10 +171,10 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
               </blockquote>
 
               <p>
-                During my solo journeys, I realized that many people dream of traveling but hesitate because of safety concerns, lack of travel partners, or simply not knowing where to start. That’s why I created WeAreSoloZ—a community where strangers become friends, experiences become memories, and journeys become stories.
+                During my solo journeys, I realized that many people dream of travelling but hesitate because of safety concerns, lack of travel partners, or simply not knowing where to start. That’s why I created WeAreSoloZ—a community where strangers become friends, experiences become memories, and journeys become stories.
               </p>
               <p>
-                At WeAreSoloZ, we don’t just organize trips; we build meaningful connections. Whether you’re an adventure seeker, nature lover, spiritual traveler, content creator, or someone looking to heal and rediscover yourself, you’ll always find a place here.
+                At WeAreSoloZ, we don’t just organize trips; we build meaningful connections. Whether you’re an adventure seeker, nature lover, spiritual traveller, content creator, or someone looking to heal and rediscover yourself, you’ll always find a place here.
               </p>
             </div>
 
@@ -301,7 +301,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                     Sponsoring a Farmer Trip Every Month
                   </h3>
                   <p className="text-stone-600 leading-relaxed font-body text-base max-w-3xl">
-                    We believe travel should create happiness not only for travelers, but for society too. As a tribute to the people who feed our nation, WeAreSoloZ sponsors <strong className="font-bold text-stone-900">one deserving farmer every month</strong> with a completely free trip, giving them an opportunity to relax, explore, and create memories they truly deserve.
+                    We believe travel should create happiness not only for travellers, but for society too. As a tribute to the people who feed our nation, WeAreSoloZ sponsors <strong className="font-bold text-stone-900">one deserving farmer every month</strong> with a completely free trip, giving them an opportunity to relax, explore, and create memories they truly deserve.
                   </p>
                 </div>
               </div>

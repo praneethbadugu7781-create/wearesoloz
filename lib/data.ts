@@ -103,7 +103,7 @@ export const stories = [
 ];
 
 export const testimonials = [
-  { name: "Praneeth", role: "Solo Traveller", quote: "Fantastic experience with WeAreSoloz! Well-organized trip, great coordination, friendly group, and unforgettable memories. Highly recommended for solo travelers." }
+  { name: "Praneeth", role: "Solo Traveller", quote: "Fantastic experience with WeAreSoloz! Well-organized trip, great coordination, friendly group, and unforgettable memories. Highly recommended for solo travellers." }
 ];
 
 

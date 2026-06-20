@@ -46,7 +46,7 @@ export default function Footer() {
                 </div>
               </div>
               <p className="text-stone-600 leading-relaxed text-sm max-w-md">
-                WeAreSoloZ is a travel community founded by Akhil with a mission to bring solo travelers together in a safe and positive space. We believe travel heals, connects, and transforms lives. Through unforgettable adventures, meaningful friendships, and our commitment to sponsoring one free trip every month for a deserving farmer, we’re building more than a travel company—we’re building a family. 🌍❤️
+                WeAreSoloZ is a travel community founded by Akhil with a mission to bring solo travellers together in a safe and positive space. We believe travel heals, connects, and transforms lives. Through unforgettable adventures, meaningful friendships, and our commitment to sponsoring one free trip every month for a deserving farmer, we’re building more than a travel company—we’re building a family. 🌍❤️
               </p>
             </div>
 
