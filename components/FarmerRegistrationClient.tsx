@@ -182,14 +182,19 @@ export default function FarmerRegistrationClient() {
               </p>
             </div>
 
-            <div className="space-y-3 mt-10">
+            <div className="space-y-3 mt-10 flex flex-col items-start">
               <a
                 href="tel:+919966085310"
                 className="inline-flex items-center gap-4 glass rounded-xl px-5 py-3 hover:bg-stone-50 border border-stone-200/50 transition-colors text-sm font-medium text-stone-700"
               >
-                <Phone className="w-4 h-4 text-soloz-primary" /> Contact Akhil: +91 9966085310
+                <Phone className="w-4 h-4 text-soloz-primary" /> Contact Akhil Pasupuleti: +91 9966085310
               </a>
-              <br />
+              <a
+                href="tel:+919281017746"
+                className="inline-flex items-center gap-4 glass rounded-xl px-5 py-3 hover:bg-stone-50 border border-stone-200/50 transition-colors text-sm font-medium text-stone-700"
+              >
+                <Phone className="w-4 h-4 text-soloz-primary" /> Contact Akhil Pasupuleti: +91 9281017746
+              </a>
               <a
                 href="https://www.instagram.com/wearesolozindia"
                 target="_blank"

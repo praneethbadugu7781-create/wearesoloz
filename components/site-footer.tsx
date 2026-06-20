@@ -34,6 +34,11 @@ export function SiteFooter() {
             <a href={`tel:${brand.phone.replace(/\s/g, "")}`} className="flex items-center gap-2 hover:text-white">
               <Phone size={16} /> {brand.phone}
             </a>
+            {(brand as any).phone2 && (
+              <a href={`tel:${(brand as any).phone2.replace(/\s/g, "")}`} className="flex items-center gap-2 hover:text-white">
+                <Phone size={16} /> {(brand as any).phone2}
+              </a>
+            )}
             <a href={brand.instagram} className="flex items-center gap-2 hover:text-white">
               <Instagram size={16} />
               {brand.instagram.includes("akhillrockstar") ? "@akhillrockstar" : "@wearesolozindia"}

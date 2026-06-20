@@ -12,9 +12,9 @@ async function seed() {
       heroTitle: "Start Solo. Travel Together.",
       heroSubheading: "Join solo travellers, explore new destinations, meet incredible people and create unforgettable memories together.",
       aboutHeading: "Travel Solo. You're Not Alone.",
-      aboutText: "WeAreSoloz is more than a travel community. It is a family of explorers who believe in adventure, friendship, self-discovery and unforgettable experiences.",
-      founderHeading: "Meet Akhil",
-      founderText: "Hi, I'm Akhil, creator of Akhill Rockstar Travel Stories and founder of WeAreSoloz.",
+      aboutText: "WeAreSoloZ is a travel community founded by Akhil with a mission to bring solo travelers together in a safe and positive space. We believe travel heals, connects, and transforms lives. Through unforgettable adventures, meaningful friendships, and our commitment to sponsoring one free trip every month for a deserving farmer, we’re building more than a travel company—we’re building a family. 🌍❤️",
+      founderHeading: "Meet Akhil Pasupuleti",
+      founderText: "Hi, I'm Akhil Pasupuleti, creator of Akhill Rockstar Travel Stories and founder of WeAreSoloZ.",
       founder_image: "/images/akhil.jpg"
     };
 
@@ -28,8 +28,9 @@ async function seed() {
     // Seed contact settings
     const contactSettings = {
       phone: "+91 9966085310",
+      phone2: "+91 9281017746",
       instagram: "https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==",
-      whatsapp: "https://wa.me/919966085310"
+      whatsapp: "https://chat.whatsapp.com/E7aoVfUi66S4VDEBsdXoMW"
     };
 
     await SiteSetting.findOneAndUpdate(

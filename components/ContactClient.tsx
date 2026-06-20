@@ -24,8 +24,10 @@ export default function ContactClient({ settings = {}, trips = [] }: ContactClie
 
   const phone = settings.phone || "+91 99660 85310";
   const formattedPhone = phone.replace(/[^0-9+]/g, "");
+  const phone2 = settings.phone2 || "+91 92810 17746";
+  const formattedPhone2 = phone2.replace(/[^0-9+]/g, "");
   const instagramLink = settings.instagram || "https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==";
-  const whatsappLink = settings.whatsapp || "https://wa.me/919966085310";
+  const whatsappLink = settings.whatsapp || "https://chat.whatsapp.com/E7aoVfUi66S4VDEBsdXoMW";
 
   // Extract unique states from active trips, falling back to default states
   const statesList = Array.from(new Set(trips.map(t => t.state || "Andhra Pradesh").filter(Boolean)));
@@ -158,8 +160,21 @@ export default function ContactClient({ settings = {}, trips = [] }: ContactClie
                   <Phone className="w-4 h-4 text-soloz-primary" />
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase tracking-widest text-soloz-textMuted">Phone</div>
+                  <div className="text-[10px] uppercase tracking-widest text-soloz-textMuted">Phone (Primary)</div>
                   <div className="text-stone-900 font-semibold">{phone}</div>
+                </div>
+              </a>
+              <a
+                data-testid="contact-phone2"
+                href={`tel:${formattedPhone2}`}
+                className="flex items-center gap-4 glass rounded-xl p-4 hover:bg-stone-50 border border-stone-200/50 transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-soloz-primary/15 flex items-center justify-center">
+                  <Phone className="w-4 h-4 text-soloz-primary" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-soloz-textMuted">Phone (Secondary)</div>
+                  <div className="text-stone-900 font-semibold">{phone2}</div>
                 </div>
               </a>
               <a

@@ -46,7 +46,7 @@ export default function Footer() {
                 </div>
               </div>
               <p className="text-stone-600 leading-relaxed text-sm max-w-md">
-                A premium travel club for solo explorers. Crossing mountain peaks, sacred temples, untouched villages, and hidden forest trails together.
+                WeAreSoloZ is a travel community founded by Akhil with a mission to bring solo travelers together in a safe and positive space. We believe travel heals, connects, and transforms lives. Through unforgettable adventures, meaningful friendships, and our commitment to sponsoring one free trip every month for a deserving farmer, we’re building more than a travel company—we’re building a family. 🌍❤️
               </p>
             </div>
 
@@ -92,7 +92,7 @@ export default function Footer() {
             </div>
 
             <a
-              href="https://wa.me/919966085310"
+              href="https://chat.whatsapp.com/E7aoVfUi66S4VDEBsdXoMW"
               target="_blank"
               rel="noreferrer"
               className="relative z-10 w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-[#ea580c] to-[#ff7a1a] text-white hover:from-[#ff7a1a] hover:to-[#ea580c] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_4px_20px_rgba(234,88,12,0.15)] hover:shadow-[0_4px_25px_rgba(234,88,12,0.3)]"
@@ -160,6 +160,12 @@ export default function Footer() {
                 </a>
               </li>
               <li>
+                <a href="tel:+919281017746" className="group flex items-center gap-2 hover:text-[#ff7a1a] transition-all duration-300 hover:translate-x-1">
+                  <ArrowRight className="w-3.5 h-3.5 text-[#ea580c] opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300 shrink-0" />
+                  +91 9281017746
+                </a>
+              </li>
+              <li>
                 <a href="https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==" target="_blank" rel="noreferrer" className="group flex items-center gap-2 hover:text-[#ff7a1a] transition-all duration-300 hover:translate-x-1">
                   <ArrowRight className="w-3.5 h-3.5 text-[#ea580c] opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300 shrink-0" />
                   @wearesolozindia
@@ -172,16 +178,16 @@ export default function Footer() {
           <div className="lg:col-span-2 rounded-3xl border border-stone-200/60 bg-stone-50/50 p-6 flex flex-col sm:flex-row items-center gap-6 group hover:border-[#ea580c]/30 hover:bg-stone-50/80 transition-all duration-300 shadow-sm">
             <img
               src="/images/akhil.jpg"
-              alt="Akhil Founder"
+              alt="Akhil Pasupuleti Founder"
               className="w-16 h-16 rounded-full object-cover border-2 border-[#ea580c]/30 shadow-md shadow-[#ea580c]/10 shrink-0"
             />
             <div className="space-y-2 text-center sm:text-left">
-              <p className="text-stone-800 leading-relaxed text-sm font-display italic">
+              <p className="text-stone-850 leading-relaxed text-sm font-display italic">
                 &ldquo;If you think travel is expensive, wait until you see the price of a wasted life.&rdquo;
               </p>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <span className="text-xs uppercase tracking-widest text-[#ff7a1a] font-bold">
-                  — Akhil, Founder
+                  — Akhil Pasupuleti, Founder
                 </span>
                 <Link href="/about-akhil" className="text-[10px] uppercase tracking-wider font-bold text-stone-900 hover:text-[#ff7a1a] inline-flex items-center justify-center gap-1 transition-colors font-sans">
                   Read Founder's Story <ArrowUpRight className="w-3 h-3" />
@@ -221,7 +227,7 @@ export default function Footer() {
               <a href="https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==" target="_blank" rel="noreferrer" className="hover:text-stone-900 transition-colors duration-300 text-stone-400">
                 <Instagram className="w-4 h-4" />
               </a>
-              <a href="https://wa.me/919966085310" target="_blank" rel="noreferrer" className="hover:text-stone-900 transition-colors duration-300 text-stone-400">
+              <a href="https://chat.whatsapp.com/E7aoVfUi66S4VDEBsdXoMW" target="_blank" rel="noreferrer" className="hover:text-stone-900 transition-colors duration-300 text-stone-400">
                 <MessageCircle className="w-4 h-4" />
               </a>
             </div>

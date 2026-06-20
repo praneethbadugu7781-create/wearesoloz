@@ -13,9 +13,11 @@ export const brand = {
   name: "WeAreSoloz",
   tagline: "Start Solo. Travel Together.",
   secondaryTagline: "Travel Solo. You're Not Alone.",
-  founder: "Akhil",
+  founder: "Akhil Pasupuleti",
   instagram: "https://www.instagram.com/wearesolozindia?igsh=MWZjNjN0MXhidWJ2Yw==",
-  phone: "+91 9966085310"
+  phone: "+91 9966085310",
+  phone2: "+91 9281017746",
+  whatsappCommunity: "https://chat.whatsapp.com/E7aoVfUi66S4VDEBsdXoMW"
 };
 
 export const navItems = [
