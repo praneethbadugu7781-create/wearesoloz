@@ -143,41 +143,43 @@ export default function FarmerRegistrationClient() {
         }}
       />
       {/* Soft overlay to blend image and ensure text is perfectly legible */}
-      <div className="absolute inset-0 z-0 bg-white/50 backdrop-blur-[1.5px]" />
+      <div className="absolute inset-0 z-0 bg-white/60 backdrop-blur-[1px]" />
 
       <section className="relative z-10 pt-40 pb-24 px-6 md:px-10">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12">
           
           {/* Left Panel: Description */}
           <Reveal>
-            <SectionLabel>Community Initiative</SectionLabel>
-            <h1 className="font-display text-5xl md:text-7xl font-light tracking-tighter mt-5 text-stone-900">
-              Free travel for <span className="gradient-text font-medium">our farmers</span>.
+            <SectionLabel>🌾 Cultivating Gratitude</SectionLabel>
+            <h1 className="font-display text-4xl md:text-5xl font-light tracking-tighter mt-5 text-stone-900 leading-tight">
+              Our Farmer <span className="gradient-text font-medium">Initiative</span>
             </h1>
-            <p className="text-soloz-textSecondary mt-8 max-w-md leading-relaxed font-body">
-              At WeAreSoloz, we believe in honoring the backbone of our nation. Founder Akhil sponsors **one free travel slot per trip** exclusively for passionate farmers to let them rest, connect, and explore beautiful destinations across India at zero cost.
-            </p>
             
-            <div className="space-y-4 mt-10 max-w-md">
-              <div className="flex items-start gap-4 glass rounded-xl p-4 border border-stone-200">
-                <div className="w-10 h-10 rounded-full bg-soloz-primary/15 flex items-center justify-center shrink-0">
-                  <Sprout className="w-4 h-4 text-soloz-primary" />
-                </div>
-                <div>
-                  <div className="text-xs uppercase font-bold tracking-wider text-stone-900">100% Free Travel</div>
-                  <p className="text-xs text-stone-500 mt-1">Includes all sharing accommodations, AC or Non-AC transportation, breakfasts and dinners, entry passes, and coordinates with zero application fees.</p>
-                </div>
+            <div className="text-stone-700 mt-6 space-y-6 leading-relaxed font-body text-sm sm:text-base">
+              <p>
+                At WeAreSoloZ, we believe travel has the power to transform lives. But true adventure isn't just about the horizons we chase—it’s about honoring the hands that sustain us right here at home.
+              </p>
+              <p>
+                Farmers are the quiet heartbeat of our nation. Every single day, with tireless dedication and quiet resilience, they nurture the land to feed millions of families. Yet, the demanding rhythm of the earth rarely grants them the chance to step away, rest, and experience the vast beauty of the world they work so hard to sustain.
+              </p>
+              
+              <div className="my-8 p-6 rounded-2xl bg-amber-500/10 border border-orange-500/15 text-stone-850">
+                <h4 className="text-[10px] uppercase font-bold tracking-widest text-amber-700 mb-1.5">Sharing the Joy of the Journey</h4>
+                <p className="text-sm font-semibold leading-relaxed">
+                  To express our deepest gratitude, WeAreSoloZ is deeply honored to sponsor <span className="text-[#ea580c]">"one fully gifted journey every month for a deserving farmer"</span>.
+                </p>
               </div>
 
-              <div className="flex items-start gap-4 glass rounded-xl p-4 border border-stone-200">
-                <div className="w-10 h-10 rounded-full bg-soloz-primary/15 flex items-center justify-center shrink-0">
-                  <ShieldCheck className="w-4 h-4 text-soloz-primary" />
-                </div>
-                <div>
-                  <div className="text-xs uppercase font-bold tracking-wider text-stone-900">Verification Process</div>
-                  <p className="text-xs text-stone-500 mt-1">Approved candidates must verify their farming background (e.g. presenting a government-issued farmer passbook/ID card) before trip boarding confirmation.</p>
-                </div>
-              </div>
+              <p>
+                This initiative is our humble way of giving back. It is an invitation for these incredible individuals to step out of the fields and into a world of well-deserved rest, inspiration, and beautiful new memories.
+              </p>
+              <p>
+                This is more than a program; it is our heartbeat. It’s our way of looking at the hands that feed us and saying, with profound respect:
+              </p>
+              
+              <p className="text-base sm:text-lg font-bold text-[#ea580c] italic border-l-4 border-[#ea580c] pl-4 py-2 bg-orange-500/5 rounded-r-xl leading-relaxed">
+                “Thank you for sustaining our lives. Now, let us show you the world.” 🌾❤️
+              </p>
             </div>
 
             <div className="space-y-3 mt-10">
