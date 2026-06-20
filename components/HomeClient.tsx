@@ -389,14 +389,14 @@ export default function HomeClient({
 
       {/* 🎥 NEW SECTION — Reels in Motion */}
       {reels && reels.length > 0 && (
-        <section data-testid="reels-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-[#080705]">
+        <section data-testid="reels-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-stone-50/50">
           <div className="max-w-7xl mx-auto space-y-12">
             <Reveal className="text-center flex flex-col items-center">
               <SectionLabel>🎥 Moments in Motion</SectionLabel>
-              <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-white">
+              <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">
                 Soloz <span className="gradient-text font-medium">Reels</span>
               </h2>
-              <p className="text-xs sm:text-sm text-soloz-ash/70 mt-2 max-w-xl">
+              <p className="text-xs sm:text-sm text-stone-600 mt-2 max-w-xl">
                 Watch raw, unfiltered snippets from our latest journeys. Click the audio icons to unmute.
               </p>
             </Reveal>
@@ -412,7 +412,7 @@ export default function HomeClient({
       )}
 
       {/* ⭐ SECTION 7 — Testimonials */}
-      <section data-testid="testimonials-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-stone-50/50">
+      <section data-testid="testimonials-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-white">
         <div className="max-w-5xl mx-auto">
           <Reveal className="text-center mb-16 flex flex-col items-center">
             <SectionLabel>⭐ Voices of Soloz</SectionLabel>
