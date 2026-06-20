@@ -4,13 +4,14 @@ import { fetchPublic } from "@/lib/api";
 
 async function getData() {
   try {
-    const [homepageSettings, dests, dbTrips, dbBlogs, dbTestimonials, dbGallery] = await Promise.all([
+    const [homepageSettings, dests, dbTrips, dbBlogs, dbTestimonials, dbGallery, dbReels] = await Promise.all([
       fetchPublic("/settings/homepage", null),
       fetchPublic("/destinations", []),
       fetchPublic("/trips", []),
       fetchPublic("/blogs", []),
       fetchPublic("/testimonials", null),
       fetchPublic("/gallery", []),
+      fetchPublic("/reels", []),
     ]);
 
     const settings = homepageSettings || {
@@ -42,7 +43,7 @@ async function getData() {
       galleryItems = defaultGallery.map((g) => ({ image: g.src, caption: g.title, title: g.title }));
     }
 
-    return { homepageSettings: settings, destinations, trips, blogs, testimonials, gallery: galleryItems };
+    return { homepageSettings: settings, destinations, trips, blogs, testimonials, gallery: galleryItems, reels: dbReels };
   } catch (error) {
     console.error("Home Page API Error:", error);
     return {
@@ -54,7 +55,8 @@ async function getData() {
       trips: defaultTrips.map((t) => ({ ...t, id: t.destination.toLowerCase().replace(/[^a-z0-9]+/g, "-"), slug: t.destination.toLowerCase().replace(/[^a-z0-9]+/g, "-") })),
       blogs: defaultStories.map((s) => ({ ...s, id: s.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"), slug: s.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") })),
       testimonials: defaultTestimonials,
-      gallery: defaultGallery.map((g) => ({ image: g.src, caption: g.title, title: g.title }))
+      gallery: defaultGallery.map((g) => ({ image: g.src, caption: g.title, title: g.title })),
+      reels: []
     };
   }
 }
@@ -70,6 +72,7 @@ export default async function HomePage() {
       blogs={data.blogs}
       testimonials={data.testimonials}
       gallery={data.gallery}
+      reels={data.reels}
     />
   );
 }

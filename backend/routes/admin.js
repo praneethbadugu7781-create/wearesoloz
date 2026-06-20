@@ -12,6 +12,7 @@ const Contact = require("../models/Contact");
 const SiteSetting = require("../models/SiteSetting");
 const Career = require("../models/Career");
 const Farmer = require("../models/Farmer");
+const Reel = require("../models/Reel");
 
 const { sendFarmerApprovalEmail, sendCareerReviewedEmail, sendContactStatusEmail, sendContactApprovalEmail } = require("../lib/mailer");
 
@@ -25,6 +26,7 @@ const models = {
   site_settings: SiteSetting,
   careers: Career,
   farmers: Farmer,
+  reels: Reel,
 };
 
 const router = express.Router();

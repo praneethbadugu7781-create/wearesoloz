@@ -17,7 +17,8 @@ import {
   Menu,
   X,
   Briefcase,
-  HeartHandshake
+  HeartHandshake,
+  Video
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -27,6 +28,7 @@ const sidebarLinks = [
   { href: "/admin/destinations", label: "Destinations", icon: MapPin },
   { href: "/admin/blogs", label: "Stories", icon: BookOpen },
   { href: "/admin/gallery", label: "Gallery", icon: ImageIcon },
+  { href: "/admin/reels", label: "Reels", icon: Video },
   { href: "/admin/testimonials", label: "Testimonials", icon: MessageSquareQuote },
   { href: "/admin/settings", label: "Site Settings", icon: Settings },
   { href: "/admin/enquiries", label: "Enquiries", icon: MailQuestion },

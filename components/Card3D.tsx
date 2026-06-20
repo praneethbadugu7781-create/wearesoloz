@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 
 interface Card3DProps {
   children: React.ReactNode;
@@ -16,10 +16,7 @@ export default function Card3D({
   scale = 1.03
 }: Card3DProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const [useTransition, setUseTransition] = useState(true);
+  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const card = cardRef.current;
@@ -35,24 +32,35 @@ export default function Card3D({
     const rotateYVal = ((x - centerX) / centerX) * maxRotate;
     const rotateXVal = -((y - centerY) / centerY) * maxRotate;
 
-    setRotateX(rotateXVal);
-    setRotateY(rotateYVal);
+    card.style.transform = `perspective(1000px) rotateX(${rotateXVal}deg) rotateY(${rotateYVal}deg) scale3d(${scale}, ${scale}, ${scale})`;
   };
 
   const handleMouseEnter = () => {
-    setIsHovered(true);
-    setUseTransition(true);
-    // Temporarily apply transition on enter for initial snap ease
-    setTimeout(() => {
-      setUseTransition(false);
+    const card = cardRef.current;
+    if (!card) return;
+    
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+    
+    card.style.transition = "transform 0.15s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease";
+    transitionTimeoutRef.current = setTimeout(() => {
+      if (cardRef.current) {
+        cardRef.current.style.transition = "box-shadow 0.4s ease";
+      }
     }, 150);
   };
 
   const handleMouseLeave = () => {
-    setIsHovered(false);
-    setUseTransition(true);
-    setRotateX(0);
-    setRotateY(0);
+    const card = cardRef.current;
+    if (!card) return;
+    
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+    
+    card.style.transition = "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease";
+    card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
   };
 
   return (
@@ -63,11 +71,9 @@ export default function Card3D({
       onMouseLeave={handleMouseLeave}
       className={className}
       style={{
-        transform: isHovered
-          ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(${scale}, ${scale}, ${scale})`
-          : "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)",
+        transform: "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)",
         transformStyle: "preserve-3d",
-        transition: useTransition ? "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease" : "box-shadow 0.4s ease",
+        transition: "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease",
         willChange: "transform",
       }}
     >

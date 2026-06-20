@@ -112,6 +112,18 @@ router.get("/gallery", async (req, res) => {
   }
 });
 
+// --- Reels ---
+router.get("/reels", async (req, res) => {
+  try {
+    await connectDB();
+    const Reel = require("../models/Reel");
+    const reels = await Reel.find().sort({ createdAt: -1 }).lean();
+    res.json(reels);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // --- Site Settings ---
 router.get("/settings/:key", async (req, res) => {
   try {

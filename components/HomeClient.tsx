@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -20,6 +20,8 @@ import {
   Instagram,
   Phone,
   MessageCircle,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import Reveal, { stagger, item, SectionLabel } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
@@ -47,6 +49,64 @@ interface HomeClientProps {
   blogs: any[];
   testimonials: any[];
   gallery: any[];
+  reels?: any[];
+}
+
+function ReelCard({ reel }: { reel: any }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (videoRef.current) {
+      const newMuted = !videoRef.current.muted;
+      videoRef.current.muted = newMuted;
+      setIsMuted(newMuted);
+    }
+  };
+
+  return (
+    <div className="relative aspect-[9/16] w-[260px] sm:w-[280px] shrink-0 rounded-2xl overflow-hidden bg-stone-950 border border-white/5 shadow-lg group snap-start">
+      <video
+        ref={videoRef}
+        src={reel.video}
+        className="w-full h-full object-cover"
+        loop
+        muted
+        playsInline
+        autoPlay
+      />
+      {/* Dark overlay at bottom */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+
+      {/* sound controls */}
+      <button
+        onClick={toggleMute}
+        className="absolute top-4 right-4 z-10 grid size-10 place-items-center rounded-full bg-black/60 backdrop-blur-md text-white border border-white/10 hover:bg-black/80 transition-all duration-300 pointer-events-auto"
+        aria-label={isMuted ? "Unmute video" : "Mute video"}
+      >
+        {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+      </button>
+
+      {/* Info details */}
+      <div className="absolute bottom-5 left-5 right-5 text-white flex flex-col gap-1.5 pointer-events-none">
+        {reel.category && (
+          <span className="self-start text-[8px] tracking-[0.15em] font-extrabold bg-[#ea580c]/25 border border-orange-500/25 px-2 py-0.5 rounded uppercase text-soloz-amber">
+            {reel.category}
+          </span>
+        )}
+        <h4 className="font-display font-bold text-sm sm:text-base leading-tight uppercase drop-shadow-md">
+          {reel.title}
+        </h4>
+        {reel.caption && (
+          <p className="text-[10px] text-stone-300 line-clamp-2 leading-relaxed drop-shadow-sm font-body">
+            {reel.caption}
+          </p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function HomeClient({
@@ -56,6 +116,7 @@ export default function HomeClient({
   blogs = [],
   testimonials = [],
   gallery = [],
+  reels = [],
 }: HomeClientProps) {
   // 1. Upcoming Trips (Treks/Adventure combined - everything except Temples)
   const upcomingTrips = trips.filter(
@@ -325,6 +386,30 @@ export default function HomeClient({
           )}
         </div>
       </section>
+
+      {/* 🎥 NEW SECTION — Reels in Motion */}
+      {reels && reels.length > 0 && (
+        <section data-testid="reels-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-[#080705]">
+          <div className="max-w-7xl mx-auto space-y-12">
+            <Reveal className="text-center flex flex-col items-center">
+              <SectionLabel>🎥 Moments in Motion</SectionLabel>
+              <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-white">
+                Soloz <span className="gradient-text font-medium">Reels</span>
+              </h2>
+              <p className="text-xs sm:text-sm text-soloz-ash/70 mt-2 max-w-xl">
+                Watch raw, unfiltered snippets from our latest journeys. Click the audio icons to unmute.
+              </p>
+            </Reveal>
+
+            {/* Horizontal Reels Track */}
+            <div className="flex gap-5 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory pr-4">
+              {reels.map((reel) => (
+                <ReelCard key={reel._id || reel.video} reel={reel} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ⭐ SECTION 7 — Testimonials */}
       <section data-testid="testimonials-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-stone-50/50">
