@@ -349,9 +349,9 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
 
           {/* Interactive World Map zoomed on Asia/Middle East */}
           <div className="md:col-span-7 flex justify-center items-center relative min-h-[480px]">
-            <div className="w-full max-w-[550px] aspect-[1.5/1] relative">
+            <div className="w-full max-w-[750px] aspect-[1.71/1] relative">
               <svg
-                viewBox="460 380 300 200"
+                viewBox="30.767 241.591 784.077 458.627"
                 className="w-full h-full drop-shadow-[0_10px_30px_rgba(234,88,12,0.04)]"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -362,14 +362,10 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                     key={idx}
                     d={loc.d}
                     stroke="#ea580c"
-                    strokeWidth="0.4"
-                    strokeOpacity="0.4"
-                    fill={
-                      ["ae", "in", "sg", "th", "lk", "my", "cn", "id", "vn"].includes(loc.id)
-                        ? "rgba(234,88,12,0.12)"
-                        : "rgba(234,88,12,0.015)"
-                    }
-                    className="transition-colors hover:fill-orange-500/20 hover:stroke-orange-500/60 cursor-default"
+                    strokeWidth="0.8"
+                    strokeOpacity="0.25"
+                    fill="rgba(234,88,12,0.01)"
+                    className="transition-colors hover:fill-orange-500/10 hover:stroke-orange-500/40 cursor-default"
                     initial={{ pathLength: 0 }}
                     whileInView={{ pathLength: 1 }}
                     viewport={{ once: true }}
@@ -403,8 +399,8 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                     x2={route.x2}
                     y2={route.y2}
                     stroke="url(#routeGradient)"
-                    strokeWidth="0.8"
-                    strokeDasharray="2 2"
+                    strokeWidth="1.2"
+                    strokeDasharray="3 3"
                     initial={{ pathLength: 0 }}
                     whileInView={{ pathLength: 1 }}
                     viewport={{ once: true }}
@@ -419,22 +415,22 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                     <stop offset="100%" stopColor="#ea580c" stopOpacity="0.85" />
                   </linearGradient>
                   <radialGradient id="glowGradient" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#ea580c" stopOpacity="0.5" />
+                    <stop offset="0%" stopColor="#ea580c" stopOpacity="0.6" />
                     <stop offset="100%" stopColor="#ea580c" stopOpacity="0" />
                   </radialGradient>
                 </defs>
 
                 {/* Glowing underlays for visited countries */}
                 {[
-                  { x: 600.1, y: 465.7, r: 12 }, // India
-                  { x: 533.8, y: 467.3, r: 8 },  // UAE
-                  { x: 604.4, y: 508.5, r: 8 },  // Sri Lanka
-                  { x: 649.9, y: 492.3, r: 8 },  // Thailand
-                  { x: 661.2, y: 486.7, r: 8 },  // Vietnam
-                  { x: 669.9, y: 519.6, r: 8 },  // Malaysia
-                  { x: 659.2, y: 527.6, r: 6 },  // Singapore
-                  { x: 701.9, y: 542.2, r: 10 }, // Indonesia
-                  { x: 651.2, y: 421.2, r: 12 }  // China
+                  { x: 600.1, y: 465.7, r: 24 }, // India
+                  { x: 533.8, y: 467.3, r: 16 },  // UAE
+                  { x: 604.4, y: 508.5, r: 16 },  // Sri Lanka
+                  { x: 649.9, y: 492.3, r: 18 },  // Thailand
+                  { x: 661.2, y: 486.7, r: 16 },  // Vietnam
+                  { x: 669.9, y: 519.6, r: 16 },  // Malaysia
+                  { x: 659.2, y: 527.6, r: 12 },  // Singapore
+                  { x: 701.9, y: 542.2, r: 20 }, // Indonesia
+                  { x: 651.2, y: 421.2, r: 24 }  // China
                 ].map((glow, idx) => (
                   <circle
                     key={idx}
@@ -461,9 +457,9 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                     key={`pulse-${idx}`}
                     cx={pulse.x}
                     cy={pulse.y}
-                    r="2.5"
+                    r="5"
                     stroke="#ea580c"
-                    strokeWidth="0.5"
+                    strokeWidth="1.2"
                     className="origin-center scale-[2] opacity-0 animate-ping"
                     style={{ animationDuration: '3s', animationDelay: `${idx * 0.5}s` }}
                   />
@@ -471,29 +467,30 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
 
                 {/* Map Nodes (Countries) */}
                 {[
-                  { x: 600.1, y: 465.7, label: "India", align: "middle" as const, dy: -6 },
-                  { x: 533.8, y: 467.3, label: "UAE", align: "end" as const, dx: -4, dy: 2 },
-                  { x: 604.4, y: 508.5, label: "Sri Lanka", align: "middle" as const, dy: 8 },
-                  { x: 649.9, y: 492.3, label: "Thailand", align: "end" as const, dx: -4, dy: 2 },
-                  { x: 661.2, y: 486.7, label: "Vietnam", align: "start" as const, dx: 4, dy: 2 },
-                  { x: 669.9, y: 519.6, label: "Malaysia", align: "start" as const, dx: 4, dy: 2 },
-                  { x: 659.2, y: 527.6, label: "Singapore", align: "end" as const, dx: -4, dy: 4 },
-                  { x: 701.9, y: 542.2, label: "Indonesia", align: "middle" as const, dy: 8 },
-                  { x: 651.2, y: 421.2, label: "China", align: "middle" as const, dy: -6 }
+                  { x: 600.1, y: 465.7, label: "India", align: "middle" as const, dy: -10 },
+                  { x: 533.8, y: 467.3, label: "UAE", align: "end" as const, dx: -8, dy: 4 },
+                  { x: 604.4, y: 508.5, label: "Sri Lanka", align: "middle" as const, dy: 14 },
+                  { x: 649.9, y: 492.3, label: "Thailand", align: "end" as const, dx: -8, dy: 4 },
+                  { x: 661.2, y: 486.7, label: "Vietnam", align: "start" as const, dx: 8, dy: 4 },
+                  { x: 669.9, y: 519.6, label: "Malaysia", align: "start" as const, dx: 8, dy: 4 },
+                  { x: 659.2, y: 527.6, label: "Singapore", align: "end" as const, dx: -6, dy: 8 },
+                  { x: 701.9, y: 542.2, label: "Indonesia", align: "middle" as const, dy: 14 },
+                  { x: 651.2, y: 421.2, label: "China", align: "middle" as const, dy: -10 }
                 ].map((node, idx) => (
                   <g key={idx} className="cursor-pointer group">
                     <circle
                       cx={node.x}
                       cy={node.y}
-                      r="1.8"
-                      className="fill-[#ea580c] stroke-white stroke-[0.8px] transition-all group-hover:r-2.5 group-hover:fill-stone-900 group-hover:stroke-[#ea580c]"
+                      r="4"
+                      className="fill-[#ea580c] stroke-white stroke-[2px] transition-all group-hover:r-5 group-hover:fill-stone-900 group-hover:stroke-[#ea580c]"
+                      style={{ filter: "drop-shadow(0px 1px 2px rgba(0,0,0,0.2))" }}
                     />
                     <text
                       x={node.x + (node.dx || 0)}
                       y={node.y + (node.dy || 0)}
                       textAnchor={node.align}
-                      className="fill-stone-950 font-display text-[4px] font-bold tracking-wider opacity-90 group-hover:opacity-100 group-hover:fill-[#ea580c] transition-opacity select-none"
-                      style={{ filter: "drop-shadow(0px 0.5px 0.5px white)" }}
+                      className="fill-stone-950 font-display text-[9px] font-black tracking-wider opacity-90 group-hover:opacity-100 group-hover:fill-[#ea580c] transition-opacity select-none"
+                      style={{ filter: "drop-shadow(0px 1px 1px white) drop-shadow(0px 1px 0.5px white)" }}
                     >
                       {node.label}
                     </text>
