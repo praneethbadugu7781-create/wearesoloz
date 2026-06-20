@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { ArrowLeft, ArrowRight, Calendar, Clock, Users } from "lucide-react";
 import Link from "next/link";
+import { getOptimizedImageUrl } from "@/lib/utils";
 
 interface Trip {
   id?: string;
@@ -150,7 +151,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
             key={`desktop-${activeTrip.id || activeTrip._id}`}
             layoutId={`card-${activeTrip.id || activeTrip._id}`}
             className="absolute inset-0 w-full h-full bg-cover bg-center"
-            style={{ backgroundImage: `url(${activeTrip.image})` }}
+            style={{ backgroundImage: `url(${getOptimizedImageUrl(activeTrip.image, 1200)})` }}
             transition={{ type: "spring", stiffness: 120, damping: 22 }}
           >
             {/* Dual gradient overlays for perfect text readability and contrast */}
@@ -169,7 +170,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.7, ease: [0.25, 1, 0.5, 1] }}
               className="absolute inset-0 w-full h-full bg-cover bg-center"
-              style={{ backgroundImage: `url(${activeTrip.image})` }}
+              style={{ backgroundImage: `url(${getOptimizedImageUrl(activeTrip.image, 1200)})` }}
             >
               {/* Dual gradient overlays for mobile */}
               <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/70 to-black/25" />
@@ -281,7 +282,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
                   key={trip.id || trip._id}
                   className="absolute bottom-0 w-[180px] h-[260px] rounded-2xl bg-cover bg-center shadow-[0_12px_40px_rgba(0,0,0,0.6)] border border-white/20 pointer-events-auto cursor-pointer overflow-hidden group"
                   style={{
-                    backgroundImage: `url(${trip.image})`,
+                    backgroundImage: `url(${getOptimizedImageUrl(trip.image, 600)})`,
                     left: `${i * 200}px`,
                   }}
                   transition={{ type: "spring", stiffness: 150, damping: 22 }}

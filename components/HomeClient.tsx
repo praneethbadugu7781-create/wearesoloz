@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import Reveal, { stagger, item, SectionLabel } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
+import { getOptimizedImageUrl } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { HomeHero } from "@/components/home-hero";
@@ -312,7 +313,12 @@ export default function HomeClient({
             <div className="columns-2 md:columns-4 gap-4">
               {gallery.slice(0, 8).map((g) => (
                 <div key={g.id || g._id || g.image} className="mb-4 break-inside-avoid rounded-xl overflow-hidden group relative">
-                  <img src={g.image} alt={g.caption || g.title} className="w-full h-auto image-zoom" />
+                  <img
+                    src={getOptimizedImageUrl(g.image, 600)}
+                    alt={g.caption || g.title}
+                    loading="lazy"
+                    className="w-full h-auto image-zoom"
+                  />
                 </div>
               ))}
             </div>
@@ -634,8 +640,9 @@ export function TripCard({ trip }: { trip: any }) {
           <div>
             <div className="relative aspect-[4/3] overflow-hidden">
               <img
-                src={trip.image || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80"}
+                src={getOptimizedImageUrl(trip.image || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80", 600)}
                 alt={trip.title || trip.destination}
+                loading="lazy"
                 className="w-full h-full object-cover image-zoom"
               />
               {trip.date && (

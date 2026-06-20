@@ -1,5 +1,7 @@
 "use client";
 
+import { getOptimizedImageUrl } from "@/lib/utils";
+
 interface TripItem {
   destination: string;
   slug: string;
@@ -31,8 +33,9 @@ export function PackagesClient({ trips }: PackagesClientProps) {
           >
             <div className="overflow-hidden packages-overflow aspect-[16/11] bg-stone-900 border border-white/10">
               <img
-                src={trip.image}
+                src={getOptimizedImageUrl(trip.image, 600)}
                 alt={trip.destination}
+                loading="lazy"
                 className="packages-item-image h-full w-full object-cover transition-transform duration-700 group-hover:scale-103"
               />
               <div className="booking-open white-color">Booking Open</div>

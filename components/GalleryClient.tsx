@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Reveal, { SectionLabel } from "@/components/Reveal";
+import { getOptimizedImageUrl } from "@/lib/utils";
 
 interface GalleryClientProps {
   initialItems: any[];
@@ -56,8 +57,9 @@ export default function GalleryClient({ initialItems = [] }: GalleryClientProps)
                   className="mb-4 break-inside-avoid rounded-xl overflow-hidden group relative"
                 >
                   <img
-                    src={g.image}
+                    src={getOptimizedImageUrl(g.image, 600)}
                     alt={g.alt || g.caption || g.title || "Gallery"}
+                    loading="lazy"
                     className="w-full h-auto image-zoom"
                   />
                   {(g.caption || g.title) && (

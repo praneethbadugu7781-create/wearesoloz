@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import Reveal, { SectionLabel } from "@/components/Reveal";
 import TermsModal from "./TermsModal";
 import SuccessModal from "./SuccessModal";
+import { getOptimizedImageUrl } from "@/lib/utils";
 
 interface TripDetailClientProps {
   trip: any;
@@ -133,7 +134,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
       <section className="relative h-[60vh] min-h-[480px] overflow-hidden bg-stone-950">
         {gallery.length <= 1 ? (
           <img
-            src={trip.image || "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=2400&q=85"}
+            src={getOptimizedImageUrl(trip.image || "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=2400&q=85", 1200)}
             alt={trip.title}
             className="w-full h-full object-cover"
           />
@@ -155,8 +156,9 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                   className="relative h-full w-full shrink-0"
                 >
                   <img
-                    src={imgSrc}
+                    src={getOptimizedImageUrl(imgSrc, 1200)}
                     alt={`${trip.title} Gallery ${index + 1}`}
+                    loading={index === 0 ? "eager" : "lazy"}
                     className="w-full h-full object-cover"
                   />
                 </div>

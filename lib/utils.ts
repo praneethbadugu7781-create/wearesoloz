@@ -12,3 +12,9 @@ export function formatDate(date: string | Date) {
     year: "numeric"
   }).format(new Date(date));
 }
+
+export function getOptimizedImageUrl(url: string, width = 600) {
+  if (!url) return "";
+  if (!url.includes("cloudinary.com")) return url;
+  return url.replace("/upload/", `/upload/c_scale,w_${width},f_auto,q_auto/`);
+}
