@@ -11,6 +11,40 @@ import { getApiUrl } from "@/lib/api";
 import TermsModal from "./TermsModal";
 import SuccessModal from "./SuccessModal";
 
+const INDIAN_STATES = [
+  "Andhra Pradesh",
+  "Telangana",
+  "Karnataka",
+  "Kerala",
+  "Tamil Nadu",
+  "Maharashtra",
+  "Goa",
+  "Gujarat",
+  "Rajasthan",
+  "Madhya Pradesh",
+  "Uttar Pradesh",
+  "Delhi",
+  "Punjab",
+  "Haryana",
+  "Bihar",
+  "West Bengal",
+  "Odisha",
+  "Assam",
+  "Himachal Pradesh",
+  "Uttarakhand",
+  "Jammu & Kashmir",
+  "Jharkhand",
+  "Chhattisgarh",
+  "Tripura",
+  "Manipur",
+  "Meghalaya",
+  "Nagaland",
+  "Mizoram",
+  "Arunachal Pradesh",
+  "Sikkim",
+  "Puducherry"
+];
+
 export default function FarmerRegistrationClient() {
   const [form, setForm] = useState({
     fullName: "",
@@ -108,10 +142,36 @@ export default function FarmerRegistrationClient() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.fullName || form.fullName.length < 2) {
-      toast.error("Full name must be at least 2 characters");
+
+    const isGibberish = (str: string) => {
+      // Check if any character repeats 4 or more times consecutively
+      if (/(.)\1{3,}/.test(str.toLowerCase())) return true;
+      // Check if unique characters are too low
+      if (str.length >= 10) {
+        const uniqueChars = new Set(str.toLowerCase().replace(/[^a-z]/g, "")).size;
+        if (uniqueChars < 3) return true;
+      }
+      return false;
+    };
+
+    const cleanName = form.fullName.trim();
+    if (!cleanName || cleanName.length < 3) {
+      toast.error("Full name must be at least 3 characters");
       return;
     }
+    if (!/^[a-zA-Z\s]+$/.test(cleanName)) {
+      toast.error("Full name must contain only letters and spaces");
+      return;
+    }
+    if (!cleanName.includes(" ")) {
+      toast.error("Please enter both your first name and last name");
+      return;
+    }
+    if (isGibberish(cleanName)) {
+      toast.error("Please enter a valid name (repeated letters or random symbols are not allowed)");
+      return;
+    }
+
     if (!form.gender) {
       toast.error("Please select your gender");
       return;
@@ -135,30 +195,59 @@ export default function FarmerRegistrationClient() {
       toast.error("Please enter a valid 10-digit mobile number (e.g. +91 9966085310)");
       return;
     }
-    if (!form.state) {
-      toast.error("State is required");
+    if (!form.state || !INDIAN_STATES.includes(form.state)) {
+      toast.error("Please select a valid state from the options");
       return;
     }
-    if (!form.district) {
-      toast.error("District is required");
+    
+    const cleanDistrict = form.district.trim();
+    if (!cleanDistrict || cleanDistrict.length < 3) {
+      toast.error("District name must be at least 3 characters");
       return;
     }
+    if (!/^[a-zA-Z\s]+$/.test(cleanDistrict)) {
+      toast.error("District name must contain only letters and spaces");
+      return;
+    }
+    if (isGibberish(cleanDistrict)) {
+      toast.error("Please enter a valid district name");
+      return;
+    }
+
     if (!form.farmingType) {
       toast.error("Please select a farming type");
       return;
     }
-    if (!form.cropType) {
-      toast.error("Please specify your crop types");
+
+    const cleanCropType = form.cropType.trim();
+    if (!cleanCropType || cleanCropType.length < 3) {
+      toast.error("Crops grown must be at least 3 characters");
       return;
     }
+    if (!/^[a-zA-Z0-9\s,]+$/.test(cleanCropType)) {
+      toast.error("Crops field must contain only letters, numbers, spaces, and commas");
+      return;
+    }
+    if (isGibberish(cleanCropType)) {
+      toast.error("Please enter valid crops names");
+      return;
+    }
+
     if (!form.landSize) {
       toast.error("Please select your land size");
       return;
     }
-    if (!form.whyJoin || form.whyJoin.length < 10) {
-      toast.error("Explanation must be at least 10 characters");
+
+    const cleanWhyJoin = form.whyJoin.trim();
+    if (!cleanWhyJoin || cleanWhyJoin.length < 20) {
+      toast.error("Motivation explanation must be at least 20 characters");
       return;
     }
+    if (isGibberish(cleanWhyJoin)) {
+      toast.error("Please enter a valid explanation (no repeated text/gibberish)");
+      return;
+    }
+
     if (form.farmingImages.length === 0) {
       toast.error("Please upload at least one image of your farm or farming activity");
       return;
@@ -393,13 +482,17 @@ export default function FarmerRegistrationClient() {
                   <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
                     State
                   </label>
-                  <Input
+                  <select
                     required
                     value={form.state}
                     onChange={(e) => setForm({ ...form, state: e.target.value })}
-                    placeholder="e.g. Telangana"
-                    className="glass border-stone-200 bg-white/90 h-12 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c]"
-                  />
+                    className="w-full rounded-md border border-stone-200 bg-white/90 px-3 py-2 h-12 text-sm text-stone-900 focus-visible:outline-none focus:border-[#ea580c]"
+                  >
+                    <option value="">Select State</option>
+                    {INDIAN_STATES.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* District */}

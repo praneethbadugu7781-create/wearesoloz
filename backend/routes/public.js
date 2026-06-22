@@ -215,38 +215,130 @@ router.post("/careers", async (req, res) => {
   }
 });
 
+const INDIAN_STATES = [
+  "Andhra Pradesh",
+  "Telangana",
+  "Karnataka",
+  "Kerala",
+  "Tamil Nadu",
+  "Maharashtra",
+  "Goa",
+  "Gujarat",
+  "Rajasthan",
+  "Madhya Pradesh",
+  "Uttar Pradesh",
+  "Delhi",
+  "Punjab",
+  "Haryana",
+  "Bihar",
+  "West Bengal",
+  "Odisha",
+  "Assam",
+  "Himachal Pradesh",
+  "Uttarakhand",
+  "Jammu & Kashmir",
+  "Jharkhand",
+  "Chhattisgarh",
+  "Tripura",
+  "Manipur",
+  "Meghalaya",
+  "Nagaland",
+  "Mizoram",
+  "Arunachal Pradesh",
+  "Sikkim",
+  "Puducherry"
+];
+
+function isGibberish(str) {
+  if (!str) return false;
+  // Check if any character repeats 4 or more times consecutively
+  if (/(.)\1{3,}/.test(str.toLowerCase())) return true;
+  // Check if unique characters are too low
+  if (str.length >= 10) {
+    const uniqueChars = new Set(str.toLowerCase().replace(/[^a-z]/g, "")).size;
+    if (uniqueChars < 3) return true;
+  }
+  return false;
+}
+
 // --- Farmers (public submit) ---
 router.post("/farmers", async (req, res) => {
   try {
     const { fullName, gender, bloodGroup, age, email, mobile, state, district, farmingType, cropType, landSize, whyJoin, farmingImages } = req.body;
-    if (!fullName || fullName.length < 2) return res.status(400).json({ error: "Full name must be at least 2 characters" });
+
+    // Full name validation
+    const cleanName = (fullName || "").trim();
+    if (!cleanName || cleanName.length < 3) return res.status(400).json({ error: "Full name must be at least 3 characters" });
+    if (!/^[a-zA-Z\s]+$/.test(cleanName)) return res.status(400).json({ error: "Full name must contain only letters and spaces" });
+    if (!cleanName.includes(" ")) return res.status(400).json({ error: "Please enter both your first name and last name" });
+    if (isGibberish(cleanName)) return res.status(400).json({ error: "Please enter a valid name (repeated letters or random symbols are not allowed)" });
+
+    // Gender validation
     if (!gender || !["Male", "Female", "Other"].includes(gender)) return res.status(400).json({ error: "Please select a valid gender" });
+
+    // Blood Group validation
     if (!bloodGroup) return res.status(400).json({ error: "Blood group is required" });
-    if (!age || isNaN(Number(age)) || Number(age) < 18 || Number(age) > 100) return res.status(400).json({ error: "Please enter a valid age (18 or older)" });
-    if (!email) return res.status(400).json({ error: "Email is required" });
-    if (!mobile || mobile.length < 7) return res.status(400).json({ error: "Please enter a valid mobile number" });
-    if (!state) return res.status(400).json({ error: "State is required" });
-    if (!district) return res.status(400).json({ error: "District is required" });
-    if (!farmingType) return res.status(400).json({ error: "Farming type is required" });
-    if (!cropType) return res.status(400).json({ error: "Crop type is required" });
-    if (!landSize) return res.status(400).json({ error: "Land size is required" });
-    if (!whyJoin || whyJoin.length < 10) return res.status(400).json({ error: "Explanation must be at least 10 characters" });
+
+    // Age validation
+    const ageNum = Number(age);
+    if (!age || isNaN(ageNum) || ageNum < 18 || ageNum > 100) return res.status(400).json({ error: "Please enter a valid age (18 or older)" });
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test((email || "").trim())) return res.status(400).json({ error: "Please enter a valid email address" });
+
+    // Mobile validation
+    const phoneRegex = /^[+]?[0-9\s\-]{7,15}$/;
+    if (!mobile || !phoneRegex.test((mobile || "").trim())) return res.status(400).json({ error: "Please enter a valid mobile number" });
+
+    // State validation
+    if (!state || !INDIAN_STATES.includes(state)) return res.status(400).json({ error: "Please select a valid Indian state" });
+
+    // District validation
+    const cleanDistrict = (district || "").trim();
+    if (!cleanDistrict || cleanDistrict.length < 3) return res.status(400).json({ error: "District name must be at least 3 characters" });
+    if (!/^[a-zA-Z\s]+$/.test(cleanDistrict)) return res.status(400).json({ error: "District name must contain only letters and spaces" });
+    if (isGibberish(cleanDistrict)) return res.status(400).json({ error: "Please enter a valid district name" });
+
+    // Farming category validation
+    const farmingTypes = ["Crop Farming", "Organic Farming", "Dairy Farming", "Horticulture", "Poultry Farming", "Mixed Farming", "Other"];
+    if (!farmingType || !farmingTypes.includes(farmingType)) return res.status(400).json({ error: "Please select a valid farming category" });
+
+    // Crops Grown validation
+    const cleanCropType = (cropType || "").trim();
+    if (!cleanCropType || cleanCropType.length < 3) return res.status(400).json({ error: "Crops grown must be at least 3 characters" });
+    if (!/^[a-zA-Z0-9\s,]+$/.test(cleanCropType)) return res.status(400).json({ error: "Crops field must contain only letters, numbers, spaces, and commas" });
+    if (isGibberish(cleanCropType)) return res.status(400).json({ error: "Please enter valid crops names" });
+
+    // Land holding size validation
+    const landSizes = ["Less than 2 acres", "2 to 5 acres", "More than 5 acres"];
+    if (!landSize || !landSizes.includes(landSize)) return res.status(400).json({ error: "Please select a valid land holding size" });
+
+    // Motivation (whyJoin) validation
+    const cleanWhyJoin = (whyJoin || "").trim();
+    if (!cleanWhyJoin || cleanWhyJoin.length < 20) return res.status(400).json({ error: "Motivation explanation must be at least 20 characters" });
+    if (isGibberish(cleanWhyJoin)) return res.status(400).json({ error: "Please enter a valid explanation (no repeated text/gibberish)" });
+
+    // Farming images validation
+    if (!farmingImages || !Array.isArray(farmingImages) || farmingImages.length === 0) {
+      return res.status(400).json({ error: "Please upload at least one farming image" });
+    }
 
     await connectDB();
     const farmer = await Farmer.create({
-      fullName,
+      fullName: cleanName,
       gender,
       bloodGroup,
       age: Number(age),
-      email,
-      mobile,
+      email: email.trim(),
+      mobile: mobile.trim(),
       state,
-      district,
+      district: cleanDistrict,
       farmingType,
-      cropType,
+      cropType: cleanCropType,
       landSize,
-      whyJoin,
-      farmingImages: farmingImages || []
+      whyJoin: cleanWhyJoin,
+      farmingImages: farmingImages
     });
 
     // Send email notifications asynchronously
