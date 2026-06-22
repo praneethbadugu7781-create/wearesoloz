@@ -3,9 +3,10 @@ import { getAuthHeaders } from "@/lib/api";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 import { useEffect, useState } from "react";
-import { HeartHandshake, Trash2, Loader2, ExternalLink, Search, User, MapPin, Sprout, Calendar, FileSpreadsheet, FileText } from "lucide-react";
+import { HeartHandshake, Trash2, Loader2, ExternalLink, Search, User, MapPin, Sprout, Calendar, FileSpreadsheet, FileText, X, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { exportToCSV, exportToPDF } from "@/lib/export";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface FarmerData {
   _id: string;
@@ -32,6 +33,9 @@ export default function AdminFarmersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
+  const [selectedFarmerId, setSelectedFarmerId] = useState<string | null>(null);
+  const [rejectionReasonInput, setRejectionReasonInput] = useState("");
 
   const handleExportCSV = () => {
     if (filtered.length === 0) return alert("No data to export.");
@@ -101,31 +105,43 @@ export default function AdminFarmersPage() {
   };
 
   const handleStatusChange = async (id: string, newStatus: "Pending" | "Approved" | "Rejected" | "Archived") => {
-    let rejectionReason = "";
     if (newStatus === "Rejected") {
-      const reason = prompt("Please enter the reason for rejecting this application:");
-      if (reason === null) return; // User cancelled
-      if (!reason.trim()) {
-        alert("Rejection reason is required to reject an application.");
-        return;
-      }
-      rejectionReason = reason.trim();
+      setSelectedFarmerId(id);
+      setRejectionReasonInput("");
+      setRejectionModalOpen(true);
+      return;
     }
 
+    await updateStatus(id, newStatus, "");
+  };
+
+  const updateStatus = async (id: string, newStatus: "Pending" | "Approved" | "Rejected" | "Archived", reason: string) => {
     try {
       const res = await fetch(`${API_URL}/admin/farmers/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-        body: JSON.stringify({ status: newStatus, rejectionReason })
+        body: JSON.stringify({ status: newStatus, rejectionReason: reason })
       });
       if (!res.ok) throw new Error("Failed to update application status");
 
       setFarmers(
-        farmers.map((f) => (f._id === id ? { ...f, status: newStatus, rejectionReason } : f))
+        farmers.map((f) => (f._id === id ? { ...f, status: newStatus, rejectionReason: reason } : f))
       );
     } catch (err: any) {
       alert(err.message || "Error updating application status.");
     }
+  };
+
+  const submitRejection = async () => {
+    if (!selectedFarmerId) return;
+    if (!rejectionReasonInput.trim()) {
+      alert("Please enter a reason for rejection.");
+      return;
+    }
+    await updateStatus(selectedFarmerId, "Rejected", rejectionReasonInput.trim());
+    setRejectionModalOpen(false);
+    setSelectedFarmerId(null);
+    setRejectionReasonInput("");
   };
 
   const handleDelete = async (id: string) => {
@@ -157,6 +173,8 @@ export default function AdminFarmersPage() {
 
     return matchesSearch && matchesStatus;
   });
+
+  const selectedFarmer = farmers.find((f) => f._id === selectedFarmerId);
 
   return (
     <main className="space-y-8">
@@ -304,8 +322,8 @@ export default function AdminFarmersPage() {
                 {/* Rejection Reason (if rejected) */}
                 {farmer.status === "Rejected" && farmer.rejectionReason && (
                   <div className="space-y-1.5">
-                    <span className="text-rose-400/80 block uppercase tracking-wider text-[9px] font-semibold">Rejection Reason:</span>
-                    <div className="rounded-lg bg-rose-500/10 p-4 border border-rose-500/20 text-xs text-rose-200 leading-relaxed italic">
+                    <span className="text-rose-600 block uppercase tracking-wider text-[9px] font-bold">Rejection Reason:</span>
+                    <div className="rounded-lg bg-rose-500/15 border border-rose-500/25 p-4 text-xs font-medium italic leading-relaxed">
                       {farmer.rejectionReason}
                     </div>
                   </div>
@@ -383,6 +401,106 @@ export default function AdminFarmersPage() {
           })}
         </div>
       )}
+
+      {/* Rejection Reason Modal */}
+      <AnimatePresence>
+        {rejectionModalOpen && selectedFarmer && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setRejectionModalOpen(false);
+                setSelectedFarmerId(null);
+                setRejectionReasonInput("");
+              }}
+              className="fixed inset-0 bg-stone-900/60 backdrop-blur-md"
+            />
+
+            {/* Modal Body */}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl border border-stone-200/80 z-10 text-stone-950"
+            >
+              {/* Close button */}
+              <button
+                onClick={() => {
+                  setRejectionModalOpen(false);
+                  setSelectedFarmerId(null);
+                  setRejectionReasonInput("");
+                }}
+                className="absolute right-4 top-4 rounded-full p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Header Icon & Title */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-50 border border-rose-100 text-rose-600">
+                  <AlertTriangle className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-stone-900 leading-tight">
+                    Reject Application
+                  </h3>
+                  <p className="text-[11px] text-stone-500">
+                    Submit a rejection reason for this application
+                  </p>
+                </div>
+              </div>
+
+              {/* Message */}
+              <p className="text-xs text-stone-600 mb-4 leading-relaxed text-left">
+                Please enter a reason for rejecting the application of{" "}
+                <strong className="text-stone-900 font-semibold">
+                  {selectedFarmer.fullName}
+                </strong>
+                . A notification email with this reason will be sent to the farmer.
+              </p>
+
+              {/* Input field */}
+              <div className="mb-6 text-left">
+                <label className="block text-[10px] uppercase tracking-wider font-semibold text-stone-500 mb-1.5">
+                  Reason for Rejection
+                </label>
+                <textarea
+                  autoFocus
+                  placeholder="e.g. Invalid document upload, incorrect profile details..."
+                  value={rejectionReasonInput}
+                  onChange={(e) => setRejectionReasonInput(e.target.value)}
+                  className="w-full h-28 rounded-lg border border-stone-200 bg-stone-50/50 p-3 text-xs text-stone-900 placeholder-stone-400 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 focus:outline-none transition resize-none"
+                />
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex justify-end gap-2.5">
+                <button
+                  onClick={() => {
+                    setRejectionModalOpen(false);
+                    setSelectedFarmerId(null);
+                    setRejectionReasonInput("");
+                  }}
+                  className="rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 py-2 text-xs font-semibold transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  onClick={submitRejection}
+                  className="rounded-lg bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 text-xs font-semibold transition shadow-md shadow-rose-600/10 flex items-center gap-1.5"
+                >
+                  Confirm Reject
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
