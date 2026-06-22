@@ -11,7 +11,8 @@ const careerSchema = new mongoose.Schema(
     instagram: { type: String, default: "" },
     experience: { type: String, required: true },
     whyJoin: { type: String, required: true },
-    status: { type: String, default: "Pending", enum: ["Pending", "Reviewed", "Archived"] }
+    status: { type: String, default: "Pending", enum: ["Pending", "Reviewed", "Rejected", "Archived"] },
+    rejectionReason: { type: String, default: "" }
   },
   { timestamps: true }
 );

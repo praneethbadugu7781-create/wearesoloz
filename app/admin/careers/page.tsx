@@ -4,9 +4,10 @@ import { getAuthHeaders } from "@/lib/api";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 import { useEffect, useState } from "react";
-import { Briefcase, Trash2, CheckCircle, Clock, Loader2, Check, ExternalLink, Search, Archive, UserCheck, FileSpreadsheet, FileText } from "lucide-react";
+import { Briefcase, Trash2, CheckCircle, Clock, Loader2, Check, ExternalLink, Search, Archive, UserCheck, FileSpreadsheet, FileText, X, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { exportToCSV, exportToPDF } from "@/lib/export";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface CareerData {
   _id: string;
@@ -19,8 +20,9 @@ interface CareerData {
   instagram?: string;
   experience: string;
   whyJoin: string;
-  status: "Pending" | "Reviewed" | "Archived";
+  status: "Pending" | "Reviewed" | "Rejected" | "Archived";
   createdAt: string;
+  rejectionReason?: string;
 }
 
 export default function AdminCareersPage() {
@@ -28,6 +30,9 @@ export default function AdminCareersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
+  const [selectedCareerId, setSelectedCareerId] = useState<string | null>(null);
+  const [rejectionReasonInput, setRejectionReasonInput] = useState("");
 
   const handleExportCSV = () => {
     if (filtered.length === 0) return alert("No data to export.");
@@ -92,21 +97,44 @@ export default function AdminCareersPage() {
     }
   };
 
-  const handleStatusChange = async (id: string, newStatus: "Pending" | "Reviewed" | "Archived") => {
+  const handleStatusChange = async (id: string, newStatus: "Pending" | "Reviewed" | "Rejected" | "Archived") => {
+    if (newStatus === "Rejected") {
+      setSelectedCareerId(id);
+      setRejectionReasonInput("");
+      setRejectionModalOpen(true);
+      return;
+    }
+
+    await updateStatus(id, newStatus, "");
+  };
+
+  const updateStatus = async (id: string, newStatus: "Pending" | "Reviewed" | "Rejected" | "Archived", reason: string) => {
     try {
       const res = await fetch(`${API_URL}/admin/careers/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus, rejectionReason: reason })
       });
       if (!res.ok) throw new Error("Failed to update status");
 
       setApplications(
-        applications.map((app) => (app._id === id ? { ...app, status: newStatus } : app))
+        applications.map((app) => (app._id === id ? { ...app, status: newStatus, rejectionReason: reason } : app))
       );
     } catch (err: any) {
       alert(err.message || "Error updating status.");
     }
+  };
+
+  const submitRejection = async () => {
+    if (!selectedCareerId) return;
+    if (!rejectionReasonInput.trim()) {
+      alert("Please enter a reason for rejection.");
+      return;
+    }
+    await updateStatus(selectedCareerId, "Rejected", rejectionReasonInput.trim());
+    setRejectionModalOpen(false);
+    setSelectedCareerId(null);
+    setRejectionReasonInput("");
   };
 
   const handleDelete = async (id: string) => {
@@ -145,6 +173,8 @@ export default function AdminCareersPage() {
     );
   }
 
+  const selectedApplication = applications.find((app) => app._id === selectedCareerId);
+
   return (
     <main className="space-y-8">
       {/* Title */}
@@ -182,7 +212,7 @@ export default function AdminCareersPage() {
 
         {/* Status Filters */}
         <div className="flex items-center gap-1.5 self-start">
-          {["All", "Pending", "Reviewed", "Archived"].map((st) => (
+          {["All", "Pending", "Reviewed", "Rejected", "Archived"].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
@@ -272,7 +302,17 @@ export default function AdminCareersPage() {
 
                       {/* Why Join */}
                       <td className="px-6 py-4 max-w-xs whitespace-pre-wrap leading-relaxed text-white/80 font-body">
-                        {app.whyJoin}
+                        <div>
+                          <p>{app.whyJoin}</p>
+                          {app.status === "Rejected" && app.rejectionReason && (
+                            <div className="mt-2 text-left">
+                              <span className="text-rose-600 block uppercase tracking-wider text-[8px] font-bold">Rejection Reason:</span>
+                              <div className="rounded-lg bg-rose-500/15 border border-rose-500/25 p-2.5 text-[11px] font-medium italic leading-normal">
+                                {app.rejectionReason}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </td>
 
                       {/* Status */}
@@ -283,6 +323,8 @@ export default function AdminCareersPage() {
                               ? "bg-amber-500/15 border border-amber-500/25 text-amber-400"
                               : app.status === "Reviewed"
                               ? "bg-blue-500/15 border border-blue-500/25 text-blue-400"
+                              : app.status === "Rejected"
+                              ? "bg-rose-500/15 border border-rose-500/25 text-rose-400"
                               : "bg-stone-500/15 border border-stone-500/25 text-stone-400"
                           }`}
                         >
@@ -326,6 +368,17 @@ export default function AdminCareersPage() {
                               <Clock size={14} />
                             </Button>
                           )}
+                          {app.status !== "Rejected" && (
+                            <Button
+                              onClick={() => handleStatusChange(app._id, "Rejected")}
+                              size="sm"
+                              variant="ghost"
+                              title="Reject Application"
+                              className="h-8 w-8 p-0 text-white/60 hover:text-rose-500 hover:bg-white/5"
+                            >
+                              <X size={14} />
+                            </Button>
+                          )}
                           <Button
                             onClick={() => handleDelete(app._id)}
                             size="sm"
@@ -345,6 +398,106 @@ export default function AdminCareersPage() {
           </div>
         )}
       </div>
+
+      {/* Rejection Reason Modal */}
+      <AnimatePresence>
+        {rejectionModalOpen && selectedApplication && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setRejectionModalOpen(false);
+                setSelectedCareerId(null);
+                setRejectionReasonInput("");
+              }}
+              className="fixed inset-0 bg-stone-900/60 backdrop-blur-md"
+            />
+
+            {/* Modal Body */}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl border border-stone-200/80 z-10 text-stone-950"
+            >
+              {/* Close button */}
+              <button
+                onClick={() => {
+                  setRejectionModalOpen(false);
+                  setSelectedCareerId(null);
+                  setRejectionReasonInput("");
+                }}
+                className="absolute right-4 top-4 rounded-full p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Header Icon & Title */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-50 border border-rose-100 text-rose-600">
+                  <AlertTriangle className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-stone-900 leading-tight">
+                    Reject Application
+                  </h3>
+                  <p className="text-[11px] text-stone-500">
+                    Submit a rejection reason for this candidate
+                  </p>
+                </div>
+              </div>
+
+              {/* Message */}
+              <p className="text-xs text-stone-600 mb-4 leading-relaxed text-left">
+                Please enter a reason for rejecting the application of{" "}
+                <strong className="text-stone-900 font-semibold">
+                  {selectedApplication.fullName}
+                </strong>
+                . A notification email with this reason will be sent to the candidate.
+              </p>
+
+              {/* Input field */}
+              <div className="mb-6 text-left">
+                <label className="block text-[10px] uppercase tracking-wider font-semibold text-stone-500 mb-1.5">
+                  Reason for Rejection
+                </label>
+                <textarea
+                  autoFocus
+                  placeholder="e.g. Profile criteria mismatch, insufficient travel experience..."
+                  value={rejectionReasonInput}
+                  onChange={(e) => setRejectionReasonInput(e.target.value)}
+                  className="w-full h-28 rounded-lg border border-stone-200 bg-stone-50/50 p-3 text-xs text-stone-900 placeholder-stone-400 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 focus:outline-none transition resize-none"
+                />
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex justify-end gap-2.5">
+                <button
+                  onClick={() => {
+                    setRejectionModalOpen(false);
+                    setSelectedCareerId(null);
+                    setRejectionReasonInput("");
+                  }}
+                  className="rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 py-2 text-xs font-semibold transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  onClick={submitRejection}
+                  className="rounded-lg bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 text-xs font-semibold transition shadow-md shadow-rose-600/10 flex items-center gap-1.5"
+                >
+                  Confirm Reject
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

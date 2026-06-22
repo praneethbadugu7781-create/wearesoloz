@@ -453,6 +453,29 @@ async function sendFarmerRejectionEmail(farmerData, reason) {
   return sendResendEmail({ to: farmerData.email, subject, text, html });
 }
 
+async function sendCareerRejectionEmail(careerData, reason) {
+  if (!careerData.email) return false;
+
+  const subject = "Update on your WeAreSoloz Careers Application";
+  const title = "Application Update";
+  const content = `
+    Hi ${careerData.fullName},<br><br>
+    Thank you for your interest in joining the WeAreSoloz travel crew! We appreciate the time you took to submit your application and share your experiences with us.<br><br>
+    After carefully reviewing your application and travel experience, unfortunately, we are unable to proceed with your application at this time.<br><br>
+    <strong>Reason for Rejection:</strong><br>
+    <blockquote style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 12px; margin: 12px 0; color: #991b1b; font-style: italic;">
+      ${reason.replace(/\n/g, "<br>")}
+    </blockquote>
+    We will keep your profile in our database and may reach out if future co-hosting or travel crew opportunities open up that align with your profile. We wish you the very best in all your future travel adventures!<br><br>
+    Sincerely,<br>
+    The WeAreSoloz Team
+  `;
+  const html = wrapPremiumEmail(title, content, "Visit WeAreSoloz", "https://wearesoloz.com");
+  const text = `Hi ${careerData.fullName}, update on your Careers application: Unfortunately, we are unable to proceed with your application at this time. Reason: ${reason}`;
+
+  return sendResendEmail({ to: careerData.email, subject, text, html });
+}
+
 async function sendCareerReviewedEmail(careerData) {
   const subject = "Your WeAreSoloz Careers Application Update";
   const title = "Application Reviewed!";
@@ -600,5 +623,6 @@ module.exports = {
   sendCareerReviewedEmail,
   sendContactStatusEmail,
   sendContactApprovalEmail,
-  sendFarmerRejectionEmail
+  sendFarmerRejectionEmail,
+  sendCareerRejectionEmail
 };
