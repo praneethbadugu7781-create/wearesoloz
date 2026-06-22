@@ -23,6 +23,7 @@ interface FarmerData {
   whyJoin: string;
   status: "Pending" | "Approved" | "Rejected" | "Archived";
   createdAt: string;
+  farmingImages?: string[];
 }
 
 export default function AdminFarmersPage() {
@@ -287,6 +288,29 @@ export default function AdminFarmersPage() {
                     {farmer.whyJoin}
                   </div>
                 </div>
+
+                {/* Farming Images */}
+                {farmer.farmingImages && farmer.farmingImages.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-white/40 block uppercase tracking-wider text-[9px]">Farming / Farm Images:</span>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                      {farmer.farmingImages.map((img, idx) => (
+                        <a
+                          key={idx}
+                          href={img}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="relative aspect-video rounded-lg overflow-hidden border border-white/10 hover:border-soloz-ember transition block bg-black/40 group"
+                        >
+                          <img src={img} alt={`Farming Upload ${idx + 1}`} className="object-cover w-full h-full group-hover:scale-105 transition-transform" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-[10px] text-white">
+                            View Fullscreen
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Bottom Row Actions */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-white/5">

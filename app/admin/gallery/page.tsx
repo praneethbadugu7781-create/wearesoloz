@@ -27,12 +27,12 @@ interface BulkItem {
 
 const emptyForm: GalleryData = {
   title: "",
-  category: "Treks",
+  category: "",
   image: "",
   alt: ""
 };
 
-const categories = ["Treks", "Spiritual Tours", "Road Trips", "Community Events", "Hidden Destinations"];
+const categories = ["Treks", "Spiritual Tours", "Road Trips", "Community Events", "Hidden Destinations", "Farmer Trips", "Other"];
 
 const cleanFilenameToTitle = (filename: string) => {
   const nameWithoutExtension = filename.substring(0, filename.lastIndexOf(".")) || filename;
@@ -97,7 +97,7 @@ export default function AdminGalleryPage() {
 
   // Bulk Upload States
   const [bulkMode, setBulkMode] = useState(false);
-  const [bulkCategory, setBulkCategory] = useState("Treks");
+  const [bulkCategory, setBulkCategory] = useState("");
   const [bulkQueue, setBulkQueue] = useState<BulkItem[]>([]);
 
   useEffect(() => {
@@ -339,12 +339,13 @@ export default function AdminGalleryPage() {
             </h3>
             {/* Global Category for all files in this batch */}
             <div className="flex items-center gap-2">
-              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 whitespace-nowrap">Global Category:</label>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 whitespace-nowrap">Global Category (Optional):</label>
               <select
                 value={bulkCategory}
                 onChange={(e) => setBulkCategory(e.target.value)}
                 className="h-8 rounded border border-white/10 bg-[#14110d] px-2 text-xs text-white focus:border-soloz-ember/50 focus:outline-none"
               >
+                <option value="">None / General</option>
                 {categories.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
@@ -527,12 +528,13 @@ export default function AdminGalleryPage() {
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Category</label>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Category (Optional)</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="h-10 w-full rounded-lg border border-white/10 bg-[#14110d] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
               >
+                <option value="">None / General</option>
                 {categories.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}

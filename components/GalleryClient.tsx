@@ -8,10 +8,13 @@ interface GalleryClientProps {
   initialItems: any[];
 }
 
-const CATS = ["All", "Treks", "Spiritual Tours", "Road Trips", "Community Events", "Hidden Destinations"];
-
 export default function GalleryClient({ initialItems = [] }: GalleryClientProps) {
   const [cat, setCat] = useState("All");
+
+  const defaultCats = ["Treks", "Spiritual Tours", "Road Trips", "Community Events", "Hidden Destinations"];
+  const dynamicCats = Array.from(new Set(initialItems.map(item => item.category).filter(Boolean)));
+  const additionalCats = dynamicCats.filter(c => !defaultCats.map(x => x.toLowerCase()).includes((c as string).toLowerCase()));
+  const CATS = ["All", ...defaultCats, ...additionalCats];
 
   const filteredItems = initialItems.filter((item) => {
     if (cat === "All") return true;

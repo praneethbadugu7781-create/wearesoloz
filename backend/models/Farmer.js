@@ -14,6 +14,7 @@ const farmerSchema = new mongoose.Schema(
     cropType: { type: String, required: true },
     landSize: { type: String, required: true },
     whyJoin: { type: String, required: true },
+    farmingImages: { type: [String], default: [] },
     status: { type: String, default: "Pending", enum: ["Pending", "Approved", "Rejected", "Archived"] }
   },
   { timestamps: true }

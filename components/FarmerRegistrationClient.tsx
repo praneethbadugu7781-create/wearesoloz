@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { Phone, Instagram, ShieldCheck, Sprout, ArrowRight } from "lucide-react";
+import { Phone, Instagram, ShieldCheck, Sprout, ArrowRight, UploadCloud, X, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -25,11 +25,83 @@ export default function FarmerRegistrationClient() {
     cropType: "",
     landSize: "",
     whyJoin: "",
+    farmingImages: [] as string[],
   });
   const [busy, setBusy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [waUrl, setWaUrl] = useState("");
+  const [imageUploading, setImageUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const API_URL = getApiUrl();
+      const sigRes = await fetch(`${API_URL}/upload/signature-public`, {
+        method: "POST"
+      });
+      if (!sigRes.ok) {
+        throw new Error("Failed to get upload authorization.");
+      }
+      const { signature, timestamp, apiKey, cloudName, folder } = await sigRes.json();
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("signature", signature);
+      formData.append("timestamp", timestamp.toString());
+      formData.append("api_key", apiKey);
+      formData.append("folder", folder);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`);
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percent);
+        }
+      };
+
+      const uploadPromise = new Promise<string>((resolve, reject) => {
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const response = JSON.parse(xhr.responseText);
+            resolve(response.secure_url);
+          } else {
+            reject(new Error("Cloudinary upload failed"));
+          }
+        };
+        xhr.onerror = () => reject(new Error("Network error during upload"));
+      });
+
+      xhr.send(formData);
+
+      const uploadedUrl = await uploadPromise;
+      setForm((prev) => ({
+        ...prev,
+        farmingImages: [...prev.farmingImages, uploadedUrl]
+      }));
+      toast.success("Image uploaded successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload image.");
+    } finally {
+      setImageUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const removeImage = (indexToRemove: number) => {
+    setForm((prev) => ({
+      ...prev,
+      farmingImages: prev.farmingImages.filter((_, idx) => idx !== indexToRemove)
+    }));
+  };
 
   const farmingTypes = ["Crop Farming", "Organic Farming", "Dairy Farming", "Horticulture", "Poultry Farming", "Mixed Farming", "Other"];
   const landSizes = ["Less than 2 acres", "2 to 5 acres", "More than 5 acres"];
@@ -87,6 +159,10 @@ export default function FarmerRegistrationClient() {
       toast.error("Explanation must be at least 10 characters");
       return;
     }
+    if (form.farmingImages.length === 0) {
+      toast.error("Please upload at least one image of your farm or farming activity");
+      return;
+    }
 
     setShowTerms(true);
   };
@@ -127,6 +203,7 @@ export default function FarmerRegistrationClient() {
         cropType: "",
         landSize: "",
         whyJoin: "",
+        farmingImages: [],
       });
       setShowSuccess(true);
     } catch {
@@ -390,6 +467,52 @@ export default function FarmerRegistrationClient() {
                   placeholder="e.g. Rice, Cotton, Chillies"
                   className="glass border-stone-200 bg-white/90 h-12 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c]"
                 />
+              </div>
+
+              {/* Farming Images Upload */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                  Upload Farm / Farming Images (At least 1 required)
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {form.farmingImages.map((img, idx) => (
+                    <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-stone-200 bg-stone-100 group shadow-sm">
+                      <img src={img} alt="Farm Upload" className="object-cover w-full h-full" />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(idx)}
+                        className="absolute top-1.5 right-1.5 bg-black/60 hover:bg-red-650 text-white rounded-full p-1 transition-colors"
+                        aria-label="Remove image"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+
+                  {form.farmingImages.length < 5 && (
+                    <label className="flex flex-col items-center justify-center aspect-video rounded-xl border-2 border-dashed border-stone-300 bg-white hover:border-[#ea580c] hover:bg-stone-50 transition cursor-pointer p-4 text-center">
+                      {imageUploading ? (
+                        <div className="flex flex-col items-center gap-1.5">
+                          <Loader2 className="animate-spin text-[#ea580c]" size={20} />
+                          <span className="text-[9px] font-semibold text-stone-500">{uploadProgress}%</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1">
+                          <UploadCloud size={20} className="text-stone-400 group-hover:text-[#ea580c]" />
+                          <span className="text-[9px] font-bold text-stone-500 uppercase tracking-wider">Add Image</span>
+                          <span className="text-[8px] text-stone-400">Max 5 images</span>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        disabled={imageUploading}
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
 
               {/* Why Join */}

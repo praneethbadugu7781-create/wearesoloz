@@ -1,4 +1,5 @@
 const express = require("express");
+const cloudinary = require("cloudinary").v2;
 const { connectDB } = require("../lib/db");
 const Trip = require("../models/Trip");
 const Destination = require("../models/Destination");
@@ -217,7 +218,7 @@ router.post("/careers", async (req, res) => {
 // --- Farmers (public submit) ---
 router.post("/farmers", async (req, res) => {
   try {
-    const { fullName, gender, bloodGroup, age, email, mobile, state, district, farmingType, cropType, landSize, whyJoin } = req.body;
+    const { fullName, gender, bloodGroup, age, email, mobile, state, district, farmingType, cropType, landSize, whyJoin, farmingImages } = req.body;
     if (!fullName || fullName.length < 2) return res.status(400).json({ error: "Full name must be at least 2 characters" });
     if (!gender || !["Male", "Female", "Other"].includes(gender)) return res.status(400).json({ error: "Please select a valid gender" });
     if (!bloodGroup) return res.status(400).json({ error: "Blood group is required" });
@@ -244,7 +245,8 @@ router.post("/farmers", async (req, res) => {
       farmingType,
       cropType,
       landSize,
-      whyJoin
+      whyJoin,
+      farmingImages: farmingImages || []
     });
 
     // Send email notifications asynchronously
@@ -267,6 +269,34 @@ router.post("/farmers", async (req, res) => {
     res.status(201).json(farmer);
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
+
+// --- Public Cloudinary Upload Signature ---
+router.post("/upload/signature-public", (req, res) => {
+  try {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+
+    const timestamp = Math.round(Date.now() / 1000);
+    const signature = cloudinary.utils.api_sign_request(
+      { timestamp, folder: "wearesoloz" },
+      process.env.CLOUDINARY_API_SECRET
+    );
+
+    res.json({
+      timestamp,
+      signature,
+      apiKey: process.env.CLOUDINARY_API_KEY,
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+      folder: "wearesoloz",
+    });
+  } catch (error) {
+    console.error("Public upload signature error:", error);
+    res.status(500).json({ error: "Failed to generate signature" });
   }
 });
 
