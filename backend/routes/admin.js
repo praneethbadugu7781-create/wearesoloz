@@ -14,7 +14,7 @@ const Career = require("../models/Career");
 const Farmer = require("../models/Farmer");
 const Reel = require("../models/Reel");
 
-const { sendFarmerApprovalEmail, sendCareerReviewedEmail, sendContactStatusEmail, sendContactApprovalEmail } = require("../lib/mailer");
+const { sendFarmerApprovalEmail, sendFarmerRejectionEmail, sendCareerReviewedEmail, sendContactStatusEmail, sendContactApprovalEmail } = require("../lib/mailer");
 
 const models = {
   trips: Trip,
@@ -103,9 +103,12 @@ router.patch("/:resource/:id", async (req, res) => {
     const record = await Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!record) return res.status(404).json({ error: "Not found" });
 
-    // Send emails on status change to Approved/Reviewed/Contacted/Closed
+    // Send emails on status change to Approved/Reviewed/Contacted/Closed/Rejected
     if (req.params.resource === "farmers" && prevRecord.status !== "Approved" && record.status === "Approved") {
       sendFarmerApprovalEmail(record).catch(console.error);
+    }
+    if (req.params.resource === "farmers" && prevRecord.status !== "Rejected" && record.status === "Rejected") {
+      sendFarmerRejectionEmail(record, req.body.rejectionReason || "Criteria mismatch / incomplete details").catch(console.error);
     }
     if (req.params.resource === "careers" && prevRecord.status !== "Reviewed" && record.status === "Reviewed") {
       sendCareerReviewedEmail(record).catch(console.error);

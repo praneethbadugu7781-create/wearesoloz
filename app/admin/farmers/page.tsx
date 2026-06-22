@@ -24,6 +24,7 @@ interface FarmerData {
   status: "Pending" | "Approved" | "Rejected" | "Archived";
   createdAt: string;
   farmingImages?: string[];
+  rejectionReason?: string;
 }
 
 export default function AdminFarmersPage() {
@@ -100,16 +101,27 @@ export default function AdminFarmersPage() {
   };
 
   const handleStatusChange = async (id: string, newStatus: "Pending" | "Approved" | "Rejected" | "Archived") => {
+    let rejectionReason = "";
+    if (newStatus === "Rejected") {
+      const reason = prompt("Please enter the reason for rejecting this application:");
+      if (reason === null) return; // User cancelled
+      if (!reason.trim()) {
+        alert("Rejection reason is required to reject an application.");
+        return;
+      }
+      rejectionReason = reason.trim();
+    }
+
     try {
       const res = await fetch(`${API_URL}/admin/farmers/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus, rejectionReason })
       });
       if (!res.ok) throw new Error("Failed to update application status");
 
       setFarmers(
-        farmers.map((f) => (f._id === id ? { ...f, status: newStatus } : f))
+        farmers.map((f) => (f._id === id ? { ...f, status: newStatus, rejectionReason } : f))
       );
     } catch (err: any) {
       alert(err.message || "Error updating application status.");
@@ -288,6 +300,16 @@ export default function AdminFarmersPage() {
                     {farmer.whyJoin}
                   </div>
                 </div>
+
+                {/* Rejection Reason (if rejected) */}
+                {farmer.status === "Rejected" && farmer.rejectionReason && (
+                  <div className="space-y-1.5">
+                    <span className="text-rose-400/80 block uppercase tracking-wider text-[9px] font-semibold">Rejection Reason:</span>
+                    <div className="rounded-lg bg-rose-500/10 p-4 border border-rose-500/20 text-xs text-rose-200 leading-relaxed italic">
+                      {farmer.rejectionReason}
+                    </div>
+                  </div>
+                )}
 
                 {/* Farming Images */}
                 {farmer.farmingImages && farmer.farmingImages.length > 0 && (

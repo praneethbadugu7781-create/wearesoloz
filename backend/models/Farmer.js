@@ -15,7 +15,8 @@ const farmerSchema = new mongoose.Schema(
     landSize: { type: String, required: true },
     whyJoin: { type: String, required: true },
     farmingImages: { type: [String], default: [] },
-    status: { type: String, default: "Pending", enum: ["Pending", "Approved", "Rejected", "Archived"] }
+    status: { type: String, default: "Pending", enum: ["Pending", "Approved", "Rejected", "Archived"] },
+    rejectionReason: { type: String, default: "" }
   },
   { timestamps: true }
 );
