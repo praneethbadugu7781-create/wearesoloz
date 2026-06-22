@@ -45,6 +45,11 @@ export function BookingModal() {
     setLoading(true);
     setError("");
 
+    if (!fullName || fullName.trim().length < 2) {
+      setError("Please enter your full name (minimum 2 characters).");
+      setLoading(false);
+      return;
+    }
     const ageNum = Number(age);
     if (!age || isNaN(ageNum) || ageNum < 18 || ageNum > 100) {
       setError("Please enter a valid age (18 or older).");
@@ -53,6 +58,23 @@ export function BookingModal() {
     }
     if (!bloodGroup) {
       setError("Please select your blood group.");
+      setLoading(false);
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email.trim())) {
+      setError("Please enter a valid email address (e.g. name@example.com).");
+      setLoading(false);
+      return;
+    }
+    const phoneRegex = /^[+]?[0-9\s\-]{7,15}$/;
+    if (!mobile || !phoneRegex.test(mobile.trim())) {
+      setError("Please enter a valid 10-digit mobile number (e.g. +91 9966085310).");
+      setLoading(false);
+      return;
+    }
+    if (!selectedPackage) {
+      setError("Please select a package.");
       setLoading(false);
       return;
     }

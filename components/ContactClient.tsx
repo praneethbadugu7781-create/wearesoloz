@@ -75,12 +75,14 @@ export default function ContactClient({ settings = {}, trips = [] }: ContactClie
       toast.error("Please select your blood group");
       return;
     }
-    if (!form.mobile || form.mobile.length < 7) {
-      toast.error("Please enter a valid mobile number");
+    const phoneRegex = /^[+]?[0-9\s\-]{7,15}$/;
+    if (!form.mobile || !phoneRegex.test(form.mobile.trim())) {
+      toast.error("Please enter a valid 10-digit mobile number (e.g. +91 9966085310)");
       return;
     }
-    if (!form.email || !form.email.includes("@")) {
-      toast.error("Please enter a valid email address");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!form.email || !emailRegex.test(form.email.trim())) {
+      toast.error("Please enter a valid email address (e.g. name@example.com)");
       return;
     }
     if (!selectedState) {
@@ -303,6 +305,7 @@ export default function ContactClient({ settings = {}, trips = [] }: ContactClie
                 </label>
                 <Input
                   required
+                  type="tel"
                   value={form.mobile}
                   onChange={(e) => setForm({ ...form, mobile: e.target.value })}
                   placeholder="e.g. +91 9966085310"
