@@ -145,7 +145,7 @@ export default function ContactClient({ settings = {}, trips = [] }: ContactClie
           <Reveal>
             <SectionLabel>Get in Touch</SectionLabel>
             <h1 className="font-display text-5xl md:text-7xl font-light tracking-tighter mt-5 text-stone-900">
-              Let&apos;s plan your <span className="gradient-text font-medium">next escape</span>.
+              Let&apos;s turn <span className="gradient-text font-medium">dreams into destinations</span>.
             </h1>
             <p className="text-soloz-textSecondary mt-8 max-w-md leading-relaxed font-body">
               Have a trip in mind, a question, or just want to say hi? Drop a message — we read every word.

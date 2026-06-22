@@ -129,7 +129,7 @@ export default function CareersClient({ settings = {} }: CareersClientProps) {
               Travel & co-host <span className="gradient-text font-medium">with Akhil</span>.
             </h1>
             <p className="text-soloz-textSecondary mt-8 max-w-md leading-relaxed font-body">
-              Are you passionate about travel, groups, and exploring the unknown? Akhil is seeking travel buddies (men or women) to travel with him and co-host WeAreSoloz group tours across India.
+              Are you passionate about travel, group experiences, and exploring the unknown? Akhil is seeking like-minded travel enthusiasts to join him and co-host WeAreSoloZ group tours across India.
             </p>
             
             <div className="space-y-4 mt-10 max-w-md">
