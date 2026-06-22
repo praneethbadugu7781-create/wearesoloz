@@ -27,7 +27,7 @@ export function getAuthHeaders(): Record<string, string> {
 }
 
 /* ───── Public fetch (server-side safe) with timeout ───── */
-export async function fetchPublic(path: string, fallback: any = null, timeoutMs: number = 2500) {
+export async function fetchPublic(path: string, fallback: any = null, timeoutMs: number = 9000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
 

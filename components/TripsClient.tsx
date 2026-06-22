@@ -105,18 +105,25 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
 
   const categoriesList = ["All", "Temples", "Treks", "Adventure"];
 
+  // Sort trips chronologically by date to guarantee next month's trips show first
+  const sortedTrips = [...initialTrips].sort((a, b) => {
+    if (!a.date) return 1;
+    if (!b.date) return -1;
+    return new Date(a.date).getTime() - new Date(b.date).getTime();
+  });
+
   const countTrips = (stateName: string) => {
     if (stateName === "All") {
-      return initialTrips.filter(t => !isInternationalTrip(t.state)).length;
+      return sortedTrips.filter(t => !isInternationalTrip(t.state)).length;
     }
     if (stateName === "All International") {
-      return initialTrips.filter(t => isInternationalTrip(t.state)).length;
+      return sortedTrips.filter(t => isInternationalTrip(t.state)).length;
     }
-    return initialTrips.filter(t => (t.state || "").toLowerCase() === stateName.toLowerCase()).length;
+    return sortedTrips.filter(t => (t.state || "").toLowerCase() === stateName.toLowerCase()).length;
   };
 
   const countCategoryTrips = (categoryName: string) => {
-    return initialTrips.filter(t => {
+    return sortedTrips.filter(t => {
       const isDomestic = !isInternationalTrip(t.state);
       if (regionType === "domestic" && !isDomestic) return false;
       if (regionType === "international" && isDomestic) return false;
@@ -130,7 +137,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
     }).length;
   };
 
-  const filteredTrips = initialTrips.filter((t) => {
+  const filteredTrips = sortedTrips.filter((t) => {
     const searchStr = `${t.destination || ""} ${t.title || ""} ${t.state || ""} ${t.category || ""}`.toLowerCase();
     const matchesQuery = searchStr.includes(q.toLowerCase());
     
@@ -152,7 +159,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
   return (
     <div data-testid="trips-page" className="bg-white min-h-screen text-[#1c1917]">
       {/* 🏠 Animated Hero Slider - Timed Cards Opening */}
-      <TripsHeroSlider trips={initialTrips.filter(t => t.status === "published").length > 0 ? initialTrips.filter(t => t.status === "published") : initialTrips} />
+      <TripsHeroSlider trips={sortedTrips.filter(t => t.status === "published").length > 0 ? sortedTrips.filter(t => t.status === "published") : sortedTrips} />
 
       {/* View Toggle (All Packages vs Month-wise Schedule) */}
       <section className="pt-12 px-6 md:px-10 bg-stone-50">
@@ -406,7 +413,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
         /* Month-wise Schedule */
         <section className="py-16 px-6 md:px-10">
           <div className="max-w-7xl mx-auto space-y-16">
-            {Object.entries(groupTripsByMonth(initialTrips)).map(([month, monthTrips]) => (
+            {Object.entries(groupTripsByMonth(sortedTrips)).map(([month, monthTrips]) => (
               <Reveal key={month}>
                 <div className="space-y-6">
                   {/* Month header */}
