@@ -734,7 +734,9 @@ export function TripCard({ trip }: { trip: any }) {
               />
               {trip.date && (
                 <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-white/90 backdrop-blur-md border border-stone-200 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[10px] uppercase tracking-widest text-stone-900 font-semibold">
-                  {new Date(trip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  {trip.destination?.toLowerCase().includes("sabarimala")
+                    ? "Every Month"
+                    : new Date(trip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                 </div>
               )}
               {trip.state?.toLowerCase() === "sri lanka" && (

@@ -125,9 +125,11 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
     setSubmitting(false);
   };
 
-  const formattedDate = trip.date
-    ? new Date(trip.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-    : "TBA";
+  const formattedDate = trip.destination?.toLowerCase().includes("sabarimala")
+    ? "Every Month"
+    : (trip.date
+      ? new Date(trip.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+      : "TBA");
 
   const seatsVal = trip.seats ?? trip.seats_available ?? "—";
 

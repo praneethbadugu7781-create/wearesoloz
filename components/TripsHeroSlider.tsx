@@ -232,7 +232,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
                     <Clock className="w-3.5 h-3.5 text-orange-400 shrink-0" /> {activeTrip.duration}
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-orange-400 shrink-0" /> {new Date(activeTrip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    <Calendar className="w-3.5 h-3.5 text-orange-400 shrink-0" /> {activeTrip.destination?.toLowerCase().includes("sabarimala") ? "Every Month" : new Date(activeTrip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                   </span>
                 </motion.div>
               </div>
