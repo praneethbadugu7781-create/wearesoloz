@@ -3,24 +3,17 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const links = [
-  { href: "/", label: "Home" },
-  { href: "/upcoming-trips", label: "Trips" },
-  { href: "/soloz-community", label: "Community" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/about-akhil", label: "About" },
-  { href: "/careers", label: "Careers" },
-  { href: "/farmer-registration", label: "Farmer Trip" },
-  { href: "/contact", label: "Contact" },
-];
+import { useLanguage } from "@/lib/LanguageContext";
+import { Locale } from "@/lib/translations";
 
 export function Navbar() {
   const pathname = usePathname();
+  const { locale, setLocale, t } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
 
   if (pathname.startsWith("/admin")) return null;
 
@@ -33,6 +26,7 @@ export function Navbar() {
 
   useEffect(() => {
     setOpen(false);
+    setShowLangMenu(false);
   }, [pathname]);
 
   const isPlainPage = 
@@ -44,6 +38,18 @@ export function Navbar() {
     pathname.startsWith("/admin");
 
   const showScrolled = scrolled || isPlainPage;
+
+  // Localized navigation items
+  const localizedLinks = [
+    { href: "/", label: t("nav_home") },
+    { href: "/upcoming-trips", label: t("nav_trips") },
+    { href: "/soloz-community", label: t("nav_community") },
+    { href: "/gallery", label: t("nav_gallery") },
+    { href: "/about-akhil", label: t("nav_about") },
+    { href: "/careers", label: t("nav_careers") },
+    { href: "/farmer-registration", label: t("nav_farmer_trip") },
+    { href: "/contact", label: t("nav_contact") },
+  ];
 
   return (
     <header
@@ -88,7 +94,7 @@ export function Navbar() {
         <nav className={`hidden lg:flex items-center gap-1 xl:gap-1.5 backdrop-blur-sm rounded-full px-2 py-1.5 border transition-all duration-300 ${
           showScrolled ? "bg-stone-50/80 border-stone-100" : "bg-white/10 border-white/10"
         }`}>
-          {links.map((l) => {
+          {localizedLinks.map((l) => {
             const isActive = pathname === l.href;
             return (
               <Link
@@ -114,8 +120,58 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* CTA + Mobile Toggle */}
+        {/* CTA + Language Selector + Mobile Toggle */}
         <div className="flex items-center gap-3">
+          {/* Desktop Language Selector */}
+          <div className="relative hidden lg:block">
+            <button
+              onClick={() => setShowLangMenu(!showLangMenu)}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-[12px] font-bold transition-all duration-300 border ${
+                showScrolled
+                  ? "bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200"
+                  : "bg-white/10 hover:bg-white/20 text-white border-white/10"
+              }`}
+              aria-label="Select Language"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span className="uppercase">{locale}</span>
+            </button>
+            <AnimatePresence>
+              {showLangMenu && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowLangMenu(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-2 w-32 bg-white/95 backdrop-blur-md rounded-2xl border border-stone-150 p-1.5 shadow-xl z-20 overflow-hidden"
+                  >
+                    {[
+                      { code: "en", label: "English" },
+                      { code: "te", label: "తెలుగు" },
+                      { code: "hi", label: "हिन्दी" },
+                    ].map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          setLocale(lang.code as Locale);
+                          setShowLangMenu(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
+                          locale === lang.code
+                            ? "bg-orange-50 text-[#ea580c] font-bold"
+                            : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
+                        }`}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+
           <Link
             href="/soloz-community"
             data-testid="nav-join-community"
@@ -125,8 +181,9 @@ export function Navbar() {
                 : "bg-white text-stone-900 hover:bg-stone-100 hover:shadow-white/10"
             }`}
           >
-            Join Community
+            {t("join_community")}
           </Link>
+          
           <button
             onClick={() => setOpen(!open)}
             data-testid="mobile-menu-toggle"
@@ -152,7 +209,7 @@ export function Navbar() {
             data-testid="mobile-menu"
             className="lg:hidden mt-3 mx-4 bg-white rounded-2xl p-2 border border-stone-100 shadow-xl shadow-stone-200/50"
           >
-            {links.map((l) => {
+            {localizedLinks.map((l) => {
               const isActive = pathname === l.href;
               return (
                 <Link
@@ -170,11 +227,39 @@ export function Navbar() {
               );
             })}
             <div className="mx-3 my-2 h-px bg-stone-100" />
+            
+            {/* Mobile Language Selector */}
+            <div className="px-4 py-3 flex items-center justify-between">
+              <span className="text-stone-500 text-sm font-semibold flex items-center gap-1.5">
+                <Globe className="w-4 h-4 text-stone-400" /> Language
+              </span>
+              <div className="flex gap-1.5">
+                {[
+                  { code: "en", label: "EN" },
+                  { code: "te", label: "TE" },
+                  { code: "hi", label: "HI" },
+                ].map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => setLocale(lang.code as Locale)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      locale === lang.code
+                        ? "bg-[#ea580c] text-white"
+                        : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                    }`}
+                  >
+                    {lang.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mx-3 my-2 h-px bg-stone-100" />
             <Link
               href="/soloz-community"
               className="block mx-2 mb-2 text-center px-4 py-3 rounded-xl bg-stone-900 text-white text-base font-bold"
             >
-              Join Community
+              {t("join_community")}
             </Link>
           </motion.div>
         )}

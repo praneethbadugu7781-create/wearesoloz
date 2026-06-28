@@ -7,6 +7,7 @@ import { BookingModal } from "@/components/booking-modal";
 import { Preloader } from "@/components/Preloader";
 import { brand } from "@/lib/data";
 import { Toaster } from "sonner";
+import { LanguageProvider } from "@/lib/LanguageContext";
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", weight: ["300", "400", "500", "600", "700"] });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
@@ -65,12 +66,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </defs>
         </svg>
 
-        <Preloader />
-        <Navbar />
-        {children}
-        <Footer />
-        <BookingModal />
-        <Toaster theme="light" richColors closeButton position="bottom-right" />
+        <LanguageProvider>
+          <Preloader />
+          <Navbar />
+          {children}
+          <Footer />
+          <BookingModal />
+          <Toaster theme="light" richColors closeButton position="bottom-right" />
+        </LanguageProvider>
       </body>
     </html>
   );

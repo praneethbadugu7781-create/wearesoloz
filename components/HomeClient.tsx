@@ -32,6 +32,7 @@ import { HomeHero } from "@/components/home-hero";
 import Card3D from "@/components/Card3D";
 import TermsModal from "./TermsModal";
 import WriteReviewModal from "./WriteReviewModal";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const WHY = [
   { icon: Users, title: "Travel Together", text: "Solo at start. Family by the end of every trip." },
@@ -118,6 +119,16 @@ export default function HomeClient({
   gallery = [],
   reels = [],
 }: HomeClientProps) {
+  const { t, locale } = useLanguage();
+
+  const localizedWHY = [
+    { icon: Users, title: t("why_1_title"), text: t("why_1_desc") },
+    { icon: Shield, title: t("why_2_title"), text: t("why_2_desc") },
+    { icon: Star, title: t("why_3_title"), text: t("why_3_desc") },
+    { icon: MapPin, title: t("why_4_title"), text: t("why_4_desc") },
+    { icon: Sparkles, title: t("why_5_title"), text: t("why_5_desc") },
+    { icon: Heart, title: t("why_6_title"), text: t("why_6_desc") },
+  ];
   // 1. Upcoming Trips (Treks/Adventure combined - everything except Temples)
   const upcomingTrips = trips.filter(
     (t) => (t.category || "").toLowerCase() !== "temples"
@@ -275,9 +286,9 @@ export default function HomeClient({
       <section data-testid="upcoming-trips-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200">
         <div className="max-w-7xl mx-auto">
           <Reveal className="text-center mb-16">
-            <SectionLabel>📅 Upcoming Solo Trips</SectionLabel>
+            <SectionLabel>📅 {t("upcoming_trips")}</SectionLabel>
             <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">
-              The next <span className="gradient-text font-medium">expeditions</span>.
+              {locale === "te" ? "తదుపరి సాహస యాత్రలు." : locale === "hi" ? "अगले अभियान।" : <>The next <span className="gradient-text font-medium">expeditions</span>.</>}
             </h2>
           </Reveal>
           {displayUpcoming.length === 0 ? (
@@ -300,9 +311,9 @@ export default function HomeClient({
       <section data-testid="spiritual-journeys-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-stone-50/50">
         <div className="max-w-7xl mx-auto">
           <Reveal className="text-center mb-16">
-            <SectionLabel>🛕 Spiritual Journeys</SectionLabel>
+            <SectionLabel>🛕 {locale === "te" ? "ఆధ్యాత్మిక యాత్రలు" : locale === "hi" ? "आध्यात्मिक यात्राएं" : "Spiritual Journeys"}</SectionLabel>
             <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">
-              Sacred trails and <span className="gradient-text font-medium">soulful yatras</span>.
+              {locale === "te" ? "పవిత్ర మార్గాలు మరియు ఆధ్యాత్మిక అనుభూతులు." : locale === "hi" ? "पवित्र मार्ग और आध्यात्मिक अनुभूतियाँ।" : <>Sacred trails and <span className="gradient-text font-medium">soulful yatras</span>.</>}
             </h2>
           </Reveal>
           {displaySpiritual.length === 0 ? (
@@ -325,13 +336,13 @@ export default function HomeClient({
       <section data-testid="why-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-stone-50/50">
         <div className="max-w-7xl mx-auto">
           <Reveal className="max-w-2xl mb-16 mx-auto text-center">
-            <SectionLabel>👥 Why Join WeAreSoloz?</SectionLabel>
+            <SectionLabel>👥 {t("why_choose_us")}</SectionLabel>
             <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">
-              Built for <span className="gradient-text font-medium">soloz</span>, by a solo.
+              {locale === "te" ? "సోలోల కోసం ప్రత్యేకంగా నిర్మించబడింది." : locale === "hi" ? "सोलोज़ के लिए विशेष रूप से निर्मित।" : <>Built for <span className="gradient-text font-medium">soloz</span>, by a solo.</>}
             </h2>
           </Reveal>
           <motion.div {...stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {WHY.map((w) => (
+            {localizedWHY.map((w) => (
               <motion.div key={w.title} variants={item}>
                 <Card3D maxRotate={7} scale={1.02} className="h-full">
                   <div className="bg-white/80 border border-stone-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)] backdrop-blur-md rounded-2xl p-6 md:p-8 hover-lift hover:shadow-md hover:border-orange-500/20 transition-all duration-300 h-full">
@@ -353,15 +364,15 @@ export default function HomeClient({
         <div className="max-w-7xl mx-auto">
           <Reveal className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
             <div>
-              <SectionLabel>📸 Travel Memories Gallery</SectionLabel>
-              <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">Moments, frozen.</h2>
+              <SectionLabel>📸 {locale === "te" ? "ప్రయాణ జ్ఞాపకాల గ్యాలరీ" : locale === "hi" ? "यात्रा यादों की गैलरी" : "Travel Memories Gallery"}</SectionLabel>
+              <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">{locale === "te" ? "మరపురాని క్షణాలు." : locale === "hi" ? "अविस्मरणीय क्षण।" : "Moments, frozen."}</h2>
             </div>
             <Link
               href="/gallery"
               data-testid="see-all-gallery"
               className="text-sm text-soloz-textSecondary hover:text-stone-900 inline-flex items-center gap-2 group transition-colors"
             >
-              Open gallery <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              {locale === "te" ? "గ్యాలరీని తెరవండి" : locale === "hi" ? "गैलरी खोलें" : "Open gallery"} <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </Link>
           </Reveal>
           {gallery.length === 0 ? (
@@ -417,13 +428,15 @@ export default function HomeClient({
       <section data-testid="testimonials-section" className="py-16 md:py-24 px-4 md:px-10 border-t border-stone-200 bg-white">
         <div className="max-w-5xl mx-auto">
           <Reveal className="text-center mb-16 flex flex-col items-center">
-            <SectionLabel>⭐ Voices of Soloz</SectionLabel>
-            <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">Real travellers. Real stories.</h2>
+            <SectionLabel>⭐ {t("what_travellers_say")}</SectionLabel>
+            <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900">
+              {locale === "te" ? "నిజమైన ప్రయాణీకులు. నిజమైన కథనాలు." : locale === "hi" ? "वास्तविक यात्री। वास्तविक कहानियाँ।" : "Real travellers. Real stories."}
+            </h2>
             <button
               onClick={() => setShowWriteReview(true)}
               className="mt-6 inline-flex items-center gap-2 border border-stone-300 hover:bg-stone-50 text-stone-700 font-bold uppercase tracking-wider text-[11px] px-6 py-3 rounded-full transition-all duration-300"
             >
-              Write a Review
+              {locale === "te" ? "సమీక్ష రాయండి" : locale === "hi" ? "समीक्षा लिखें" : "Write a Review"}
             </button>
           </Reveal>
           {allTestimonials.length === 0 ? (
@@ -479,23 +492,29 @@ export default function HomeClient({
         <div className="relative max-w-4xl mx-auto text-center flex flex-col items-center">
           <Reveal className="flex flex-col items-center text-center">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-6">
-              <MessageCircle className="w-4 h-4 text-emerald-600 animate-bounce" /> Official WhatsApp Community
+              <MessageCircle className="w-4 h-4 text-emerald-600 animate-bounce" /> {locale === "te" ? "అధికారిక వాట్సాప్ కమ్యూనిటీ" : locale === "hi" ? "आधिकारिक व्हाट्सएप कम्युनिटी" : "Official WhatsApp Community"}
             </div>
             <h2 className="font-display text-4xl sm:text-5xl md:text-7xl font-light tracking-tighter leading-none text-stone-900">
-              Connect with <span className="text-emerald-600 font-medium">1,000+</span> <br />Solo Travellers
+              {locale === "te" ? <>కనెక్ట్ అవ్వండి <span className="text-emerald-600 font-medium">1,000+</span> <br />సోలో ప్రయాణీకులతో</> : locale === "hi" ? <>जुड़ें <span className="text-emerald-600 font-medium">1,000+</span> <br />सोलो यात्रियों से</> : <>Connect with <span className="text-emerald-600 font-medium">1,000+</span> <br />Solo Travellers</>}
             </h2>
             <p className="text-stone-600 mt-6 max-w-xl mx-auto leading-relaxed font-body">
-              Join our official WhatsApp community to get instant updates on upcoming solo trips, participate in trip planning Q&A, and chat with travel buddies who share your passion for adventure.
+              {locale === "te" ? (
+                "రాబోయే సోలో ట్రిప్స్ గురించి తక్షణ అప్‌డేట్‌లను పొందడానికి, ట్రిప్ ప్లానింగ్ చర్చల్లో పాల్గొనడానికి మరియు మీలాగే ప్రయాణాలను ఇష్టపడే స్నేహితులతో చాట్ చేయడానికి మా అధికారిక వాట్సాప్ కమ్యూనిటీలో చేరండి."
+              ) : locale === "hi" ? (
+                "आगामी सोलो ट्रिप्स पर तुरंत अपडेट प्राप्त करने, ट्रिप प्लानिंग चर्चाओं में भाग लेने और यात्रा के शौकीन मित्रों के साथ चैट करने के लिए हमारे आधिकारिक व्हाट्सएप समुदाय में शामिल हों।"
+              ) : (
+                "Join our official WhatsApp community to get instant updates on upcoming solo trips, participate in trip planning Q&A, and chat with travel buddies who share your passion for adventure."
+              )}
             </p>
             <div className="mt-8">
               <a
-                href={settings.whatsapp_link || "https://wa.me/919966085310"}
+                href={settings.whatsapp_link || "https://chat.whatsapp.com/E7aoVfUi66S4VDEBsdXoMW"}
                 target="_blank"
                 rel="noreferrer"
                 data-testid="cta-join-whatsapp"
                 className="inline-flex items-center justify-center gap-3 bg-emerald-600 text-white hover:bg-emerald-700 px-8 py-4 rounded-full font-bold text-sm uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(5,150,105,0.25)] hover:scale-[1.03]"
               >
-                <MessageCircle className="w-5 h-5" /> Join WhatsApp Community
+                <MessageCircle className="w-5 h-5" /> {t("join_whatsapp")}
               </a>
             </div>
           </Reveal>
@@ -508,12 +527,18 @@ export default function HomeClient({
           <div className="grid md:grid-cols-5 gap-12 items-start">
             {/* Info panel */}
             <Reveal className="md:col-span-2">
-              <SectionLabel>📞 Contact / Join Now</SectionLabel>
+              <SectionLabel>📞 {t("contact_us")}</SectionLabel>
               <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-4 text-stone-900 leading-none">
-                Start your <br /><span className="gradient-text font-medium">adventure</span>.
+                {locale === "te" ? <>మీ <br /><span className="gradient-text font-medium">సాహసాన్ని</span> ప్రారంభించండి.</> : locale === "hi" ? <>अपना <br /><span className="gradient-text font-medium">रोमांच</span> शुरू करें।</> : <>Start your <br /><span className="gradient-text font-medium">adventure</span>.</>}
               </h2>
               <p className="text-stone-600 mt-6 leading-relaxed font-body">
-                Ready to join an upcoming trip or have questions? Fill out the details here, and Akhil will get back to you immediately to finalize your booking.
+                {locale === "te" ? (
+                  "రాబోయే ట్రిప్‌లో చేరడానికి సిద్ధంగా ఉన్నారా లేదా ఏవైనా ప్రశ్నలు ఉన్నాయా? ఇక్కడ వివరాలను పూరించండి మరియు మీ బుకింగ్‌ను ఖరారు చేయడానికి అఖిల్ వెంటనే మిమ్మల్ని సంప్రదిస్తారు."
+                ) : locale === "hi" ? (
+                  "आगामी यात्रा में शामिल होने के लिए तैयार हैं या कोई प्रश्न हैं? यहाँ विवरण भरें, और बुकिंग को अंतिम रूप देने के लिए अखिल तुरंत आपसे संपर्क करेंगे।"
+                ) : (
+                  "Ready to join an upcoming trip or have questions? Fill out the details here, and Akhil will get back to you immediately to finalize your booking."
+                )}
               </p>
 
               <div className="mt-10 space-y-6">
@@ -541,12 +566,14 @@ export default function HomeClient({
 
             {/* Form panel */}
             <Reveal className="md:col-span-3 bg-white p-6 sm:p-10 rounded-3xl border border-stone-200 shadow-sm relative">
-              <h3 className="font-display text-2xl font-semibold text-stone-900 mb-6">Inquiry & Booking Form</h3>
+              <h3 className="font-display text-2xl font-semibold text-stone-900 mb-6">
+                {locale === "te" ? "విచారణ & బుకింగ్ ఫారమ్" : locale === "hi" ? "पूछताछ और बुकिंग फॉर्म" : "Inquiry & Booking Form"}
+              </h3>
               
               <form onSubmit={submitContactForm} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Full Name</label>
+                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">{t("full_name")}</label>
                     <Input
                       required
                       value={form.full_name}
@@ -556,7 +583,7 @@ export default function HomeClient({
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Mobile Number</label>
+                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">{t("phone_number")}</label>
                     <Input
                       required
                       type="tel"
@@ -571,7 +598,9 @@ export default function HomeClient({
                 {/* Age & Blood Group */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Age</label>
+                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">
+                      {locale === "te" ? "వయస్సు" : locale === "hi" ? "उम्र" : "Age"}
+                    </label>
                     <Input
                       required
                       type="number"
@@ -582,7 +611,9 @@ export default function HomeClient({
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Blood Group</label>
+                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">
+                      {locale === "te" ? "రక్త గ్రూపు" : locale === "hi" ? "रक्त समूह" : "Blood Group"}
+                    </label>
                     <div className="relative">
                       <select
                         required
@@ -605,7 +636,7 @@ export default function HomeClient({
                 </div>
 
                 <div>
-                  <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Email Address</label>
+                  <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">{t("email_address")}</label>
                   <Input
                     required
                     type="email"
@@ -619,7 +650,9 @@ export default function HomeClient({
                 {/* Dependent Dropdowns */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">State</label>
+                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">
+                      {locale === "te" ? "రాష్ట్రం" : locale === "hi" ? "राज्य" : "State"}
+                    </label>
                     <div className="relative">
                       <select
                         required
@@ -644,7 +677,9 @@ export default function HomeClient({
                   </div>
 
                   <div>
-                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Destination Interested</label>
+                    <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">
+                      {locale === "te" ? "ఆసక్తి గల గమ్యస్థానం" : locale === "hi" ? "गंतव्य जिसमें रुचि है" : "Destination Interested"}
+                    </label>
                     <div className="relative">
                       <select
                         required
@@ -668,7 +703,7 @@ export default function HomeClient({
                 </div>
 
                 <div>
-                  <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">Message (Optional)</label>
+                  <label className="text-[10px] uppercase font-bold text-stone-400 block mb-1">{t("message_optional")}</label>
                   <Textarea
                     value={form.message}
                     onChange={(e) => setForm({ ...form, message: e.target.value })}
@@ -679,7 +714,13 @@ export default function HomeClient({
 
                 {/* Styled Travel Policy Notice Card */}
                 <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200/80 text-[11px] text-amber-900 leading-normal font-body">
-                  <strong>⚠️ Booking Notice:</strong> Train/flight tickets to the starting city are not included. You will meet Akhil directly at the assembly point.
+                  {locale === "te" ? (
+                    "⚠️ బుకింగ్ గమనిక: ప్రారంభ నగరానికి రైలు/విమాన టిక్కెట్లు చేర్చబడలేదు. మీరు నేరుగా అసెంబ్లీ పాయింట్ వద్ద అఖిల్‌ను కలుస్తారు."
+                  ) : locale === "hi" ? (
+                    "⚠️ बुकिंग सूचना: शुरुआती शहर के लिए ट्रेन/उड़ान टिकट शामिल नहीं हैं। आप सीधे असेंबली पॉइंट पर अखिल से मिलेंगे।"
+                  ) : (
+                    "⚠️ Booking Notice: Train/flight tickets to the starting city are not included. You will meet Akhil directly at the assembly point."
+                  )}
                 </div>
 
                 <Button
@@ -687,7 +728,15 @@ export default function HomeClient({
                   disabled={busy}
                   className="w-full h-12 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold transition-all duration-300"
                 >
-                  {busy ? "Sending Inquiry..." : "Send Inquiry & Chat on WhatsApp"}
+                  {busy 
+                    ? t("submitting") 
+                    : (locale === "te" 
+                        ? "విచారణను సమర్పించండి & వాట్సాప్‌లో చాట్ చేయండి" 
+                        : locale === "hi" 
+                          ? "पूछताछ भेजें और व्हाट्सएप पर चैट करें" 
+                          : "Send Inquiry & Chat on WhatsApp"
+                      )
+                  }
                 </Button>
               </form>
             </Reveal>

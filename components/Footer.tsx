@@ -4,9 +4,12 @@ import React from "react";
 import Link from "next/link";
 import { Instagram, Phone, MessageCircle, Youtube, ArrowRight, ArrowUpRight, Heart } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export default function Footer() {
   const pathname = usePathname();
+  const { t, locale } = useLanguage();
+
   if (pathname.startsWith("/admin")) return null;
 
   const scrollToTop = () => {
@@ -41,12 +44,12 @@ export default function Footer() {
                     We<span className="text-[#ea580c]">Are</span>Soloz
                   </div>
                   <div className="text-[9px] uppercase tracking-[0.3em] text-[#ff7a1a] font-semibold mt-0.5">
-                    Travel Solo · You're Not Alone
+                    {t("footer_tagline")}
                   </div>
                 </div>
               </div>
               <p className="text-stone-600 leading-relaxed text-sm max-w-md">
-                WeAreSoloZ is a travel community founded by Akhil with a mission to bring solo travellers together in a safe and positive space. We believe travel heals, connects, and transforms lives. Through unforgettable adventures, meaningful friendships, and our commitment to sponsoring one free trip every month for a deserving farmer, we’re building more than a travel company—we’re building a family. 🌍❤️
+                {t("footer_desc")}
               </p>
             </div>
 
@@ -54,15 +57,15 @@ export default function Footer() {
             <div className="grid grid-cols-3 gap-4 border-t border-stone-100 pt-6">
               <div>
                 <div className="text-2xl font-bold text-stone-900 font-sans">12+</div>
-                <div className="text-[10px] uppercase tracking-widest text-[#ff7a1a] font-semibold mt-0.5">Countries</div>
+                <div className="text-[10px] uppercase tracking-widest text-[#ff7a1a] font-semibold mt-0.5">{t("countries")}</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-stone-900 font-sans">50+</div>
-                <div className="text-[10px] uppercase tracking-widest text-[#ff7a1a] font-semibold mt-0.5">Trails</div>
+                <div className="text-[10px] uppercase tracking-widest text-[#ff7a1a] font-semibold mt-0.5">{t("trails")}</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-stone-900 font-sans">2k+</div>
-                <div className="text-[10px] uppercase tracking-widest text-[#ff7a1a] font-semibold mt-0.5">Explorers</div>
+                <div className="text-[10px] uppercase tracking-widest text-[#ff7a1a] font-semibold mt-0.5">{t("explorers")}</div>
               </div>
             </div>
           </div>
@@ -83,11 +86,11 @@ export default function Footer() {
                 </span>
               </div>
               <h3 className="font-display text-2xl font-bold text-stone-900 leading-tight">
-                Leave your footprints <br />
-                <span className="text-[#ea580c] italic font-normal font-display">where others fear to tread.</span>
+                {t("leave_footprints")} <br />
+                <span className="text-[#ea580c] italic font-normal font-display">{t("where_others_fear")}</span>
               </h3>
               <p className="text-xs text-stone-600 leading-relaxed max-w-sm">
-                Ready to find your family? Join our active solo travel community on WhatsApp to get real-time schedule updates, coordinates, and itineraries.
+                {t("ready_to_find")}
               </p>
             </div>
 
@@ -97,7 +100,7 @@ export default function Footer() {
               rel="noreferrer"
               className="relative z-10 w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-[#ea580c] to-[#ff7a1a] text-white hover:from-[#ff7a1a] hover:to-[#ea580c] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_4px_20px_rgba(234,88,12,0.15)] hover:shadow-[0_4px_25px_rgba(234,88,12,0.3)]"
             >
-              Join WhatsApp Community
+              {t("join_whatsapp")}
               <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </a>
           </div>
@@ -105,25 +108,25 @@ export default function Footer() {
           {/* Card 3: Explore Links */}
           <div className="rounded-3xl border border-stone-200/60 bg-stone-50/50 p-6 space-y-6 hover:border-stone-300 hover:bg-stone-50/80 transition-all duration-300 shadow-sm">
             <div className="text-xs uppercase tracking-[0.25em] text-[#ea580c] font-bold border-l-2 border-[#ea580c] pl-3">
-              Explore
+              {t("quick_links")}
             </div>
             <ul className="space-y-3.5 text-sm text-stone-600">
               <li>
                 <Link href="/upcoming-trips" className="group flex items-center gap-2 hover:text-[#ff7a1a] transition-all duration-300 hover:translate-x-1">
                   <ArrowRight className="w-3.5 h-3.5 text-[#ea580c] opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300 shrink-0" />
-                  Upcoming Trips
+                  {t("nav_trips")}
                 </Link>
               </li>
               <li>
                 <Link href="/gallery" className="group flex items-center gap-2 hover:text-[#ff7a1a] transition-all duration-300 hover:translate-x-1">
                   <ArrowRight className="w-3.5 h-3.5 text-[#ea580c] opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300 shrink-0" />
-                  Gallery
+                  {t("nav_gallery")}
                 </Link>
               </li>
               <li>
                 <Link href="/soloz-community" className="group flex items-center gap-2 hover:text-[#ff7a1a] transition-all duration-300 hover:translate-x-1">
                   <ArrowRight className="w-3.5 h-3.5 text-[#ea580c] opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300 shrink-0" />
-                  Community
+                  {t("nav_community")}
                 </Link>
               </li>
             </ul>
@@ -132,25 +135,25 @@ export default function Footer() {
           {/* Card 4: Connect Links */}
           <div className="rounded-3xl border border-stone-200/60 bg-stone-50/50 p-6 space-y-6 hover:border-stone-300 hover:bg-stone-50/80 transition-all duration-300 shadow-sm">
             <div className="text-xs uppercase tracking-[0.25em] text-[#ea580c] font-bold border-l-2 border-[#ea580c] pl-3">
-              Connect
+              {t("contact_us")}
             </div>
             <ul className="space-y-3.5 text-sm text-stone-600 font-medium">
               <li>
                 <Link href="/about-akhil" className="group flex items-center gap-2 hover:text-[#ff7a1a] transition-all duration-300 hover:translate-x-1">
                   <ArrowRight className="w-3.5 h-3.5 text-[#ea580c] opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300 shrink-0" />
-                  About Akhil
+                  {t("nav_about")}
                 </Link>
               </li>
               <li>
                 <Link href="/careers" className="group flex items-center gap-2 hover:text-[#ff7a1a] transition-all duration-300 hover:translate-x-1">
                   <ArrowRight className="w-3.5 h-3.5 text-[#ea580c] opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300 shrink-0" />
-                  Careers
+                  {t("nav_careers")}
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className="group flex items-center gap-2 hover:text-[#ff7a1a] transition-all duration-300 hover:translate-x-1">
                   <ArrowRight className="w-3.5 h-3.5 text-[#ea580c] opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300 shrink-0" />
-                  Contact
+                  {t("nav_contact")}
                 </Link>
               </li>
               <li>
@@ -183,14 +186,20 @@ export default function Footer() {
             />
             <div className="space-y-2 text-center sm:text-left">
               <p className="text-stone-850 leading-relaxed text-sm font-display italic">
-                &ldquo;If you think travel is expensive, wait until you see the price of a wasted life.&rdquo;
+                {locale === "te" ? (
+                  "\"ప్రయాణం ఖరీదైనదని మీరు అనుకుంటే, వృధా అయిన జీవితం యొక్క విలువను చూసే వరకు వేచి ఉండండి.\""
+                ) : locale === "hi" ? (
+                  "\"यदि आपको लगता है कि यात्रा महंगी है, तो तब तक प्रतीक्षा करें जब तक आप बर्बाद जीवन की कीमत न देख लें।\""
+                ) : (
+                  "\"If you think travel is expensive, wait until you see the price of a wasted life.\""
+                )}
               </p>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <span className="text-xs uppercase tracking-widest text-[#ff7a1a] font-bold">
-                  — Akhil Pasupuleti, Founder
+                  — Akhil Pasupuleti, {locale === "te" ? "వ్యవస్థాపకుడు" : locale === "hi" ? "संस्थापक" : "Founder"}
                 </span>
                 <Link href="/about-akhil" className="text-[10px] uppercase tracking-wider font-bold text-stone-900 hover:text-[#ff7a1a] inline-flex items-center justify-center gap-1 transition-colors font-sans">
-                  Read Founder's Story <ArrowUpRight className="w-3 h-3" />
+                  {locale === "te" ? "వ్యవస్థాపకుడి కథను చదవండి" : locale === "hi" ? "संस्थापक की कहानी पढ़ें" : "Read Founder's Story"} <ArrowUpRight className="w-3 h-3" />
                 </Link>
               </div>
             </div>
@@ -211,10 +220,10 @@ export default function Footer() {
         {/* Footer Bottom copyright */}
         <div className="relative border-t border-stone-100 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500 font-medium z-10">
           <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
-            <span>© {new Date().getFullYear()} WeAreSoloz. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} WeAreSoloz. {locale === "te" ? "అన్ని హక్కులు ప్రత్యేకించబడ్డాయి." : locale === "hi" ? "सर्वाधिकार सुरक्षित।" : "All rights reserved."}</span>
             <span className="text-stone-300 hidden sm:inline">|</span>
             <span className="flex items-center gap-1 justify-center">
-              Built with <Heart className="w-3 h-3 text-[#ea580c] fill-[#ea580c]" /> for solo travellers
+              {locale === "te" ? "సోలో ప్రయాణీకుల కోసం" : locale === "hi" ? "सोलो यात्रियों के लिए" : "Built with"} <Heart className="w-3 h-3 text-[#ea580c] fill-[#ea580c]" /> {locale === "te" ? "ప్రేమతో నిర్మించబడింది" : locale === "hi" ? "प्यार से निर्मित" : "for solo travellers"}
             </span>
           </div>
           
@@ -234,9 +243,9 @@ export default function Footer() {
             <button 
               type="button"
               onClick={scrollToTop} 
-              className="text-stone-400 hover:text-stone-900 transition-colors duration-300 flex items-center gap-1.5"
+              className="text-stone-400 hover:text-stone-900 transition-colors duration-300 flex items-center gap-1.5 font-bold"
             >
-              Back to Top
+              {locale === "te" ? "పైకి వెళ్ళండి" : locale === "hi" ? "ऊपर जाएं" : "Back to Top"}
             </button>
           </div>
         </div>

@@ -5,8 +5,10 @@ import { X, Send, CreditCard } from "lucide-react";
 import { trips as defaultTrips } from "@/lib/data";
 import { usePathname } from "next/navigation";
 import SuccessModal from "./SuccessModal";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export function BookingModal() {
+  const { t, locale } = useLanguage();
   const pathname = usePathname();
   if (pathname.startsWith("/admin")) return null;
 
@@ -46,35 +48,35 @@ export function BookingModal() {
     setError("");
 
     if (!fullName || fullName.trim().length < 2) {
-      setError("Please enter your full name (minimum 2 characters).");
+      setError(locale === "te" ? "దయచేసి మీ పూర్తి పేరును నమోదు చేయండి (కనీసం 2 అక్షరాలు)." : locale === "hi" ? "कृपया अपना पूरा नाम दर्ज करें (न्यूनतम 2 अक्षर)।" : "Please enter your full name (minimum 2 characters).");
       setLoading(false);
       return;
     }
     const ageNum = Number(age);
     if (!age || isNaN(ageNum) || ageNum < 18 || ageNum > 100) {
-      setError("Please enter a valid age (18 or older).");
+      setError(locale === "te" ? "దయచేసి సరైన వయస్సును నమోదు చేయండి (18 లేదా అంతకంటే ఎక్కువ)." : locale === "hi" ? "कृपया एक मान्य आयु दर्ज करें (18 या उससे अधिक)।" : "Please enter a valid age (18 or older).");
       setLoading(false);
       return;
     }
     if (!bloodGroup) {
-      setError("Please select your blood group.");
+      setError(locale === "te" ? "దయచేసి మీ రక్త గ్రూపును ఎంచుకోండి." : locale === "hi" ? "कृपया अपना रक्त समूह चुनें।" : "Please select your blood group.");
       setLoading(false);
       return;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email.trim())) {
-      setError("Please enter a valid email address (e.g. name@example.com).");
+      setError(locale === "te" ? "దయచేసి సరైన ఈమెయిల్ చిరునామాను నమోదు చేయండి." : locale === "hi" ? "कृपया एक मान्य ईमेल पता दर्ज करें।" : "Please enter a valid email address (e.g. name@example.com).");
       setLoading(false);
       return;
     }
     const phoneRegex = /^[+]?[0-9\s\-]{7,15}$/;
     if (!mobile || !phoneRegex.test(mobile.trim())) {
-      setError("Please enter a valid 10-digit mobile number (e.g. +91 9966085310).");
+      setError(locale === "te" ? "దయచేసి సరైన మొబైల్ నంబర్ నమోదు చేయండి." : locale === "hi" ? "कृपया एक मान्य मोबाइल नंबर दर्ज करें।" : "Please enter a valid 10-digit mobile number (e.g. +91 9966085310).");
       setLoading(false);
       return;
     }
     if (!selectedPackage) {
-      setError("Please select a package.");
+      setError(locale === "te" ? "దయచేసి ఒక ప్యాకేజీని ఎంచుకోండి." : locale === "hi" ? "कृपया एक पैकेज चुनें।" : "Please select a package.");
       setLoading(false);
       return;
     }
@@ -140,8 +142,12 @@ export function BookingModal() {
             </button>
 
             <div className="reserve-top-details mb-6">
-              <h3 className="text-2xl font-display font-extrabold text-white mb-1">Reserve Now</h3>
-              <p className="text-xs text-soloz-ash/80">You&apos;ll receive a confirmation within 24h.</p>
+              <h3 className="text-2xl font-display font-extrabold text-white mb-1">
+                {locale === "te" ? "ఇప్పుడే రిజర్వ్ చేసుకోండి" : locale === "hi" ? "अभी बुक करें" : "Reserve Now"}
+              </h3>
+              <p className="text-xs text-soloz-ash/80">
+                {locale === "te" ? "మీరు 24 గంటల్లో నిర్ధారణను అందుకుంటారు." : locale === "hi" ? "आपको 24 घंटे के भीतर पुष्टि मिल जाएगी।" : "You'll receive a confirmation within 24h."}
+              </p>
             </div>
 
             <form onSubmit={handleSubmit} className="package-form space-y-4">
@@ -152,11 +158,11 @@ export function BookingModal() {
               )}
 
               <div className="package-fields reserve flex flex-col gap-1.5">
-                <label htmlFor="Reserve-Name" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">Name</label>
+                <label htmlFor="Reserve-Name" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">{t("full_name")}</label>
                 <input
                   id="Reserve-Name"
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-soloz-ember transition"
-                  placeholder="Your Name"
+                  placeholder={locale === "te" ? "మీ పేరు" : locale === "hi" ? "आपका नाम" : "Your Name"}
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -167,11 +173,13 @@ export function BookingModal() {
               {/* Age & Blood Group */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="package-fields reserve flex flex-col gap-1.5">
-                  <label htmlFor="Reserve-Age" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">Age</label>
+                  <label htmlFor="Reserve-Age" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">
+                    {locale === "te" ? "వయస్సు" : locale === "hi" ? "उम्र" : "Age"}
+                  </label>
                   <input
                     id="Reserve-Age"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-soloz-ember transition"
-                    placeholder="Your Age"
+                    placeholder={locale === "te" ? "మీ వయస్సు" : locale === "hi" ? "आपकी उम्र" : "Your Age"}
                     type="number"
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
@@ -180,7 +188,9 @@ export function BookingModal() {
                 </div>
 
                 <div className="package-fields reserve flex flex-col gap-1.5">
-                  <label htmlFor="Reserve-BloodGroup" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">Blood Group</label>
+                  <label htmlFor="Reserve-BloodGroup" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">
+                    {locale === "te" ? "రక్త గ్రూపు" : locale === "hi" ? "रक्त समूह" : "Blood Group"}
+                  </label>
                   <div className="relative">
                     <select
                       id="Reserve-BloodGroup"
@@ -189,7 +199,7 @@ export function BookingModal() {
                       onChange={(e) => setBloodGroup(e.target.value)}
                       required
                     >
-                      <option value="" disabled>Select Blood</option>
+                      <option value="" disabled>{locale === "te" ? "రక్తాన్ని ఎంచుకోండి" : locale === "hi" ? "रक्त चुनें" : "Select Blood"}</option>
                       {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bg) => (
                         <option key={bg} value={bg}>{bg}</option>
                       ))}
@@ -205,7 +215,7 @@ export function BookingModal() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="package-fields reserve flex flex-col gap-1.5">
-                  <label htmlFor="Reserve-Email" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">Email</label>
+                  <label htmlFor="Reserve-Email" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">{t("email_address")}</label>
                   <input
                     id="Reserve-Email"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-soloz-ember transition"
@@ -218,11 +228,11 @@ export function BookingModal() {
                 </div>
 
                 <div className="package-fields reserve flex flex-col gap-1.5">
-                  <label htmlFor="Reserve-Mobile" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">Phone Number</label>
+                  <label htmlFor="Reserve-Mobile" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">{t("phone_number")}</label>
                   <input
                     id="Reserve-Mobile"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-soloz-ember transition"
-                    placeholder="Your Mobile No."
+                    placeholder={locale === "te" ? "మీ మొబైల్ నంబర్" : locale === "hi" ? "आपका मोबाइल नंबर" : "Your Mobile No."}
                     type="tel"
                     value={mobile}
                     onChange={(e) => setMobile(e.target.value)}
@@ -233,7 +243,9 @@ export function BookingModal() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="package-fields reserve flex flex-col gap-1.5">
-                  <label htmlFor="Reserve-Number-of-Guests" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">Number of Guests</label>
+                  <label htmlFor="Reserve-Number-of-Guests" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">
+                    {locale === "te" ? "అతిథుల సంఖ్య" : locale === "hi" ? "अतिथियों की संख्या" : "Number of Guests"}
+                  </label>
                   <div className="relative">
                     <select
                       id="Reserve-Number-of-Guests"
@@ -244,7 +256,7 @@ export function BookingModal() {
                     >
                       {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
                         <option key={num} value={num}>
-                          {num} {num === 1 ? "Guest" : "Guests"}
+                          {num} {num === 1 ? (locale === "te" ? "అతిథి" : locale === "hi" ? "अतिथि" : "Guest") : (locale === "te" ? "అతిథులు" : locale === "hi" ? "अतिथि" : "Guests")}
                         </option>
                       ))}
                     </select>
@@ -257,7 +269,9 @@ export function BookingModal() {
                 </div>
 
                 <div className="package-fields reserve flex flex-col gap-1.5">
-                  <label htmlFor="Choice-Tour" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">Select your package</label>
+                  <label htmlFor="Choice-Tour" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">
+                    {locale === "te" ? "ప్యాకేజీని ఎంచుకోండి" : locale === "hi" ? "पैकेज चुनें" : "Select your package"}
+                  </label>
                   <div className="relative">
                     <select
                       id="Choice-Tour"
@@ -266,7 +280,7 @@ export function BookingModal() {
                       onChange={(e) => setSelectedPackage(e.target.value)}
                       required
                     >
-                      <option value="">Choose a Tour</option>
+                      <option value="">{locale === "te" ? "టూర్ ఎంచుకోండి" : locale === "hi" ? "यात्रा चुनें" : "Choose a Tour"}</option>
                       {defaultTrips.map((t) => (
                         <option key={t.destination} value={t.destination}>
                           {t.destination}
@@ -283,11 +297,13 @@ export function BookingModal() {
               </div>
 
               <div className="package-fields reserve flex flex-col gap-1.5">
-                <label htmlFor="Reserve-Message" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">Special Notes</label>
+                <label htmlFor="Reserve-Message" className="text-xs uppercase tracking-wider text-soloz-ash/60 font-semibold">
+                  {locale === "te" ? "ప్రత్యేక గమనికలు" : locale === "hi" ? "विशेष टिप्पणियाँ" : "Special Notes"}
+                </label>
                 <textarea
                   id="Reserve-Message"
                   rows={3}
-                  placeholder="Write your message here"
+                  placeholder={locale === "te" ? "మీ సందేశాన్ని ఇక్కడ రాయండి..." : locale === "hi" ? "अपना संदेश यहाँ लिखें..." : "Write your message here"}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-soloz-ember transition resize-none"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -295,8 +311,14 @@ export function BookingModal() {
               </div>
 
               {/* Travel Policy notice card */}
-              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-300 leading-normal font-body">
-                <strong>⚠️ Booking Notice:</strong> Train/flight tickets to the starting city are not included. You will meet Akhil directly at the assembly point.
+              <div className="p-3.5 rounded-xl bg-[#ea580c]/10 border border-[#ea580c]/25 text-[11px] text-[#ff7a1a] leading-normal font-body">
+                {locale === "te" ? (
+                  "⚠️ బుకింగ్ గమనిక: ప్రారంభ నగరానికి రైలు/విమాన టిక్కెట్లు చేర్చబడలేదు. మీరు నేరుగా అసెంబ్లీ పాయింట్ వద్ద అఖిల్‌ను కలుస్తారు."
+                ) : locale === "hi" ? (
+                  "⚠️ बुकिंग सूचना: शुरुआती शहर के लिए ट्रेन/उड़ान टिकट शामिल नहीं हैं। आप सीधे असेंबली पॉइंट पर अखिल से मिलेंगे।"
+                ) : (
+                  "⚠️ Booking Notice: Train/flight tickets to the starting city are not included. You will meet Akhil directly at the assembly point."
+                )}
               </div>
 
               <div className="flex flex-col gap-3 pt-4">
@@ -306,17 +328,17 @@ export function BookingModal() {
                   className="w-full flex items-center justify-center gap-2 rounded-xl bg-soloz-ember hover:bg-orange-600 text-white font-bold py-3 text-sm transition disabled:opacity-50"
                 >
                   <Send size={16} />
-                  {loading ? "Sending Enquiry..." : "Send Message"}
+                  {loading ? t("submitting") : (locale === "te" ? "సందేశం పంపండి" : locale === "hi" ? "संदेश भेजें" : "Send Message")}
                 </button>
 
                 <a
-                  href={`https://wa.me/919966085310?text=Hi%20Akhil,%20I'm%20interested%20in%20booking%20a%20trip%20with%20WeAreSoloz.`}
+                  href={`https://chat.whatsapp.com/E7aoVfUi66S4VDEBsdXoMW`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold py-3 text-sm transition"
                 >
                   <CreditCard size={16} />
-                  Pay With Pixopay (Contact Akhil)
+                  {locale === "te" ? "Pixopay తో చెల్లించండి (అఖిల్‌ను సంప్రదించండి)" : locale === "hi" ? "Pixopay के साथ भुगतान करें (अखिल से संपर्क करें)" : "Pay With Pixopay (Contact Akhil)"}
                 </a>
               </div>
             </form>
@@ -330,8 +352,8 @@ export function BookingModal() {
           setSuccess(false);
           setIsOpen(false);
         }}
-        title="Reservation Request Sent!"
-        message="Thank you! Akhil will contact you shortly via WhatsApp or email to confirm your booking."
+        title={locale === "te" ? "రిజర్వేషన్ అభ్యర్థన పంపబడింది!" : locale === "hi" ? "आरक्षण अनुरोध भेजा गया!" : "Reservation Request Sent!"}
+        message={locale === "te" ? "ధన్యవాదాలు! మీ బుకింగ్‌ను ధృవీకరించడానికి అఖిల్ త్వరలో వాట్సాప్ లేదా ఈమెయిల్ ద్వారా మిమ్మల్ని సంప్రదిస్తారు." : locale === "hi" ? "धन्यवाद! बुकिंग की पुष्टि के लिए अखिल जल्द ही व्हाट्सएप या ईमेल द्वारा आपसे संपर्क करेंगे।" : "Thank you! Akhil will contact you shortly via WhatsApp or email to confirm your booking."}
         whatsappUrl={waUrl}
       />
     </>
