@@ -228,12 +228,14 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
                   variants={textRevealVariants}
                   className="flex flex-wrap gap-2 md:gap-4 text-[10px] md:text-xs font-semibold text-stone-250 uppercase tracking-wider bg-white/5 border border-white/10 backdrop-blur-md px-3 py-1.5 md:px-4 md:py-2.5 rounded-xl w-fit"
                 >
-                  <span className="flex items-center gap-1.5 border-r border-white/10 pr-3 md:pr-4">
+                  <span className={`flex items-center gap-1.5 ${activeTrip.destination?.toLowerCase().includes("sabarimala") ? "border-r border-white/10 pr-3 md:pr-4" : ""}`}>
                     <Clock className="w-3.5 h-3.5 text-orange-400 shrink-0" /> {activeTrip.duration}
                   </span>
-                  <span className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-orange-400 shrink-0" /> {activeTrip.destination?.toLowerCase().includes("sabarimala") ? "Every Month" : new Date(activeTrip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                  </span>
+                  {activeTrip.destination?.toLowerCase().includes("sabarimala") && (
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-orange-400 shrink-0" /> Every Month
+                    </span>
+                  )}
                 </motion.div>
               </div>
 

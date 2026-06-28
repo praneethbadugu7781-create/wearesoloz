@@ -431,7 +431,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                   {monthTrips.length > 0 ? (
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8">
                       {monthTrips.map((t) => (
-                        <TripCard key={t.id || t._id} trip={t} />
+                        <TripCard key={t.id || t._id} trip={t} showDate={true} />
                       ))}
                     </div>
                   ) : (

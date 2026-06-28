@@ -205,10 +205,10 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
           <div className="md:col-span-2">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
               {[
-                { icon: Calendar, label: "Start Date", value: formattedDate },
+                trip.destination?.toLowerCase().includes("sabarimala") ? { icon: Calendar, label: "Start Date", value: "Every Month" } : null,
                 { icon: Clock, label: "Duration", value: trip.duration || "—" },
                 { icon: MapPin, label: "Region", value: trip.destination },
-              ].map((s) => (
+              ].filter(Boolean).map((s: any) => (
                 <div key={s.label} className="glass rounded-xl p-4 border border-stone-200">
                   <s.icon className="w-4 h-4 text-soloz-primary mb-2" />
                   <div className="text-[10px] uppercase tracking-widest text-soloz-textMuted">{s.label}</div>
