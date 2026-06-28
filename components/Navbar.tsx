@@ -39,16 +39,15 @@ export function Navbar() {
 
   const showScrolled = scrolled || isPlainPage;
 
-  // Localized navigation items
   const localizedLinks = [
-    { href: "/", label: t("nav_home") },
-    { href: "/upcoming-trips", label: t("nav_trips") },
-    { href: "/soloz-community", label: t("nav_community") },
-    { href: "/gallery", label: t("nav_gallery") },
-    { href: "/about-akhil", label: t("nav_about") },
-    { href: "/careers", label: t("nav_careers") },
-    { href: "/farmer-registration", label: t("nav_farmer_trip") },
-    { href: "/contact", label: t("nav_contact") },
+    { href: "/", label: "Home" },
+    { href: "/upcoming-trips", label: "Trips" },
+    { href: "/soloz-community", label: "Community" },
+    { href: "/gallery", label: "Gallery" },
+    { href: "/about-akhil", label: "About" },
+    { href: "/careers", label: "Careers" },
+    { href: "/farmer-registration", label: "Farmer Trip" },
+    { href: "/contact", label: "Contact" },
   ];
 
   return (
@@ -181,7 +180,7 @@ export function Navbar() {
                 : "bg-white text-stone-900 hover:bg-stone-100 hover:shadow-white/10"
             }`}
           >
-            {t("join_community")}
+            Join Community
           </Link>
           
           <button
@@ -259,7 +258,7 @@ export function Navbar() {
               href="/soloz-community"
               className="block mx-2 mb-2 text-center px-4 py-3 rounded-xl bg-stone-900 text-white text-base font-bold"
             >
-              {t("join_community")}
+              Join Community
             </Link>
           </motion.div>
         )}

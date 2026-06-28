@@ -6,6 +6,7 @@ import { Youtube, Instagram, Phone, MessageCircle, ArrowRight, Leaf, Quote, Hear
 import { motion } from "framer-motion";
 import Reveal, { SectionLabel } from "@/components/Reveal";
 import { worldMapData } from "./worldMapData";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface AboutClientProps {
   settings: any;
@@ -85,6 +86,7 @@ const whyWeExistList = [
 ];
 
 export default function AboutClient({ settings = {} }: AboutClientProps) {
+  const { t, locale } = useLanguage();
   const founderImage = settings.founder_image || settings.founderImage || "/images/akhil.jpg";
   const instagramLink = settings.instagram_link || "https://www.instagram.com/akhillrockstar";
   const whatsappCommunityLink = "https://chat.whatsapp.com/E7aoVfUi66S4VDEBsdXoMW";
@@ -116,7 +118,13 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
         <Reveal className="max-w-4xl mx-auto">
           <Quote className="w-12 h-12 mx-auto text-orange-500/25 mb-6 rotate-180" />
           <h2 className="font-display text-3xl md:text-5xl lg:text-6xl font-light italic tracking-tight text-stone-850 leading-tight">
-            &ldquo;If you think travel is expensive, wait until you see the price of a <span className="gradient-text font-semibold animate-pulse">wasted life</span>.&rdquo;
+            {locale === "te" ? (
+              <>&ldquo;మీరు ప్రయాణం ఖరీదైనదని అనుకుంటే, ఒక <span className="gradient-text font-semibold animate-pulse">వృధా అయిన జీవితం</span> యొక్క ధరను చూసే వరకు వేచి ఉండండి.&rdquo;</>
+            ) : locale === "hi" ? (
+              <>&ldquo;यदि आपको लगता है कि यात्रा महंगी है, तो तब तक प्रतीक्षा करें जब तक आप एक <span className="gradient-text font-semibold animate-pulse">बर्बाद जीवन</span> की कीमत न देख लें।&rdquo;</>
+            ) : (
+              <>&ldquo;If you think travel is expensive, wait until you see the price of a <span className="gradient-text font-semibold animate-pulse">wasted life</span>.&rdquo;</>
+            )}
           </h2>
         </Reveal>
       </section>
@@ -145,36 +153,60 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                 </div>
                 <div>
                   <h4 className="font-display text-lg font-bold text-stone-900 leading-tight">Akhil Pasupuleti</h4>
-                  <p className="text-xs uppercase tracking-wider text-orange-600 font-semibold mt-0.5">Founder of WeAreSoloZ</p>
+                  <p className="text-xs uppercase tracking-wider text-orange-600 font-semibold mt-0.5">{locale === "te" ? "వ్యవస్థాపకుడు - WeAreSoloZ" : locale === "hi" ? "संस्थापक - WeAreSoloZ" : "Founder of WeAreSoloZ"}</p>
                 </div>
               </div>
               <div className="text-stone-400 font-display italic text-sm group-hover:text-orange-500 transition-colors">
-                &ldquo;Travel Solo, You&apos;re Not Alone&rdquo;
+                &ldquo;{locale === "te" ? "ఒంటరిగా ప్రయాణించండి, మీరు ఒంటరిగా లేరు" : locale === "hi" ? "सोलो यात्रा करें, आप अकेले नहीं हैं" : "Travel Solo, You're Not Alone"}&rdquo;
               </div>
             </div>
           </Reveal>
 
           {/* Right Panel: Bio Text */}
           <Reveal>
-            <SectionLabel>Founder Story</SectionLabel>
+            <SectionLabel>{locale === "te" ? "వ్యవస్థాపకుడి కథ" : locale === "hi" ? "संस्थापक की कहानी" : "Founder Story"}</SectionLabel>
             <h1 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-5 text-stone-900 leading-tight">
-              Hi, I&apos;m <span className="gradient-text font-semibold">Akhil Pasupuleti</span>.
+              {locale === "te" ? <>హాయ్, నేను <span className="gradient-text font-semibold">అఖిల్ పసుపులేటి</span>.</> : locale === "hi" ? <>नमस्ते, मैं <span className="gradient-text font-semibold">अखिल पसुपुलेटी</span> हूँ।</> : <>Hi, I'm <span className="gradient-text font-semibold">Akhil Pasupuleti</span>.</>}
             </h1>
 
             <div className="space-y-6 mt-8 text-stone-600 leading-relaxed font-body text-base md:text-lg">
               <p className="font-medium text-stone-850 text-lg md:text-xl leading-snug">
-                Founded by Akhil, a passionate traveller with 7+ years of experience across 12 countries and countless destinations throughout India, WeAreSoloZ was born from a simple belief:
+                {locale === "te" ? (
+                  "భారతదేశం అంతటా లెక్కలేనన్ని ప్రదేశాలతో పాటు 12 దేశాలలో 7+ సంవత్సరాల ప్రయాణ అనుభవం ఉన్న ఉద్వేగభరితమైన ప్రయాణీకుడు అఖిల్ స్థాపించిన WeAreSoloZ, ఒక సాధారణ నమ్మకం నుండి పుట్టింది:"
+                ) : locale === "hi" ? (
+                  "भारत भर में अनगिनत गंतव्यों के साथ 12 देशों में 7+ वर्षों के अनुभव वाले एक उत्साही यात्री अखिल द्वारा स्थापित, WeAreSoloZ का जन्म एक सरल विश्वास से हुआ था:"
+                ) : (
+                  "Founded by Akhil, a passionate traveller with 7+ years of experience across 12 countries and countless destinations throughout India, WeAreSoloZ was born from a simple belief:"
+                )}
               </p>
               
               <blockquote className="border-l-4 border-[#ea580c] pl-4 italic text-[#ea580c] font-medium my-4">
-                No one should miss the beauty of the world because of fear, loneliness, or lack of company.
+                {locale === "te" ? (
+                  "భయం, ఒంటరితనం లేదా తోడు లేకపోవడం వల్ల ఎవరూ ప్రపంచ అందాలను కోల్పోకూడదు."
+                ) : locale === "hi" ? (
+                  "डर, अकेलेपन या साथ की कमी के कारण किसी को भी दुनिया की खूबसूरती को देखने से नहीं चूकना चाहिए।"
+                ) : (
+                  "No one should miss the beauty of the world because of fear, loneliness, or lack of company."
+                )}
               </blockquote>
 
               <p>
-                During my solo journeys, I realized that many people dream of travelling but hesitate because of safety concerns, lack of travel partners, or simply not knowing where to start. That’s why I created WeAreSoloZ—a community where strangers become friends, experiences become memories, and journeys become stories.
+                {locale === "te" ? (
+                  "నా ఒంటరి ప్రయాణాలలో, చాలా మంది ప్రయాణించాలని కలలు కంటున్నప్పటికీ భద్రతా ఆందోళనలు, తోటి ప్రయాణీకులు లేకపోవడం లేదా ఎక్కడ ప్రారంభించాలో తెలియక వెనుకాడతారని నేను గ్రహించాను. అందుకే నేను WeAreSoloZ ను సృష్టించాను — అపరిచితులు స్నేహితులుగా, అనుభవాలు జ్ఞాపకాలుగా మరియు ప్రయాణాలు కథలుగా మారే కమ్యూనిటీ."
+                ) : locale === "hi" ? (
+                  "अपनी सोलो यात्राओं के दौरान, मुझे एहसास हुआ कि बहुत से लोग यात्रा करने का सपना देखते हैं लेकिन सुरक्षा चिंताओं, यात्रा भागीदारों की कमी या बस यह न जानने के कारण झिझकते हैं कि कहां से शुरू करें। इसीलिए मैंने WeAreSoloZ बनाया—एक ऐसा समुदाय जहाँ अजनबी दोस्त बनते हैं, अनुभव यादें बनते हैं, और यात्राएँ कहानियाँ बनती हैं।"
+                ) : (
+                  "During my solo journeys, I realized that many people dream of travelling but hesitate because of safety concerns, lack of travel partners, or simply not knowing where to start. That’s why I created WeAreSoloZ—a community where strangers become friends, experiences become memories, and journeys become stories."
+                )}
               </p>
               <p>
-                At WeAreSoloZ, we don’t just organize trips; we build meaningful connections. Whether you’re an adventure seeker, nature lover, spiritual traveller, content creator, or someone looking to heal and rediscover yourself, you’ll always find a place here.
+                {locale === "te" ? (
+                  "WeAreSoloZ లో, మేము కేవలం పర్యటనలను నిర్వహించము; మేము అర్థవంతమైన బంధాలను నిర్మిస్తాము. మీరు సాహస ప్రియులైనా, ప్రకృతి ప్రేమికులైనా, ఆధ్యాత్మిక ప్రయాణీకులైనా, కంటెంట్ క్రియేటర్ అయినా, లేదా మిమ్మల్ని మీరు నయం చేసుకుంటూ తిరిగి కనుగొనాలనుకునే వారైనా, మీకు ఇక్కడ ఎల్లప్పుడూ ఒక స్థానం ఉంటుంది."
+                ) : locale === "hi" ? (
+                  "WeAreSoloZ में, हम केवल यात्राएं आयोजित नहीं करते हैं; हम सार्थक संबंध बनाते हैं। चाहे आप रोमांच के चाहने वाले हों, प्रकृति प्रेमी हों, आध्यात्मिक यात्री हों, सामग्री निर्माता हों, या कोई ऐसा व्यक्ति जो खुद को ठीक करना और फिर से खोजना चाहता है, आपको यहाँ हमेशा एक जगह मिलेगी।"
+                ) : (
+                  "At WeAreSoloZ, we don’t just organize trips; we build meaningful connections. Whether you’re an adventure seeker, nature lover, spiritual traveller, content creator, or someone looking to heal and rediscover yourself, you’ll always find a place here."
+                )}
               </p>
             </div>
 
@@ -187,7 +219,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 bg-white rounded-full px-5 py-2.5 text-xs font-semibold border border-stone-200 hover:border-red-200 hover:bg-red-50 hover:text-[#ef4444] transition-all shadow-sm text-stone-700"
               >
-                <Youtube className="w-4 h-4 text-red-600" /> YouTube Channel
+                <Youtube className="w-4 h-4 text-red-600" /> {locale === "te" ? "యూట్యూబ్ ఛానల్" : locale === "hi" ? "यूट्यूब चैनल" : "YouTube Channel"}
               </a>
               <a
                 data-testid="about-instagram"
@@ -219,7 +251,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 bg-white rounded-full px-5 py-2.5 text-xs font-semibold border border-stone-200 hover:border-orange-200 hover:bg-orange-50 hover:text-[#ea580c] transition-all shadow-sm text-stone-700"
               >
-                <MessageCircle className="w-4 h-4 text-emerald-600" /> Join WhatsApp Community
+                <MessageCircle className="w-4 h-4 text-emerald-600" /> {t("join_whatsapp")}
               </a>
             </div>
           </Reveal>
@@ -230,27 +262,57 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       <section className="py-24 px-6 md:px-10 border-t border-stone-200 bg-stone-50/40 relative z-10">
         <div className="max-w-7xl mx-auto">
           <Reveal className="text-center mb-16">
-            <SectionLabel>Difference</SectionLabel>
+            <SectionLabel>{locale === "te" ? "వ్యత్యాసం" : locale === "hi" ? "अंतर" : "Difference"}</SectionLabel>
             <h2 className="font-display text-4xl md:text-5xl font-light tracking-tighter mt-5 text-stone-900">
-              🌟 What Makes Us <span className="gradient-text font-medium">Different?</span>
+              {locale === "te" ? <>🌟 మమ్మల్ని ఏది <span className="gradient-text font-medium">ప్రత్యేకంగా నిలుపుతుంది?</span></> : locale === "hi" ? <>🌟 हमें क्या <span className="gradient-text font-medium">अलग बनाता है?</span></> : <>🌟 What Makes Us <span className="gradient-text font-medium">Different?</span></>}
             </h2>
             <p className="text-stone-500 mt-4 leading-relaxed font-body text-base max-w-xl mx-auto">
-              We aren&apos;t just another travel booking agency. We build a family of dreamers and explorers.
+              {locale === "te" ? "మేము కేవలం మరొక ట్రావెల్ బుకింగ్ ఏజెన్సీ మాత్రమే కాదు. మేము కలలు కనేవారి మరియు అన్వేషకుల కుటుంబాన్ని నిర్మిస్తాము." : locale === "hi" ? "हम केवल एक और यात्रा बुकिंग एजेंसी नहीं हैं। हम सपने देखने वालों और खोजकर्ताओं का एक परिवार बनाते हैं।" : "We aren't just another travel booking agency. We build a family of dreamers and explorers."}
             </p>
           </Reveal>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-            {differences.map((diff, idx) => (
-              <Reveal key={idx} className="h-full">
-                <div className={`bg-white rounded-3xl p-8 border border-stone-200/60 h-full flex flex-col justify-between hover:shadow-2xl hover:shadow-stone-300/30 hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${diff.color}`}>
-                  <div className="space-y-4">
-                    <div className="text-4xl">{diff.emoji}</div>
-                    <h3 className="font-display text-lg font-bold text-stone-900 group-hover:text-[#ea580c] transition-colors">{diff.title}</h3>
-                    <p className="text-stone-500 font-body text-xs leading-relaxed">{diff.desc}</p>
+            {differences.map((diff, idx) => {
+              const localizedTitle = locale === "te" ? (
+                idx === 0 ? "సురక్షితమైన & సహాయక కమ్యూనిటీ" :
+                idx === 1 ? "సోలో ప్రయాణీకులకు ఎల్లప్పుడూ స్వాగతం" :
+                idx === 2 ? "జీవితకాల స్నేహాలు" :
+                idx === 3 ? "విభిన్న విహారయాత్రలు" :
+                idx === 4 ? "ఫోటోగ్రఫీ & మరపురాని జ్ఞాపకాలు" : diff.title
+              ) : locale === "hi" ? (
+                idx === 0 ? "सुरक्षित और सहायक कम्युनिटी" :
+                idx === 1 ? "सोलो यात्रियों का हमेशा स्वागत है" :
+                idx === 2 ? "जीवन भर की दोस्ती" :
+                idx === 3 ? "विविध यात्राएं" :
+                idx === 4 ? "फोटोग्राफी और अविस्मरणीय यादें" : diff.title
+              ) : diff.title;
+
+              const localizedDesc = locale === "te" ? (
+                idx === 0 ? "మేము భద్రత మరియు సౌకర్యానికి ప్రాధాన్యత ఇస్తాము, ప్రయాణీకులందరికీ సానుకూల వాతావరణాన్ని సృష్టిస్తాము." :
+                idx === 1 ? "తోడు లేదని చింతించకండి. మీరు ఒక ఆత్మీయమైన మరియు ఆహ్వానించే కుటుంబంలో చేరుతారు." :
+                idx === 2 ? "Connect with like-minded travellers who share your passions and build lasting bonds." :
+                idx === 3 ? "సాహస యాత్రలు, ఆధ్యాత్మిక ప్రయాణాలు, ప్రకృతి, వైద్యం మరియు వారాంతపు పర్యటనలు." :
+                idx === 4 ? "అందమైన క్షణాలను చిత్రీకరించండి మరియు జీవితాంతం గుర్తుండిపోయే కథలను దాచుకోండి." : diff.desc
+              ) : locale === "hi" ? (
+                idx === 0 ? "हम सुरक्षा और आराम को प्राथमिकता देते हैं, सभी यात्रियों के लिए एक सकारात्मक स्थान बनाते हैं।" :
+                idx === 1 ? "कभी भी साथी न होने की चिंता न करें। आप एक गर्मजोशी से भरे और स्वागत करने वाले परिवार में शामिल होंगे।" :
+                idx === 2 ? "समान विचारधारा वाले यात्रियों से जुड़ें जो आपके जुनून को साझा करते हैं और स्थायी संबंध बनाते हैं।" :
+                idx === 3 ? "क्यूरेटेड साहसिक कार्य, आध्यात्मिक, प्रकृति, उपचार और सप्ताहांत यात्राएं।" :
+                idx === 4 ? "सुंदर क्षणों को कैप्चर करें और उन कहानियों को रखें जिन्हें आप जीवन भर संजो कर रखेंगे।" : diff.desc
+              ) : diff.desc;
+
+              return (
+                <Reveal key={idx} className="h-full">
+                  <div className={`bg-white rounded-3xl p-8 border border-stone-200/60 h-full flex flex-col justify-between hover:shadow-2xl hover:shadow-stone-300/30 hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${diff.color}`}>
+                    <div className="space-y-4">
+                      <div className="text-4xl">{diff.emoji}</div>
+                      <h3 className="font-display text-lg font-bold text-stone-900 group-hover:text-[#ea580c] transition-colors">{localizedTitle}</h3>
+                      <p className="text-stone-500 font-body text-xs leading-relaxed">{localizedDesc}</p>
+                    </div>
                   </div>
-                </div>
-              </Reveal>
-            ))}
+                </Reveal>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -260,31 +322,61 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
         <div className="max-w-7xl mx-auto">
           
           <Reveal className="text-center mb-16">
-            <SectionLabel>Themed Journeys</SectionLabel>
+            <SectionLabel>{locale === "te" ? "నేపథ్య యాత్రలు" : locale === "hi" ? "थीम आधारित यात्राएं" : "Themed Journeys"}</SectionLabel>
             <h2 className="font-display text-4xl md:text-6xl font-light tracking-tighter mt-5 text-stone-900">
-              Monthly <span className="gradient-text">Themed Experiences</span>
+              {locale === "te" ? <>నెలవారీ <span className="gradient-text">నేపథ్య అనుభవాలు</span></> : locale === "hi" ? <>मासिक <span className="gradient-text">थीम आधारित अनुभव</span></> : <>Monthly <span className="gradient-text">Themed Experiences</span></>}
             </h2>
             <p className="text-stone-500 mt-6 max-w-xl mx-auto leading-relaxed font-body text-base">
-              Every month, we curate and organize unique experiences designed to bring families, grandparents, siblings, and seekers closer together.
+              {locale === "te" ? "ప్రతి నెలా, మేము కుటుంబాలు, తాతామ్మ నానమ్మలు, తోబుట్టువులు మరియు అన్వేషకులను మరింత దగ్గర చేయడానికి రూపొందించిన ప్రత్యేక అనుభవాలను పర్యవేక్షిస్తాము మరియు నిర్వహిస్తాము." : locale === "hi" ? "हर महीने, हम परिवारों, दादा-दादी, भाई-बहनों और साधकों को एक साथ लाने के लिए डिज़ाइन किए गए अद्वितीय अनुभवों को क्यूरेट और व्यवस्थित करते हैं।" : "Every month, we curate and organize unique experiences designed to bring families, grandparents, siblings, and seekers closer together."}
             </p>
           </Reveal>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-            {themedExperiences.map((item, idx) => (
-              <Reveal key={idx} className="h-full">
-                <div className={`bg-white rounded-3xl p-6 border border-stone-200/60 shadow-sm hover:-translate-y-1 transition-all duration-300 h-full flex flex-col justify-between group ${item.color} hover:shadow-2xl hover:shadow-stone-300/35 cursor-pointer`}>
-                  <div className="space-y-4">
-                    <div className="text-4xl">{item.emoji}</div>
-                    <h3 className="font-display text-base font-bold text-stone-900 group-hover:text-[#ea580c] transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-stone-500 text-xs font-body leading-relaxed">
-                      {item.desc}
-                    </p>
+            {themedExperiences.map((item, idx) => {
+              const localizedTitle = locale === "te" ? (
+                idx === 0 ? "తల్లితో ప్రయాణం" :
+                idx === 1 ? "తండ్రితో ప్రయాణం" :
+                idx === 2 ? "తాతామ్మ నానమ్మలతో ప్రయాణం" :
+                idx === 3 ? "తోబుట్టువుల ప్రత్యేక ట్రిప్స్" :
+                idx === 4 ? "హీలింగ్ & స్వీయ-ఆవిష్కరణ యాత్రలు" : item.title
+              ) : locale === "hi" ? (
+                idx === 0 ? "मां के साथ यात्रा" :
+                idx === 1 ? "पिता के साथ यात्रा" :
+                idx === 2 ? "दादा-दादी के साथ यात्रा" :
+                idx === 3 ? "भाई-बहनों की विशेष ट्रिप्स" :
+                idx === 4 ? "हीलिंग और आत्म-खोज यात्राएं" : item.title
+              ) : item.title;
+
+              const localizedDesc = locale === "te" ? (
+                idx === 0 ? "మీకు సర్వస్వం ఇచ్చిన తల్లితో అందమైన ప్రయాణ జ్ఞాపకాలను సృష్టిస్తూ సాగే ఒక కృతజ్ఞతా ప్రయాణం." :
+                idx === 1 ? "మీ తండ్రితో బంధాన్ని బలోపేతం చేసుకోండి మరియు రోడ్ ట్రిప్స్, క్యాంప్‌ఫైర్లు మరియు అర్థవంతమైన కథలను పంచుకోండి." :
+                idx === 2 ? "మర్యాద, కథలు పంచుకోవడం మరియు బహుళ-తరాల వెచ్చదనంపై దృష్టి సారించే ఒక సౌకర్యవంతమైన, నెమ్మదిగా సాగే ప్రయాణం." :
+                idx === 3 ? "అద్భుతమైన మార్గాలు మరియు రోడ్ ట్రిప్స్‌లో బాల్యపు బంధాలను మరియు నవ్వులను పునరుజ్జీవింపజేయండి." :
+                idx === 4 ? "పవిత్రమైన ప్రకృతి మార్గాలు, యోగా మరియు ధ్యాన తిరోగమనాలు మీ మనస్సు, శరీరం మరియు ఆత్మను పునరుజ్జీవింపజేస్తాయి." : item.desc
+              ) : locale === "hi" ? (
+                idx === 0 ? "कृतज्ञता और संबंध की एक यात्रा, उस महिला के साथ सुंदर यात्रा यादें बनाना जिसने आपको सब कुछ दिया।" :
+                idx === 1 ? "अपने पिता के साथ अपने बंधन को मजबूत करें और सड़क यात्राएं, आउटडोर कैंपफायर और सार्थक कहानियां साझा करें।" :
+                idx === 2 ? "सम्मान, कहानी-साझाकरण और बहु-पीढ़ी के गर्मजोशी पर ध्यान केंद्रित करने वाली एक आरामदायक, धीमी गति की यात्रा।" :
+                idx === 3 ? "अद्भुत ट्रेल्स और सड़क यात्राओं पर बचपन के बंधनों और साझा हँसी को फिर से जगाएं।" :
+                idx === 4 ? "अपने आप से फिर से जुड़ें। पवित्र प्रकृति ट्रेल्स, योग और ध्यान शिविरों में अपने मन, शरीर और आत्मा को तरोताजा करें।" : item.desc
+              ) : item.desc;
+
+              return (
+                <Reveal key={idx} className="h-full">
+                  <div className={`bg-white rounded-3xl p-6 border border-stone-200/60 shadow-sm hover:-translate-y-1 transition-all duration-300 h-full flex flex-col justify-between group ${item.color} hover:shadow-2xl hover:shadow-stone-300/35 cursor-pointer`}>
+                    <div className="space-y-4">
+                      <div className="text-4xl">{item.emoji}</div>
+                      <h3 className="font-display text-base font-bold text-stone-900 group-hover:text-[#ea580c] transition-colors">
+                        {localizedTitle}
+                      </h3>
+                      <p className="text-stone-500 text-xs font-body leading-relaxed">
+                        {localizedDesc}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </Reveal>
-            ))}
+                </Reveal>
+              );
+            })}
           </div>
 
           {/* SECTION 4.5: Farmer Initiative / Our Mission */}
@@ -296,12 +388,18 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                   <Leaf className="w-8 h-8 text-emerald-600 animate-pulse" />
                 </div>
                 <div className="space-y-3 text-center md:text-left">
-                  <div className="text-[10px] uppercase font-bold tracking-widest text-emerald-600">🌾 Our Mission</div>
+                  <div className="text-[10px] uppercase font-bold tracking-widest text-emerald-600">{locale === "te" ? "🌾 మా లక్ష్యం" : locale === "hi" ? "🌾 हमारा मिशन" : "🌾 Our Mission"}</div>
                   <h3 className="font-display text-2xl md:text-3xl font-bold text-stone-900 tracking-tight leading-tight">
-                    Sponsoring a Farmer Trip Every Month
+                    {locale === "te" ? "ప్రతి నెలా ఒక రైతుకు ఉచిత ప్రయాణాన్ని స్పాన్సర్ చేయడం" : locale === "hi" ? "हर महीने एक किसान यात्रा प्रायोजित करना" : "Sponsoring a Farmer Trip Every Month"}
                   </h3>
                   <p className="text-stone-600 leading-relaxed font-body text-base max-w-3xl">
-                    We believe travel should create happiness not only for travellers, but for society too. As a tribute to the people who feed our nation, WeAreSoloZ sponsors <strong className="font-bold text-stone-900">one deserving farmer every month</strong> with a completely free trip, giving them an opportunity to relax, explore, and create memories they truly deserve.
+                    {locale === "te" ? (
+                      <>ప్రయాణం కేవలం ప్రయాణీకులకు మాత్రమే కాకుండా, సమాజానికి కూడా సంతోషాన్ని కలిగించాలని మేము నమ్ముతాము. మన దేశానికి ఆహారం అందించే ప్రజలకు నివాళిగా, WeAreSoloZ <strong className="font-bold text-stone-900">ప్రతి నెలా ఒక అర్హుడైన రైతుకు</strong> పూర్తిగా ఉచిత ట్రిప్‌ను స్పాన్సర్ చేస్తుంది, వారికి విశ్రాంతి తీసుకోవడానికి, అన్వేషించడానికి మరియు వారు నిజంగా అర్హులైన జ్ఞాపకాలను సృష్టించడానికి అవకాశం ఇస్తుంది.</>
+                    ) : locale === "hi" ? (
+                      <>हमारा मानना है कि यात्रा से न केवल यात्रियों के लिए, बल्कि समाज के लिए भी खुशियाँ पैदा होनी चाहिए। हमारे देश का पेट भरने वाले लोगों को श्रद्धांजलि के रूप में, WeAreSoloZ <strong className="font-bold text-stone-900">हर महीने एक योग्य किसान</strong> को पूरी तरह से मुफ्त यात्रा प्रायोजित करता है, जिससे उन्हें आराम करने, तलाशने और यादें बनाने का अवसर मिलता है जिसके वे वास्तव में हकदार हैं।</>
+                    ) : (
+                      <>We believe travel should create happiness not only for travellers, but for society too. As a tribute to the people who feed our nation, WeAreSoloZ sponsors <strong className="font-bold text-stone-900">one deserving farmer every month</strong> with a completely free trip, giving them an opportunity to relax, explore, and create memories they truly deserve.</>
+                    )}
                   </p>
                 </div>
               </div>
@@ -316,25 +414,25 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
         <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-12 items-center">
           <div className="md:col-span-5 space-y-6">
             <Reveal>
-              <SectionLabel>My Travel Footprints</SectionLabel>
+              <SectionLabel>{locale === "te" ? "నా ప్రయాణ అడుగుజాడలు" : locale === "hi" ? "मेरे यात्रा पदचिह्न" : "My Travel Footprints"}</SectionLabel>
               <h2 className="font-display text-4xl md:text-5xl font-light tracking-tighter text-stone-900 leading-tight">
-                7 Years of <span className="gradient-text font-medium">Global Exploration</span>.
+                {locale === "te" ? <>7 సంవత్సరాల <span className="gradient-text font-medium">ప్రపంచ అన్వేషణ</span>.</> : locale === "hi" ? <>7 वर्ष का <span className="gradient-text font-medium">वैश्विक अन्वेषण</span>।</> : <>7 Years of <span className="gradient-text font-medium">Global Exploration</span>.</>}
               </h2>
               <p className="text-stone-600 font-body text-base leading-relaxed mt-4">
-                Akhil Pasupuleti has spent the last seven years exploring the diverse landscapes of our world, spanning across 12 countries and countless destinations throughout India.
+                {locale === "te" ? "అఖిల్ పసుపులేటి గత ఏడు సంవత్సరాలుగా మన ప్రపంచంలోని వైవిధ్యమైన ప్రకృతి దృశ్యాలను అన్వేషిస్తూ గడిపారు, 12 దేశాలు మరియు భారతదేశం అంతటా లెక్కలేనన్ని ప్రదేశాలలో ప్రయాణించారు." : locale === "hi" ? "अखिल पसुपुलेटी ने पिछले सात साल हमारी दुनिया के विविध परिदृश्यों की खोज में बिताए हैं, जिसमें भारत भर में 12 देशों और अनगिनत गंतव्य शामिल हैं।" : "Akhil Pasupuleti has spent the last seven years exploring the diverse landscapes of our world, spanning across 12 countries and countless destinations throughout India."}
               </p>
               <p className="text-stone-600 font-body text-base leading-relaxed">
-                This constellation map highlights his international travel tracks. Click on any of the active nodes to visualize the key hubs where WeAreSoloZ brings global experiences to life.
+                {locale === "te" ? "ఈ ఇంటరాక్టివ్ కాన్స్టెలేషన్ మ్యాప్ అతని అంతర్జాతీయ ప్రయాణ మార్గాలను హైలైట్ చేస్తుంది. WeAreSoloZ ప్రపంచ అనుభవాలను సజీవంగా మార్చే కీలక హబ్‌లను చూడటానికి ఏదైనా యాక్టివ్ నోడ్‌పై క్లిక్ చేయండి." : locale === "hi" ? "यह नक्षत्र मानचित्र उनके अंतर्राष्ट्रीय यात्रा मार्गों को उजागर करता है। उन प्रमुख केंद्रों की कल्पना करने के लिए किसी भी सक्रिय नोड पर क्लिक करें जहां WeAreSoloZ वैश्विक अनुभवों को जीवन में लाता है।" : "This constellation map highlights his international travel tracks. Click on any of the active nodes to visualize the key hubs where WeAreSoloZ brings global experiences to life."}
               </p>
             </Reveal>
 
             {/* Visited Regions */}
             <div className="grid grid-cols-2 gap-3 pt-4">
               {[
-                { name: "Middle East & South Asia", region: "India, UAE, Sri Lanka" },
-                { name: "Indochina Peninsula", region: "Thailand, Vietnam" },
-                { name: "Malay Peninsula", region: "Malaysia, Singapore" },
-                { name: "East Asia & Islands", region: "China, Indonesia" },
+                { name: locale === "te" ? "మధ్యప్రాచ్యం & దక్షిణ ఆసియా" : locale === "hi" ? "मध्य पूर्व और दक्षिण एशिया" : "Middle East & South Asia", region: "India, UAE, Sri Lanka" },
+                { name: locale === "te" ? "ఇండోచైనా ద్వీపకల్పం" : locale === "hi" ? "इंडोचाइना प्रायद्वीप" : "Indochina Peninsula", region: "Thailand, Vietnam" },
+                { name: locale === "te" ? "మలయ్ ద్వీపకల్పం" : locale === "hi" ? "मलय प्रायद्वीप" : "Malay Peninsula", region: "Malaysia, Singapore" },
+                { name: locale === "te" ? "తూర్పు ఆసియా & దీవులు" : locale === "hi" ? "पूर्वी एशिया और द्वीप समूह" : "East Asia & Islands", region: "China, Indonesia" },
               ].map((hub, idx) => (
                 <div key={idx} className="glass rounded-xl p-3 border border-stone-200/60 bg-white/50">
                   <div className="flex items-center gap-2">
@@ -507,34 +605,66 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       <section className="py-24 px-6 md:px-10 border-t border-stone-200 bg-stone-50/40 relative z-10">
         <div className="max-w-7xl mx-auto">
           <Reveal className="text-center mb-16">
-            <SectionLabel>Our Heart</SectionLabel>
+            <SectionLabel>{locale === "te" ? "మా హృదయం" : locale === "hi" ? "हमारा दिल" : "Our Heart"}</SectionLabel>
             <h2 className="font-display text-4xl md:text-5xl font-light tracking-tight text-stone-900 leading-tight">
-              ❤️ Why We <span className="gradient-text font-medium">Exist</span>
+              {locale === "te" ? <>❤️ మేము ఎందుకు <span className="gradient-text font-medium">ఉన్నాము</span></> : locale === "hi" ? <>❤️ हमारा <span className="gradient-text font-medium">अस्तित्व क्यों है</span></> : <>❤️ Why We <span className="gradient-text font-medium">Exist</span></>}
             </h2>
             <p className="text-stone-600 mt-4 leading-relaxed font-body text-lg max-w-3xl mx-auto">
-              Because travel is more than ticking destinations off a list.
+              {locale === "te" ? "ఎందుకంటే ప్రయాణం అనేది కేవలం గమ్యస్థానాల జాబితాను దాటడం కంటే చాలా ఎక్కువ." : locale === "hi" ? "क्योंकि यात्रा केवल सूची से गंतव्यों को टिक करने से कहीं अधिक है।" : "Because travel is more than ticking destinations off a list."}
             </p>
           </Reveal>
 
           {/* Why We Exist Pillars */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {whyWeExistList.map((pillar) => (
-              <Reveal key={pillar.title} className="h-full">
-                <div className={`bg-white rounded-3xl p-8 border border-stone-200/60 h-full relative overflow-hidden flex flex-col justify-between hover:shadow-2xl hover:shadow-stone-300/30 hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${pillar.border}`}>
-                  <div className={`absolute inset-0 bg-gradient-to-br ${pillar.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                  <div className="relative z-10 space-y-4">
-                    <div className="text-4xl">{pillar.emoji}</div>
-                    <h3 className="font-display text-xl font-bold text-stone-900 group-hover:text-[#ea580c] transition-colors">{pillar.title}</h3>
-                    <p className="text-stone-500 font-body text-xs leading-relaxed">{pillar.desc}</p>
+            {whyWeExistList.map((pillar, idx) => {
+              const localizedTitle = locale === "te" ? (
+                idx === 0 ? "ప్రయాణం నయం చేస్తుంది" :
+                idx === 1 ? "ప్రయాణం నేర్పుతుంది" :
+                idx === 2 ? "ప్రయాణం కలుపుతుంది" :
+                idx === 3 ? "ప్రయాణం మారుస్తుంది" : pillar.title
+              ) : locale === "hi" ? (
+                idx === 0 ? "यात्रा ठीक करती है" :
+                idx === 1 ? "यात्रा सिखाती है" :
+                idx === 2 ? "यात्रा जोड़ती है" :
+                idx === 3 ? "यात्रा बदलती है" : pillar.title
+              ) : pillar.title;
+
+              const localizedDesc = locale === "te" ? (
+                idx === 0 ? "ఒత్తిడి నుండి దూరంగా అడుగు పెట్టండి మరియు ప్రశాంతమైన హృదయంతో తిరిగి రండి." :
+                idx === 1 ? "జీవితంపై మీ అవగాహనను పెంచే కొత్త సంస్కృతులను మరియు మార్గాలను కనుగొనండి." :
+                idx === 2 ? "క్యాంప్‌ఫైర్లు మరియు రిమోట్ మార్గాల చుట్టూ అపరిచితులను కుటుంబంగా మార్చుకోండి." :
+                idx === 3 ? "మీ సౌకర్య పరిమితులను విస్తరించండి, మీ పిలుపును కనుగొనండి మరియు మీ కోణాన్ని మార్చుకోండి." : pillar.desc
+              ) : locale === "hi" ? (
+                idx === 0 ? "तनाव से दूर कदम रखें और एक तरोताजा, शांतिपूर्ण दिल के साथ वापस लौटें।" :
+                idx === 1 ? "नई संस्कृतियों और रास्तों की खोज करें जो जीवन की आपकी समझ को आकार देते हैं।" :
+                idx === 2 ? "कैंपफायर के आसपास और दूरदराज के रास्तों पर अजनबियों को परिवार में बदलें।" :
+                idx === 3 ? "अपने आराम क्षेत्र का विस्तार करें, अपनी पुकार खोजें, और अपने दृष्टिकोण को बदलें।" : pillar.desc
+              ) : pillar.desc;
+
+              return (
+                <Reveal key={pillar.title} className="h-full">
+                  <div className={`bg-white rounded-3xl p-8 border border-stone-200/60 h-full relative overflow-hidden flex flex-col justify-between hover:shadow-2xl hover:shadow-stone-300/30 hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${pillar.border}`}>
+                    <div className={`absolute inset-0 bg-gradient-to-br ${pillar.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                    <div className="relative z-10 space-y-4">
+                      <div className="text-4xl">{pillar.emoji}</div>
+                      <h3 className="font-display text-xl font-bold text-stone-900 group-hover:text-[#ea580c] transition-colors">{localizedTitle}</h3>
+                      <p className="text-stone-500 font-body text-xs leading-relaxed">{localizedDesc}</p>
+                    </div>
                   </div>
-                </div>
-              </Reveal>
-            ))}
+                </Reveal>
+              );
+            })}
           </div>
 
           <Reveal className="max-w-4xl mx-auto text-center mt-16 bg-white border border-stone-100 p-8 rounded-3xl shadow-sm">
             <p className="text-stone-600 leading-relaxed font-body text-lg max-w-3xl mx-auto">
-              Technology can help us plan journeys, but only humans can feel the joy of watching a sunrise from a mountain, listening to ocean waves, or sharing stories around a campfire with strangers who become family.
+              {locale === "te" ? (
+                "సాంకేతికత మనకు ప్రయాణాలను ప్లాన్ చేయడంలో సహాయపడుతుంది, కానీ పర్వతం నుండి సూర్యోదయాన్ని చూడటం, సముద్రపు అలల శబ్దాన్ని వినడం లేదా అపరిచితులతో క్యాంప్‌ఫైర్ చుట్టూ కథలను పంచుకుంటూ వారిని కుటుంబంగా మార్చుకోవడంలో ఆనందాన్ని మానవులు మాత్రమే పొందగలరు."
+              ) : locale === "hi" ? (
+                "तकनीक हमें यात्राओं की योजना बनाने में मदद कर सकती है, लेकिन पहाड़ से सूर्योदय देखने, समुद्र की लहरों को सुनने, या कैंपफायर के आसपास अजनबियों के साथ कहानियां साझा करने की खुशी केवल इंसान ही महसूस कर सकते हैं जो बाद में परिवार बन जाते हैं।"
+              ) : (
+                "Technology can help us plan journeys, but only humans can feel the joy of watching a sunrise from a mountain, listening to ocean waves, or sharing stories around a campfire with strangers who become family."
+              )}
             </p>
           </Reveal>
         </div>
@@ -544,12 +674,12 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
       <section className="py-24 px-6 md:px-10 border-t border-stone-200 bg-stone-50/20 relative z-10 text-center">
         <div className="max-w-4xl mx-auto space-y-6">
           <Reveal>
-            <SectionLabel>Our Vision</SectionLabel>
+            <SectionLabel>{locale === "te" ? "మా విజన్" : locale === "hi" ? "हमारा दृष्टिकोण" : "Our Vision"}</SectionLabel>
             <h2 className="font-display text-3xl md:text-5xl font-light tracking-tight text-stone-900 leading-tight mt-4">
-              To build India&apos;s most trusted <span className="gradient-text font-semibold">solo travel community</span>
+              {locale === "te" ? <>భారతదేశంలో అత్యంత విశ్వసనీయమైన <span className="gradient-text font-semibold">సోలో ట్రావెల్ కమ్యూనిటీని</span> నిర్మించడం</> : locale === "hi" ? <>भारत का सबसे भरोसेमंद <span className="gradient-text font-semibold">सोलो ट्रैवल कम्युनिटी</span> बनाना</> : <>To build India&apos;s most trusted <span className="gradient-text font-semibold">solo travel community</span></>}
             </h2>
             <p className="text-stone-600 leading-relaxed font-body text-lg mt-6">
-              Where people can travel safely, connect deeply, heal emotionally, and create memories that last a lifetime.
+              {locale === "te" ? "ప్రజలు సురక్షితంగా ప్రయాణించగలిగేలా, లోతుగా కనెక్ట్ అవ్వగలిగేలా, మానసికంగా కోలుకునేలా మరియు జీవితాంతం గుర్తుండిపోయే జ్ఞాపకాలను సృష్టించేలా." : locale === "hi" ? "जहां लोग सुरक्षित रूप से यात्रा कर सकें, गहराई से जुड़ सकें, भावनात्मक रूप से ठीक हो सकें और जीवन भर चलने वाली यादें बना सकें।" : "Where people can travel safely, connect deeply, heal emotionally, and create memories that last a lifetime."}
             </p>
           </Reveal>
         </div>
@@ -571,13 +701,13 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
               ✨ WeAreSoloZ
             </h2>
             <p className="text-xl text-orange-500 mt-2 font-display italic">
-              Travel Solo. You&apos;re Not Alone.
+              {locale === "te" ? "ఒంటరిగా ప్రయాణించండి · మీరు ఒంటరిగా లేరు" : locale === "hi" ? "अकेले यात्रा करें · आप अकेले नहीं हैं" : "Travel Solo. You're Not Alone."}
             </p>
             <p className="text-base text-stone-400 mt-4 font-body font-medium uppercase tracking-wider">
-              Where Strangers Become Friends, and Memories Last Forever. 🌍❤️✈️
+              {locale === "te" ? "అపరిచితులు స్నేహితులుగా మారే చోటు, జ్ఞాపకాలు ఎప్పటికీ నిలిచిపోయే చోటు. 🌍❤️✈️" : locale === "hi" ? "जहाँ अजनबी दोस्त बनते हैं, और यादें हमेशा बनी रहती हैं। 🌍❤️✈️" : "Where Strangers Become Friends, and Memories Last Forever. 🌍❤️✈️"}
             </p>
             <p className="text-xs text-stone-500 mt-2 font-mono">
-              Founder — Akhil Pasupuleti
+              {locale === "te" ? "వ్యవస్థాపకుడు" : locale === "hi" ? "संस्थापक" : "Founder"} — Akhil Pasupuleti
             </p>
           </Reveal>
 
@@ -587,7 +717,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                 href="/upcoming-trips"
                 className="inline-flex items-center justify-center gap-2 bg-[#ea580c] text-white px-8 py-4 rounded-full font-bold hover:bg-orange-600 hover:scale-[1.02] transition-all hover:shadow-xl hover:shadow-orange-500/20"
               >
-                Explore Trips <ArrowRight className="w-4 h-4" />
+                {locale === "te" ? "ట్రిప్స్ అన్వేషించండి" : locale === "hi" ? "यात्राएं एक्सप्लोर करें" : "Explore Trips"} <ArrowRight className="w-4 h-4" />
               </Link>
               <a
                 href={whatsappCommunityLink}
@@ -595,7 +725,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
                 rel="noreferrer"
                 className="inline-flex items-center justify-center gap-2 bg-white/10 text-white hover:bg-white/20 border border-white/10 px-8 py-4 rounded-full font-bold hover:scale-[1.02] transition-all"
               >
-                Join The Community
+                {locale === "te" ? "కమ్యూనిటీలో చేరండి" : locale === "hi" ? "कम्युनिटी में शामिल हों" : "Join The Community"}
               </a>
             </div>
           </Reveal>

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import Reveal, { SectionLabel } from "@/components/Reveal";
 import { TripCard } from "@/components/HomeClient";
 import TripsHeroSlider from "@/components/TripsHeroSlider";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface TripsClientProps {
   initialTrips: any[];
@@ -97,6 +98,28 @@ const groupTripsByMonth = (tripsList: any[]) => {
 };
 
 export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
+  const { t, locale } = useLanguage();
+  
+  const translateMonthToTelugu = (monthStr: string) => {
+    const [m, y] = monthStr.split(" ");
+    const months: Record<string, string> = {
+      January: "జనవరి", February: "ఫిబ్రవరి", March: "మార్చి", April: "ఏప్రిల్",
+      May: "మే", June: "జూన్", July: "జూలై", August: "ఆగస్టు",
+      September: "సెప్టెంబరు", October: "అక్టోబరు", November: "నవంబరు", December: "డిసెంబరు"
+    };
+    return `${months[m] || m} ${y || ""}`;
+  };
+
+  const translateMonthToHindi = (monthStr: string) => {
+    const [m, y] = monthStr.split(" ");
+    const months: Record<string, string> = {
+      January: "जनवरी", February: "फरवरी", March: "मार्च", April: "अप्रैल",
+      May: "मई", June: "जून", July: "जुलाई", August: "अगस्त",
+      September: "सितंबर", October: "अक्टूबर", November: "नवंबर", December: "दिसंबर"
+    };
+    return `${months[m] || m} ${y || ""}`;
+  };
+
   const [q, setQ] = useState("");
   const [regionType, setRegionType] = useState<"domestic" | "international">("domestic");
   const [selectedState, setSelectedState] = useState("All");
@@ -165,9 +188,9 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
       <section className="pt-12 px-6 md:px-10 bg-stone-50">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200/65 pb-6">
           <div>
-            <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#ea580c] block">Expedition Directory</span>
+            <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#ea580c] block">{locale === "te" ? "ట్రిప్స్ జాబితా" : locale === "hi" ? "यात्रा निर्देशिका" : "Expedition Directory"}</span>
             <h2 className="font-display text-2xl sm:text-3xl font-light text-stone-900 mt-1">
-              Browse our <span className="gradient-text font-medium">journeys</span>
+              {locale === "te" ? <>మా ప్రయాణాలను <span className="gradient-text font-medium">అన్వేషించండి</span></> : locale === "hi" ? <>हमारी यात्राओं को <span className="gradient-text font-medium">ब्राउज़ करें</span></> : <>Browse our <span className="gradient-text font-medium">journeys</span></>}
             </h2>
           </div>
           <div className="flex bg-stone-200/60 p-1 rounded-full self-start sm:self-center border border-stone-300/30">
@@ -179,7 +202,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                   : "text-stone-600 hover:text-stone-950"
               }`}
             >
-              All Packages
+              {locale === "te" ? "అన్ని ప్యాకేజీలు" : locale === "hi" ? "सभी पैकेज" : "All Packages"}
             </button>
             <button
               onClick={() => setSubView("months")}
@@ -189,7 +212,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                   : "text-stone-600 hover:text-stone-950"
               }`}
             >
-              Month-wise Schedule
+              {locale === "te" ? "నెలవారీ షెడ్యూల్" : locale === "hi" ? "मासिक समय-सारणी" : "Month-wise Schedule"}
             </button>
           </div>
         </div>
@@ -215,7 +238,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                         : "text-stone-600 hover:text-stone-950"
                     }`}
                   >
-                    State-wise (India)
+                    {locale === "te" ? "రాష్ట్రాల వారీగా" : locale === "hi" ? "राज्य-वार (भारत)" : "State-wise (India)"}
                   </button>
                   <button
                     onClick={() => {
@@ -229,7 +252,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                         : "text-stone-600 hover:text-stone-950"
                     }`}
                   >
-                    International
+                    {locale === "te" ? "అంతర్జాతీయం" : locale === "hi" ? "अंतर्राष्ट्रीय" : "International"}
                   </button>
                 </div>
               </Reveal>
@@ -237,12 +260,12 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
               <Reveal>
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                   <div>
-                    <SectionLabel>Browse by Region</SectionLabel>
+                    <SectionLabel>{locale === "te" ? "ప్రాంతం ద్వారా వెతకండి" : locale === "hi" ? "क्षेत्र के अनुसार खोजें" : "Browse by Region"}</SectionLabel>
                     <h2 className="font-display text-2xl md:text-3xl font-light text-stone-900 mt-2">
                       {regionType === "domestic" ? (
-                        <>Select a State to <span className="gradient-text font-medium">filter trips</span></>
+                        locale === "te" ? <>ట్రిప్స్‌ను ఫిల్టర్ చేయడానికి <span className="gradient-text font-medium">రాష్ట్రాన్ని ఎంచుకోండి</span></> : locale === "hi" ? <>यात्राओं को फ़िल्टर करने के लिए <span className="gradient-text font-medium">एक राज्य चुनें</span></> : <>Select a State to <span className="gradient-text font-medium">filter trips</span></>
                       ) : (
-                        <>Select a Country to <span className="gradient-text font-medium">filter trips</span></>
+                        locale === "te" ? <>ట్రిప్స్‌ను ఫిల్టర్ చేయడానికి <span className="gradient-text font-medium">దేశాన్ని ఎంచుకోండి</span></> : locale === "hi" ? <>यात्राओं को फ़िल्टर करने के लिए <span className="gradient-text font-medium">एक देश चुनें</span></> : <>Select a Country to <span className="gradient-text font-medium">filter trips</span></>
                       )}
                     </h2>
                   </div>
@@ -251,7 +274,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                       <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                       <Input
                         type="text"
-                        placeholder="Search trips, states..."
+                        placeholder={locale === "te" ? "ట్రిప్స్, రాష్ట్రాలను వెతకండి..." : locale === "hi" ? "यात्राएं, राज्य खोजें..." : "Search trips, states..."}
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
                         className="pl-10 pr-4 py-2 w-full bg-white border border-stone-200 focus-visible:border-[#ea580c] rounded-full text-sm placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-[#ea580c]/20"
@@ -266,7 +289,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                         }}
                         className="text-xs font-semibold text-[#ea580c] hover:underline transition-colors whitespace-nowrap"
                       >
-                        Clear All
+                        {locale === "te" ? "అన్నీ క్లియర్ చేయండి" : locale === "hi" ? "सभी साफ करें" : "Clear All"}
                       </button>
                     )}
                   </div>
@@ -305,10 +328,10 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                         {/* Content */}
                         <div className="absolute inset-0 p-4 flex flex-col justify-end items-start text-left">
                           <span className="text-[10px] uppercase font-bold tracking-widest text-orange-200/90 mb-0.5">
-                            {count} {count === 1 ? "trip" : "trips"}
+                            {count} {locale === "te" ? "ట్రిప్స్" : locale === "hi" ? "यात्राएं" : (count === 1 ? "trip" : "trips")}
                           </span>
                           <h3 className="font-display text-sm md:text-base font-semibold text-white leading-tight">
-                            {state.name === "All" ? "All Regions" : state.name === "All International" ? "All International" : state.name}
+                            {state.name === "All" ? (locale === "te" ? "అన్ని ప్రాంతాలు" : locale === "hi" ? "सभी क्षेत्र" : "All Regions") : state.name === "All International" ? (locale === "te" ? "అన్ని అంతర్జాతీయ" : locale === "hi" ? "सभी अंतर्राष्ट्रीय" : "All International") : state.name}
                           </h3>
                         </div>
                       </button>
@@ -326,12 +349,16 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
               <div className="flex flex-wrap items-center justify-between border-b border-stone-100 pb-8 mb-12 gap-4">
                 <div>
                   <h3 className="font-display text-xl md:text-2xl font-light text-stone-900">
-                    Filter by <span className="gradient-text font-medium">Experience</span>
+                    {locale === "te" ? <>అనుభవం ద్వారా <span className="gradient-text font-medium">ఫిల్టర్ చేయండి</span></> : locale === "hi" ? <>अनुभव द्वारा <span className="gradient-text font-medium">फ़िल्टर करें</span></> : <>Filter by <span className="gradient-text font-medium">Experience</span></>}
                   </h3>
                   <p className="text-xs text-stone-400 mt-1">
-                    Showing {filteredTrips.length} {filteredTrips.length === 1 ? "trip" : "trips"} for {
-                      selectedState === "All" ? "all regions" : selectedState === "All International" ? "all international" : selectedState
-                    }
+                    {locale === "te" ? (
+                      <>మొత్తం {filteredTrips.length} ట్రిప్స్ ఉన్నాయి - {selectedState === "All" ? "అన్ని ప్రాంతాలు" : selectedState === "All International" ? "అన్ని అంతర్జాతీయ ప్రాంతాలు" : selectedState}</>
+                    ) : locale === "hi" ? (
+                      <>कुल {filteredTrips.length} यात्राएं दिखा रहा है - {selectedState === "All" ? "सभी क्षेत्र" : selectedState === "All International" ? "सभी अंतर्राष्ट्रीय क्षेत्र" : selectedState}</>
+                    ) : (
+                      <>Showing {filteredTrips.length} {filteredTrips.length === 1 ? "trip" : "trips"} for {selectedState === "All" ? "all regions" : selectedState === "All International" ? "all international" : selectedState}</>
+                    )}
                   </p>
                 </div>
                 
@@ -339,6 +366,10 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                   {categoriesList.map((cat) => {
                     const isActive = selectedCategory.toLowerCase() === cat.toLowerCase();
                     const count = countCategoryTrips(cat);
+                    const label = cat === "All" ? (locale === "te" ? "అన్నీ" : locale === "hi" ? "सभी" : "All") : 
+                                  cat === "Temples" ? (locale === "te" ? "ఆధ్యాత్మికం" : locale === "hi" ? "मंदिर" : "Temples") :
+                                  cat === "Treks" ? (locale === "te" ? "ట్రెక్స్" : locale === "hi" ? "ट्रेक" : "Treks") :
+                                  cat === "Adventure" ? (locale === "te" ? "సాహసం" : locale === "hi" ? "रोमांच" : "Adventure") : cat;
                     return (
                       <button
                         key={cat}
@@ -349,7 +380,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                             : "bg-white text-stone-600 border-stone-200 hover:border-stone-400 hover:text-stone-900"
                         }`}
                       >
-                        <span>{cat}</span>
+                        <span>{label}</span>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
                           isActive ? "bg-white/20 text-white" : "bg-stone-100 text-stone-500"
                         }`}>
@@ -363,7 +394,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
 
               {filteredTrips.length === 0 ? (
                 <div className="text-center glass rounded-3xl py-20 text-stone-500 border border-stone-200">
-                  No trips published yet for this selection. Visit the community to be notified first.
+                  {locale === "te" ? "ఈ ఎంపికకు ఇంకా ఎలాంటి ట్రిప్స్ ప్రచురించబడలేదు. మొదటగా నోటిఫికేషన్ పొందడానికి కమ్యూనిటీని సందర్శించండి." : locale === "hi" ? "इस चयन के लिए अभी तक कोई यात्रा प्रकाशित नहीं हुई है। सबसे पहले सूचित होने के लिए कम्युनिटी पर जाएं।" : "No trips published yet for this selection. Visit the community to be notified first."}
                 </div>
               ) : selectedState !== "All" && selectedCategory === "All" ? (
                 /* ── Grouped by Category within a State ── */
@@ -381,10 +412,13 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                           <span className="text-2xl">{catIcon}</span>
                           <div>
                             <h3 className="font-display text-xl md:text-2xl font-semibold text-stone-900">
-                              {cat}
+                              {cat === "Temples" ? (locale === "te" ? "దేవాలయాలు / ఆధ్యాత్మికం" : locale === "hi" ? "मंदिर" : "Temples") :
+                               cat === "Treks" ? (locale === "te" ? "పర్వతారోహణ / ట్రెక్స్" : locale === "hi" ? "ट्रेक" : "Treks") :
+                               (locale === "te" ? "సాహసాలు" : locale === "hi" ? "रोमांच" : "Adventure")
+                              }
                             </h3>
                             <p className="text-xs text-stone-400 mt-0.5">
-                              {catTrips.length} {catTrips.length === 1 ? "trip" : "trips"} in {selectedState}
+                              {catTrips.length} {locale === "te" ? "ట్రిప్స్" : locale === "hi" ? "यात्राएं" : (catTrips.length === 1 ? "trip" : "trips")} in {selectedState}
                             </p>
                           </div>
                           <div className="flex-1 h-px bg-gradient-to-r from-stone-200 to-transparent ml-4" />
@@ -419,10 +453,10 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                   {/* Month header */}
                   <div className="flex items-center gap-4">
                     <h3 className="font-display text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
-                      {month}
+                      {locale === "te" ? translateMonthToTelugu(month) : locale === "hi" ? translateMonthToHindi(month) : month}
                     </h3>
                     <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-orange-100 text-[#ea580c] font-bold uppercase tracking-wider">
-                      {monthTrips.length} {monthTrips.length === 1 ? "trip" : "trips"}
+                      {monthTrips.length} {locale === "te" ? "ట్రిప్స్" : locale === "hi" ? "यात्राएं" : (monthTrips.length === 1 ? "trip" : "trips")}
                     </span>
                     <div className="flex-1 h-px bg-gradient-to-r from-stone-200 to-transparent" />
                   </div>
@@ -436,7 +470,13 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                     </div>
                   ) : (
                     <div className="border border-dashed border-stone-200 rounded-2xl p-8 text-center text-stone-400 text-xs sm:text-sm bg-stone-50/50">
-                      No trips scheduled for {month.split(" ")[0]} yet. Akhil is finalizing new trails!
+                      {locale === "te" ? (
+                        <>{translateMonthToTelugu(month).split(" ")[0]} నెలకు ఇంకా ఎలాంటి ట్రిప్స్ షెడ్యూల్ చేయలేదు. అఖిల్ కొత్త మార్గాలను సిద్ధం చేస్తున్నారు!</>
+                      ) : locale === "hi" ? (
+                        <>{translateMonthToHindi(month).split(" ")[0]} के लिए अभी तक कोई यात्रा निर्धारित नहीं है। अखिल नए ट्रेल्स को अंतिम रूप दे रहे हैं!</>
+                      ) : (
+                        <>No trips scheduled for {month.split(" ")[0]} yet. Akhil is finalizing new trails!</>
+                      )}
                     </div>
                   )}
                 </div>
