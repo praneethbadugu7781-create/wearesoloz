@@ -573,11 +573,17 @@ body {
   background-color: #14110d;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
-  padding: 40px;
+  padding: 20px;
   width: 100%;
   max-width: 520px;
   position: relative;
   box-shadow: 0 30px 100px rgba(0, 0, 0, 0.8);
+}
+
+@media (min-width: 640px) {
+  .reserve-form-block {
+    padding: 40px;
+  }
 }
 
 .reserve-cross {

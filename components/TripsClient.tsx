@@ -424,7 +424,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                           <div className="flex-1 h-px bg-gradient-to-r from-stone-200 to-transparent ml-4" />
                         </div>
                         {/* Category Trip Cards */}
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
                           {catTrips.map((t) => (
                             <TripCard key={t.id || t._id} trip={t} />
                           ))}
@@ -434,7 +434,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
                   })}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
                   {filteredTrips.map((t) => (
                     <TripCard key={t.id || t._id} trip={t} />
                   ))}
@@ -463,7 +463,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
 
                   {/* Grid of trips for this month */}
                   {monthTrips.length > 0 ? (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
                       {monthTrips.map((t) => (
                         <TripCard key={t.id || t._id} trip={t} showDate={true} />
                       ))}

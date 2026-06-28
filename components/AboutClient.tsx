@@ -427,7 +427,7 @@ export default function AboutClient({ settings = {} }: AboutClientProps) {
             </Reveal>
 
             {/* Visited Regions */}
-            <div className="grid grid-cols-2 gap-3 pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
               {[
                 { name: locale === "te" ? "మధ్యప్రాచ్యం & దక్షిణ ఆసియా" : locale === "hi" ? "मध्य पूर्व और दक्षिण एशिया" : "Middle East & South Asia", region: "India, UAE, Sri Lanka" },
                 { name: locale === "te" ? "ఇండోచైనా ద్వీపకల్పం" : locale === "hi" ? "इंडोचाइना प्रायद्वीप" : "Indochina Peninsula", region: "Thailand, Vietnam" },

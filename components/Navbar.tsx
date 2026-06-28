@@ -40,14 +40,14 @@ export function Navbar() {
   const showScrolled = scrolled || isPlainPage;
 
   const localizedLinks = [
-    { href: "/", label: "Home" },
-    { href: "/upcoming-trips", label: "Trips" },
-    { href: "/soloz-community", label: "Community" },
-    { href: "/gallery", label: "Gallery" },
-    { href: "/about-akhil", label: "About" },
-    { href: "/careers", label: "Careers" },
-    { href: "/farmer-registration", label: "Farmer Trip" },
-    { href: "/contact", label: "Contact" },
+    { href: "/", labelKey: "nav_home" },
+    { href: "/upcoming-trips", labelKey: "nav_trips" },
+    { href: "/soloz-community", labelKey: "nav_community" },
+    { href: "/gallery", labelKey: "nav_gallery" },
+    { href: "/about-akhil", labelKey: "nav_about" },
+    { href: "/careers", labelKey: "nav_careers" },
+    { href: "/farmer-registration", labelKey: "nav_farmer_trip" },
+    { href: "/contact", labelKey: "nav_contact" },
   ];
 
   return (
@@ -55,8 +55,8 @@ export function Navbar() {
       data-testid="navbar"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         showScrolled
-          ? "bg-white/80 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.06)] border-b border-stone-100 py-2"
-          : "bg-white/5 backdrop-blur-md border-b border-white/10 shadow-sm py-4"
+          ? "bg-white/80 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.06)] border-b border-stone-100 py-1.5"
+          : "bg-white/5 backdrop-blur-md border-b border-white/10 shadow-sm py-2.5"
       }`}
     >
       {/* Subtle orange accent line at top */}
@@ -70,47 +70,48 @@ export function Navbar() {
               src="/logo.png"
               alt="WeAreSoloz"
               className={`rounded-full object-cover transition-all duration-300 ring-2 ring-orange-500/45 group-hover:ring-orange-500 shadow-[0_0_12px_rgba(234,88,12,0.25)] group-hover:shadow-[0_0_20px_rgba(234,88,12,0.5)] ${
-                showScrolled ? "h-12 w-12 md:h-14 md:w-14" : "h-14 w-14 md:h-16 md:w-16"
+                showScrolled ? "h-9 w-9 md:h-10 md:w-10" : "h-11 w-11 md:h-12 md:w-12"
               }`}
             />
             <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white animate-pulse" />
           </div>
           <div className="leading-none">
             <div className={`font-sans font-extrabold tracking-tight transition-all duration-300 ${
-              showScrolled ? "text-lg md:text-xl text-stone-900" : "text-xl md:text-2xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
+              showScrolled ? "text-base md:text-lg text-stone-900" : "text-lg md:text-xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
             }`}>
               We<span className="text-[#ea580c]">Are</span>Soloz
             </div>
-            <div className={`text-[8.5px] md:text-[10px] uppercase tracking-[0.08em] md:tracking-[0.2em] transition-all duration-300 ${
+            <div className={`text-[8px] md:text-[9.5px] uppercase tracking-[0.08em] md:tracking-[0.2em] transition-all duration-300 ${
               showScrolled ? "text-stone-500" : "text-white/95 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]"
-            } font-semibold mt-0.5 whitespace-nowrap`}>
+            } font-semibold mt-0.5 whitespace-nowrap hidden sm:block`}>
               Travel Solo · You're Not Alone
             </div>
           </div>
         </Link>
 
         {/* Desktop Nav */}
-        <nav className={`hidden lg:flex items-center gap-1 xl:gap-1.5 backdrop-blur-sm rounded-full px-2 py-1.5 border transition-all duration-300 ${
+        <nav className={`hidden lg:flex items-center gap-0.5 xl:gap-1 backdrop-blur-sm rounded-full px-1.5 py-1 border transition-all duration-300 ${
           showScrolled ? "bg-stone-50/80 border-stone-100" : "bg-white/10 border-white/10"
         }`}>
           {localizedLinks.map((l) => {
             const isActive = pathname === l.href;
+            const linkText = t(l.labelKey);
             return (
               <Link
                 key={l.href}
                 href={l.href}
-                data-testid={`nav-${l.label.toLowerCase().replace(/\s+/g, "-")}`}
-                className={`relative px-3.5 xl:px-4 py-2 text-[13.5px] xl:text-[14.5px] font-semibold rounded-full transition-all duration-300 ${
+                data-testid={`nav-${linkText.toLowerCase().replace(/\s+/g, "-")}`}
+                className={`relative px-3 xl:px-3.5 py-1.5 text-[13px] xl:text-[13.5px] font-semibold rounded-full transition-all duration-300 ${
                   isActive
                     ? (showScrolled ? "bg-white text-stone-900 shadow-sm" : "bg-white/20 text-white shadow-sm")
                     : (showScrolled ? "text-stone-500 hover:text-stone-900 hover:bg-white/60" : "text-white/80 hover:text-white hover:bg-white/10")
                 }`}
               >
-                {l.label}
+                {linkText}
                 {isActive && (
                   <motion.div
                     layoutId="activeNav"
-                    className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#ea580c]"
+                    className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#ea580c]"
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}
@@ -125,14 +126,14 @@ export function Navbar() {
           <div className="relative hidden lg:block">
             <button
               onClick={() => setShowLangMenu(!showLangMenu)}
-              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-[12px] font-bold transition-all duration-300 border ${
+              className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11.5px] font-bold transition-all duration-300 border ${
                 showScrolled
                   ? "bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200"
                   : "bg-white/10 hover:bg-white/20 text-white border-white/10"
               }`}
               aria-label="Select Language"
             >
-              <Globe className="w-3.5 h-3.5" />
+              <Globe className="w-3 h-3" />
               <span className="uppercase">{locale}</span>
             </button>
             <AnimatePresence>
@@ -174,13 +175,13 @@ export function Navbar() {
           <Link
             href="/soloz-community"
             data-testid="nav-join-community"
-            className={`hidden md:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold transition-all duration-300 hover:shadow-lg ${
+            className={`hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full text-[12.5px] font-semibold transition-all duration-300 hover:shadow-lg ${
               showScrolled
                 ? "bg-stone-900 text-white hover:bg-stone-800 hover:shadow-stone-900/10"
                 : "bg-white text-stone-900 hover:bg-stone-100 hover:shadow-white/10"
             }`}
           >
-            Join Community
+            {t("join_community")}
           </Link>
           
           <button
@@ -206,22 +207,23 @@ export function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             data-testid="mobile-menu"
-            className="lg:hidden mt-3 mx-4 bg-white rounded-2xl p-2 border border-stone-100 shadow-xl shadow-stone-200/50"
+            className="lg:hidden mt-3 mx-4 bg-white rounded-2xl p-2 border border-stone-100 shadow-xl shadow-stone-200/50 max-h-[calc(100vh-110px)] overflow-y-auto"
           >
             {localizedLinks.map((l) => {
               const isActive = pathname === l.href;
+              const linkText = t(l.labelKey);
               return (
                 <Link
                   key={l.href}
                   href={l.href}
-                  data-testid={`mobile-nav-${l.label.toLowerCase().replace(/\s+/g, "-")}`}
+                  data-testid={`mobile-nav-${linkText.toLowerCase().replace(/\s+/g, "-")}`}
                   className={`block px-4 py-3 rounded-xl text-base font-semibold transition-colors ${
                     isActive
                       ? "bg-orange-50 text-[#ea580c]"
                       : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
                   }`}
                 >
-                  {l.label}
+                  {linkText}
                 </Link>
               );
             })}
@@ -258,7 +260,7 @@ export function Navbar() {
               href="/soloz-community"
               className="block mx-2 mb-2 text-center px-4 py-3 rounded-xl bg-stone-900 text-white text-base font-bold"
             >
-              Join Community
+              {t("join_community")}
             </Link>
           </motion.div>
         )}
