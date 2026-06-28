@@ -4,10 +4,10 @@ export const translations: Record<Locale, Record<string, string>> = {
   en: {
     // Navbar
     nav_home: "Home",
-    nav_trips: "Upcoming Trips",
-    nav_community: "Soloz Community",
+    nav_trips: "Trips",
+    nav_community: "Community",
     nav_gallery: "Gallery",
-    nav_about: "About Akhil",
+    nav_about: "About",
     nav_careers: "Careers",
     nav_farmer_trip: "Farmer Trip",
     nav_contact: "Contact",
@@ -108,10 +108,10 @@ export const translations: Record<Locale, Record<string, string>> = {
   te: {
     // Navbar
     nav_home: "హోమ్",
-    nav_trips: "రాబోయే ట్రిప్స్",
-    nav_community: "సోలోజ్ కమ్యూనిటీ",
+    nav_trips: "ట్రిప్స్",
+    nav_community: "కమ్యూనిటీ",
     nav_gallery: "గ్యాలరీ",
-    nav_about: "అఖిల్ గురించి",
+    nav_about: "అఖిల్",
     nav_careers: "కెరీర్స్",
     nav_farmer_trip: "రైతు ట్రిప్",
     nav_contact: "సంప్రదించండి",
@@ -212,10 +212,10 @@ export const translations: Record<Locale, Record<string, string>> = {
   hi: {
     // Navbar
     nav_home: "होम",
-    nav_trips: "आगामी ट्रिप्स",
-    nav_community: "सोलोज़ कम्युनिटी",
+    nav_trips: "ट्रिप्स",
+    nav_community: "कम्युनिटी",
     nav_gallery: "गैलरी",
-    nav_about: "अखिल के बारे में",
+    nav_about: "अखिल",
     nav_careers: "करियर",
     nav_farmer_trip: "किसान ट्रिप",
     nav_contact: "संपर्क",
