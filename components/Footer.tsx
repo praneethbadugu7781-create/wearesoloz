@@ -124,9 +124,9 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/soloz-community" className="group flex items-center gap-2 hover:text-[#ff7a1a] transition-all duration-300 hover:translate-x-1">
+                <Link href="/reviews" className="group flex items-center gap-2 hover:text-[#ff7a1a] transition-all duration-300 hover:translate-x-1">
                   <ArrowRight className="w-3.5 h-3.5 text-[#ea580c] opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300 shrink-0" />
-                  {t("nav_community")}
+                  {t("nav_reviews")}
                 </Link>
               </li>
             </ul>

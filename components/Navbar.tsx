@@ -43,7 +43,7 @@ export function Navbar() {
   const localizedLinks = [
     { href: "/", labelKey: "nav_home" },
     { href: "/upcoming-trips", labelKey: "nav_trips" },
-    { href: "/soloz-community", labelKey: "nav_community" },
+    { href: "/reviews", labelKey: "nav_reviews" },
     { href: "/gallery", labelKey: "nav_gallery" },
     { href: "/trip-memories", labelKey: "nav_memories" },
     { href: "/about-akhil", labelKey: "nav_about" },
