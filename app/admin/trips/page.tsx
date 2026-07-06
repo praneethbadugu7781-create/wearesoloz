@@ -430,7 +430,7 @@ export default function AdminTripsPage() {
       defaultDate = `${year}-${month}-01`;
     }
     setScheduleDate(defaultDate);
-    const firstDraft = trips.find((t) => t.status === "draft");
+    const firstDraft = trips.find((t) => t.status === "draft") || trips[0];
     setSelectedTemplateId(firstDraft?._id || "");
   };
 
@@ -445,12 +445,19 @@ export default function AdminTripsPage() {
       return;
     }
 
+    const template = trips.find((t) => t._id === selectedTemplateId);
+    if (!template) return;
+
+    // Clone the template data without ID so it saves as a NEW trip copy!
+    const { _id, __v, createdAt, updatedAt, id, ...cloneData } = template as any;
+
     setScheduling(true);
     try {
-      const res = await fetch(`${API_URL}/admin/trips/${selectedTemplateId}`, {
-        method: "PATCH",
+      const res = await fetch(`${API_URL}/admin/trips`, {
+        method: "POST",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({
+          ...cloneData,
           date: scheduleDate,
           status: "published"
         })
@@ -477,12 +484,15 @@ export default function AdminTripsPage() {
     const template = trips.find((t) => t._id === selectedTemplateId);
     if (!template) return;
 
+    // Clone the template data without ID so it saves as a NEW trip copy when they save!
+    const { _id, __v, createdAt, updatedAt, id, ...cloneData } = template as any;
+
     setFormData({
-      ...template,
+      ...cloneData,
       date: scheduleDate,
       status: "published"
     });
-    setEditId(template._id || null);
+    setEditId(null); // Setting editId to null creates a NEW trip on save!
     setSchedulingMonth(null);
     const isInter = template.state ? !indianStates.includes(template.state) : false;
     setIsInternational(isInter);
@@ -1100,9 +1110,9 @@ export default function AdminTripsPage() {
                 <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block font-semibold">
                   Select Template Trip
                 </label>
-                {trips.filter(t => t.status === "draft").length === 0 ? (
+                {trips.length === 0 ? (
                   <div className="text-xs text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded p-2">
-                    No draft template trips available in the database.
+                    No template trips available in the database.
                   </div>
                 ) : (
                   <select
@@ -1112,13 +1122,15 @@ export default function AdminTripsPage() {
                     className="h-10 w-full rounded-lg border border-white/10 bg-[#1a1712] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
                   >
                     <option value="" disabled>-- Select a template --</option>
-                    {trips
-                      .filter(t => t.status === "draft")
-                      .map((t) => (
+                    {trips.map((t) => {
+                      const dateStr = t.date ? ` - ${new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : "";
+                      const statusStr = t.status === "draft" ? " (Draft)" : dateStr;
+                      return (
                         <option key={t._id} value={t._id}>
-                          {t.destination} ({t.state} - {t.duration})
+                          {t.destination} ({t.state} - {t.duration}){statusStr}
                         </option>
-                      ))}
+                      );
+                    })}
                   </select>
                 )}
               </div>
@@ -1139,7 +1151,7 @@ export default function AdminTripsPage() {
               <div className="flex flex-col gap-2 pt-2">
                 <Button
                   type="submit"
-                  disabled={scheduling || trips.filter(t => t.status === "draft").length === 0}
+                  disabled={scheduling || trips.length === 0}
                   className="w-full justify-center pt-0.5"
                 >
                   {scheduling ? (
