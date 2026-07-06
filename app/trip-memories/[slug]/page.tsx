@@ -365,10 +365,10 @@ export default function TripMemoryDetailPage() {
       {/* Cinematic Lightbox Modal */}
       <AnimatePresence>
         {lightboxOpen && lightboxMediaList.length > 0 && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0c0a09]/95 backdrop-blur-md p-4">
             <button
               onClick={() => setLightboxOpen(false)}
-              className="absolute right-6 top-6 text-white/70 hover:text-white transition-colors z-50 bg-white/10 hover:bg-white/20 p-2 rounded-full backdrop-blur-md"
+              className="absolute right-6 top-6 text-orange-400 hover:text-orange-300 transition-colors z-50 bg-white/5 hover:bg-white/10 p-2 rounded-full backdrop-blur-md border border-orange-500/10"
             >
               <X size={20} />
             </button>
@@ -380,7 +380,7 @@ export default function TripMemoryDetailPage() {
                   e.stopPropagation();
                   setLightboxMediaIndex((prev) => (prev === 0 ? lightboxMediaList.length - 1 : prev - 1));
                 }}
-                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-50 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-md transition-colors"
+                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-50 text-orange-400 hover:text-orange-300 bg-white/5 hover:bg-white/10 p-3 rounded-full backdrop-blur-md transition-colors border border-orange-500/10"
               >
                 <ChevronLeft size={24} />
               </button>
@@ -393,7 +393,7 @@ export default function TripMemoryDetailPage() {
                   e.stopPropagation();
                   setLightboxMediaIndex((prev) => (prev === lightboxMediaList.length - 1 ? 0 : prev + 1));
                 }}
-                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-md transition-colors"
+                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 text-orange-400 hover:text-orange-300 bg-white/5 hover:bg-white/10 p-3 rounded-full backdrop-blur-md transition-colors border border-orange-500/10"
               >
                 <ChevronRight size={24} />
               </button>
@@ -401,11 +401,11 @@ export default function TripMemoryDetailPage() {
 
             {/* Media Content Wrapper */}
             <div 
-              className="w-full max-w-5xl h-[80vh] flex flex-col md:flex-row rounded-2xl overflow-hidden bg-stone-900 border border-white/10 shadow-2xl relative"
+              className="w-full max-w-5xl h-[80vh] flex flex-col md:flex-row rounded-2xl overflow-hidden bg-[#14110d] border border-orange-500/10 shadow-2xl relative"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Left Column: Media Display */}
-              <div className="flex-1 bg-black flex items-center justify-center relative group min-h-[40vh] md:min-h-0">
+              <div className="flex-1 bg-[#0f0d0a] flex items-center justify-center relative group min-h-[40vh] md:min-h-0 overflow-hidden p-2">
                 {isVideo(lightboxMediaList[lightboxMediaIndex].url) ? (
                   <video
                     key={lightboxMediaList[lightboxMediaIndex].url}
@@ -413,19 +413,19 @@ export default function TripMemoryDetailPage() {
                     controls
                     autoPlay
                     playsInline
-                    className="max-w-full max-h-[75vh] object-contain"
+                    className="max-w-full max-h-full object-contain"
                   />
                 ) : (
                   <img
                     src={lightboxMediaList[lightboxMediaIndex].url}
                     alt="Lightbox media preview"
-                    className="max-w-full max-h-[75vh] object-contain select-none"
+                    className="max-w-full max-h-full object-contain select-none"
                   />
                 )}
               </div>
 
               {/* Right Column: Author Info & Story Description */}
-              <div className="w-full md:w-80 bg-stone-950 p-6 flex flex-col justify-between text-white shrink-0 border-t md:border-t-0 md:border-l border-white/10">
+              <div className="w-full md:w-80 bg-[#171410] p-6 flex flex-col justify-between text-white shrink-0 border-t md:border-t-0 md:border-l border-orange-500/10">
                 <div className="space-y-4 overflow-y-auto max-h-[25vh] md:max-h-full">
                   <div className="flex items-center gap-3">
                     <div className="size-8 rounded-full bg-orange-600 flex items-center justify-center text-xs font-bold text-white uppercase select-none">
@@ -441,7 +441,7 @@ export default function TripMemoryDetailPage() {
                     </div>
                   </div>
 
-                  <div className="border-t border-white/10 pt-4 space-y-2">
+                  <div className="border-t border-orange-500/10 pt-4 space-y-2">
                     <h5 className="text-[10px] uppercase tracking-wider text-orange-400 font-bold">Memory Share</h5>
                     <p className="text-xs text-stone-300 leading-relaxed font-body whitespace-pre-line">
                       {lightboxMediaList[lightboxMediaIndex].text}
@@ -449,7 +449,7 @@ export default function TripMemoryDetailPage() {
                   </div>
                 </div>
 
-                <div className="mt-4 border-t border-white/10 pt-4 flex items-center justify-between text-[10px] text-stone-500 font-bold uppercase tracking-wider">
+                <div className="mt-4 border-t border-orange-500/10 pt-4 flex items-center justify-between text-[10px] text-stone-500 font-bold uppercase tracking-wider">
                   <span>WeAreSoloz Scrapbook</span>
                   <span>{lightboxMediaIndex + 1} of {lightboxMediaList.length}</span>
                 </div>
