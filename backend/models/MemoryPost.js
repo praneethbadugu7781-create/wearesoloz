@@ -7,12 +7,14 @@ const memoryPostSchema = new mongoose.Schema(
     text: { type: String, required: true },
     photos: { type: [String], default: [] },
     authorName: { type: String, required: true },
-    authorPhone: { type: String, required: true },
-    likes: { type: [String], default: [] }, // Array of phone numbers
+    authorPhone: { type: String },
+    authorEmail: { type: String, required: true },
+    likes: { type: [String], default: [] }, // Array of email strings
     comments: {
       type: [{
         authorName: { type: String, required: true },
-        authorPhone: { type: String, required: true },
+        authorPhone: { type: String },
+        authorEmail: { type: String, required: true },
         text: { type: String, required: true },
         createdAt: { type: Date, default: Date.now }
       }],

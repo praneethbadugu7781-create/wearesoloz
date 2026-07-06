@@ -20,7 +20,8 @@ const tripSchema = new mongoose.Schema(
     participants: {
       type: [{
         name: { type: String, required: true },
-        phone: { type: String, required: true }
+        phone: { type: String },
+        email: { type: String }
       }],
       default: []
     },
@@ -34,7 +35,9 @@ const tripSchema = new mongoose.Schema(
       }],
       default: []
     },
-    recap: { type: String, default: "" }
+    recap: { type: String, default: "" },
+    memoryImage: { type: String, default: "" },
+    memoryCoverImage: { type: String, default: "" }
   },
   { timestamps: true }
 );

@@ -10,7 +10,8 @@ import { motion } from "framer-motion";
 
 interface Participant {
   name: string;
-  phone: string;
+  phone?: string;
+  email?: string;
 }
 
 interface CompletedTrip {
@@ -26,6 +27,8 @@ interface CompletedTrip {
   image: string;
   images: string[];
   participants: Participant[];
+  memoryImage?: string;
+  memoryCoverImage?: string;
   memoriesCount: number;
   photosCount: number;
 }
@@ -120,7 +123,7 @@ export default function TripMemoriesPage() {
                   {/* Trip Banner Image */}
                   <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
                     <img
-                      src={getOptimizedImageUrl(trip.image || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80", 500)}
+                      src={getOptimizedImageUrl(trip.memoryImage || trip.image || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80", 500)}
                       alt={trip.destination}
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                       loading="lazy"

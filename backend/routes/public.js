@@ -12,6 +12,7 @@ const Career = require("../models/Career");
 const Farmer = require("../models/Farmer");
 const jwt = require("jsonwebtoken");
 const MemoryPost = require("../models/MemoryPost");
+const { sendTripMemoryOtpEmail } = require("../lib/mailer");
 
 const router = express.Router();
 
@@ -401,9 +402,9 @@ const otps = new Map();
 // OTP Request
 router.post("/memories/otp/request", async (req, res) => {
   try {
-    const { tripId, phone } = req.body;
-    if (!tripId || !phone) {
-      return res.status(400).json({ error: "Trip ID and phone number are required" });
+    const { tripId, email } = req.body;
+    if (!tripId || !email) {
+      return res.status(400).json({ error: "Trip ID and email address are required" });
     }
 
     await connectDB();
@@ -412,28 +413,31 @@ router.post("/memories/otp/request", async (req, res) => {
       return res.status(404).json({ error: "Trip not found" });
     }
 
-    const cleanedInputPhone = phone.trim().replace(/[\s-()]/g, "");
+    const cleanedEmail = email.trim().toLowerCase();
 
     const participant = trip.participants.find(p => {
-      const cleanedPartPhone = p.phone.trim().replace(/[\s-()]/g, "");
-      return cleanedPartPhone === cleanedInputPhone || cleanedPartPhone.endsWith(cleanedInputPhone) || cleanedInputPhone.endsWith(cleanedPartPhone);
+      return p.email && p.email.trim().toLowerCase() === cleanedEmail;
     });
 
     if (!participant) {
-      return res.status(400).json({ error: "This phone number is not registered as a participant for this trip." });
+      return res.status(400).json({ error: "This email address is not registered as a participant for this trip." });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = Date.now() + 5 * 60 * 1000;
-    otps.set(`${cleanedInputPhone}_${tripId}`, { otp, expiresAt, name: participant.name });
+    otps.set(`${cleanedEmail}_${tripId}`, { otp, expiresAt, name: participant.name });
 
-    console.log(`\n[OTP VERIFICATION CODE] For participant: ${participant.name} (${phone}) on trip "${trip.destination}" -> code is: ${otp}\n`);
+    console.log(`\n[OTP VERIFICATION CODE] For participant: ${participant.name} (${email}) on trip "${trip.destination}" -> code is: ${otp}\n`);
+
+    // Trigger actual email via Resend
+    await sendTripMemoryOtpEmail(cleanedEmail, participant.name, trip.destination, otp);
 
     res.json({
       success: true,
       message: "OTP sent successfully."
     });
   } catch (err) {
+    console.error("OTP request error:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -441,20 +445,20 @@ router.post("/memories/otp/request", async (req, res) => {
 // OTP Verify
 router.post("/memories/otp/verify", async (req, res) => {
   try {
-    const { tripId, phone, otp } = req.body;
-    if (!tripId || !phone || !otp) {
-      return res.status(400).json({ error: "Trip ID, phone, and OTP are required" });
+    const { tripId, email, otp } = req.body;
+    if (!tripId || !email || !otp) {
+      return res.status(400).json({ error: "Trip ID, email, and OTP are required" });
     }
 
-    const cleanedPhone = phone.trim().replace(/[\s-()]/g, "");
-    const otpRecord = otps.get(`${cleanedPhone}_${tripId}`);
+    const cleanedEmail = email.trim().toLowerCase();
+    const otpRecord = otps.get(`${cleanedEmail}_${tripId}`);
 
     if (!otpRecord) {
-      return res.status(400).json({ error: "No verification request found for this phone number" });
+      return res.status(400).json({ error: "No verification request found for this email address" });
     }
 
     if (Date.now() > otpRecord.expiresAt) {
-      otps.delete(`${cleanedPhone}_${tripId}`);
+      otps.delete(`${cleanedEmail}_${tripId}`);
       return res.status(400).json({ error: "OTP has expired. Please request a new one." });
     }
 
@@ -463,18 +467,18 @@ router.post("/memories/otp/verify", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { tripId, phone: cleanedPhone, name: otpRecord.name, role: "participant" },
+      { tripId, email: cleanedEmail, name: otpRecord.name, role: "participant" },
       process.env.JWT_SECRET,
       { expiresIn: "30d" }
     );
 
-    otps.delete(`${cleanedPhone}_${tripId}`);
+    otps.delete(`${cleanedEmail}_${tripId}`);
 
     res.json({
       success: true,
       token,
       name: otpRecord.name,
-      phone: cleanedPhone
+      email: cleanedEmail
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -558,7 +562,7 @@ router.post("/memories/posts", verifyParticipantToken, async (req, res) => {
       text,
       photos: photos || [],
       authorName: req.participant.name,
-      authorPhone: req.participant.phone,
+      authorEmail: req.participant.email,
       likes: [],
       comments: []
     });
@@ -581,11 +585,11 @@ router.post("/memories/posts/:postId/like", verifyParticipantToken, async (req, 
     const post = await MemoryPost.findById(req.params.postId);
     if (!post) return res.status(404).json({ error: "Post not found" });
 
-    const phone = req.participant.phone;
-    const index = post.likes.indexOf(phone);
+    const email = req.participant.email;
+    const index = post.likes.indexOf(email);
 
     if (index === -1) {
-      post.likes.push(phone);
+      post.likes.push(email);
     } else {
       post.likes.splice(index, 1);
     }
@@ -614,7 +618,7 @@ router.post("/memories/posts/:postId/comment", verifyParticipantToken, async (re
 
     const newComment = {
       authorName: req.participant.name,
-      authorPhone: req.participant.phone,
+      authorEmail: req.participant.email,
       text: text.trim(),
       createdAt: new Date()
     };
@@ -639,11 +643,11 @@ router.post("/memories/trips/:tripId/like", verifyParticipantToken, async (req, 
     const trip = await Trip.findById(req.params.tripId);
     if (!trip) return res.status(404).json({ error: "Trip not found" });
 
-    const phone = req.participant.phone;
-    const index = trip.likes.indexOf(phone);
+    const email = req.participant.email;
+    const index = trip.likes.indexOf(email);
 
     if (index === -1) {
-      trip.likes.push(phone);
+      trip.likes.push(email);
     } else {
       trip.likes.splice(index, 1);
     }
@@ -672,7 +676,7 @@ router.post("/memories/trips/:tripId/comment", verifyParticipantToken, async (re
 
     const newComment = {
       authorName: req.participant.name,
-      authorPhone: req.participant.phone,
+      authorEmail: req.participant.email,
       text: text.trim(),
       createdAt: new Date()
     };

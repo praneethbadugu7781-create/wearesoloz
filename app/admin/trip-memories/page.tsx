@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { getAuthHeaders } from "@/lib/api";
 import { Compass, Edit2, Check, Loader2, Calendar, Users, X, BookOpen, UserPlus, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CloudinaryUpload } from "@/components/cloudinary-upload";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 interface Participant {
   name: string;
-  phone: string;
+  phone?: string;
+  email: string;
 }
 
 interface CompletedTrip {
@@ -22,6 +24,8 @@ interface CompletedTrip {
   image: string;
   participants: Participant[];
   recap?: string;
+  memoryImage?: string;
+  memoryCoverImage?: string;
   memoriesCount: number;
   photosCount: number;
 }
@@ -32,6 +36,10 @@ export default function AdminTripMemoriesPage() {
   const [saving, setSaving] = useState(false);
   const [activeTrip, setActiveTrip] = useState<CompletedTrip | null>(null);
   
+  // Custom Memory Assets
+  const [memoryImage, setMemoryImage] = useState("");
+  const [memoryCoverImage, setMemoryCoverImage] = useState("");
+
   // Participant List Edit States
   const [recapText, setRecapText] = useState("");
   const [participantsList, setParticipantsList] = useState<Participant[]>([]);
@@ -45,7 +53,6 @@ export default function AdminTripMemoriesPage() {
   const fetchCompletedTrips = async () => {
     setLoading(true);
     try {
-      // Pull completed trips directly from memories listing API
       const res = await fetch(`${API_URL}/memories/completed-trips`);
       if (!res.ok) throw new Error("Failed to load completed trips");
       const data = await res.json();
@@ -62,23 +69,27 @@ export default function AdminTripMemoriesPage() {
     setActiveTrip(trip);
     setRecapText(trip.recap || "");
     setParticipantsList(trip.participants || []);
+    setMemoryImage(trip.memoryImage || "");
+    setMemoryCoverImage(trip.memoryCoverImage || "");
   };
 
   const handleCancel = () => {
     setActiveTrip(null);
     setRecapText("");
     setParticipantsList([]);
+    setMemoryImage("");
+    setMemoryCoverImage("");
   };
 
   const addParticipant = () => {
-    setParticipantsList([...participantsList, { name: "", phone: "" }]);
+    setParticipantsList([...participantsList, { name: "", phone: "", email: "" }]);
   };
 
   const removeParticipant = (index: number) => {
     setParticipantsList(participantsList.filter((_, idx) => idx !== index));
   };
 
-  const updateParticipant = (index: number, field: "name" | "phone", value: string) => {
+  const updateParticipant = (index: number, field: keyof Participant, value: string) => {
     setParticipantsList(
       participantsList.map((p, idx) => (idx === index ? { ...p, [field]: value } : p))
     );
@@ -95,6 +106,7 @@ export default function AdminTripMemoriesPage() {
       if (!line.trim()) return;
       let name = "";
       let phone = "";
+      let email = "";
 
       const separators = [" - ", " – ", " -", "- ", "-", " , ", ", ", ",", " : ", ": ", ":"];
       let foundSeparator = false;
@@ -104,7 +116,12 @@ export default function AdminTripMemoriesPage() {
           const parts = line.split(sep);
           if (parts.length >= 2) {
             name = parts[0].trim();
-            phone = parts.slice(1).join(sep).trim().replace(/[\s-()]/g, "");
+            const rest = parts.slice(1).join(sep).trim();
+            if (rest.includes("@")) {
+              email = rest.toLowerCase();
+            } else {
+              phone = rest.replace(/[\s-()]/g, "");
+            }
             foundSeparator = true;
             break;
           }
@@ -112,17 +129,25 @@ export default function AdminTripMemoriesPage() {
       }
 
       if (!foundSeparator) {
-        const phoneMatch = line.match(/\+?\d[\d\s-()]{7,14}/);
-        if (phoneMatch) {
-          phone = phoneMatch[0].trim().replace(/[\s-()]/g, "");
-          name = line.replace(phoneMatch[0], "").trim().replace(/^[-–,:\s]+|[-–,:\s]+$/g, "");
+        if (line.includes("@")) {
+          const emailMatch = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+          if (emailMatch) {
+            email = emailMatch[0].toLowerCase();
+            name = line.replace(emailMatch[0], "").trim().replace(/^[-–,:\s]+|[-–,:\s]+$/g, "");
+          }
         } else {
-          name = line.trim();
+          const phoneMatch = line.match(/\+?\d[\d\s-()]{7,14}/);
+          if (phoneMatch) {
+            phone = phoneMatch[0].trim().replace(/[\s-()]/g, "");
+            name = line.replace(phoneMatch[0], "").trim().replace(/^[-–,:\s]+|[-–,:\s]+$/g, "");
+          } else {
+            name = line.trim();
+          }
         }
       }
 
-      if (phone) {
-        parsed.push({ name: name || "Guest", phone });
+      if (email || phone) {
+        parsed.push({ name: name || "Guest", phone, email: email || `${name.toLowerCase().replace(/\s+/g, "")}@example.com` });
       }
     });
 
@@ -132,7 +157,7 @@ export default function AdminTripMemoriesPage() {
       setShowImportModal(false);
       alert(`Imported ${parsed.length} attendees successfully!`);
     } else {
-      alert("Failed to parse phone numbers. Verify list matches Name - Phone formatting.");
+      alert("Failed to parse emails or phone numbers. Verify list matches Name - Email formatting.");
     }
   };
 
@@ -140,9 +165,15 @@ export default function AdminTripMemoriesPage() {
     e.preventDefault();
     if (!activeTrip) return;
 
+    // Validate emails are present
+    const hasMissingEmails = participantsList.some(p => !p.email || !p.email.trim());
+    if (hasMissingEmails) {
+      alert("All participants must have a valid email address configured for verification purposes.");
+      return;
+    }
+
     setSaving(true);
     try {
-      // Patch through generic resource updates in admin endpoints
       const res = await fetch(`${API_URL}/admin/trips/${activeTrip._id}`, {
         method: "PATCH",
         headers: {
@@ -151,7 +182,9 @@ export default function AdminTripMemoriesPage() {
         },
         body: JSON.stringify({
           recap: recapText,
-          participants: participantsList
+          participants: participantsList,
+          memoryImage,
+          memoryCoverImage
         })
       });
 
@@ -189,7 +222,7 @@ export default function AdminTripMemoriesPage() {
             <BookOpen className="text-soloz-amber" size={24} /> Manage Trip Memories
           </h1>
           <p className="text-xs text-soloz-ash/60 mt-1">
-            Configure participant phone numbers, write completed trip summaries, and compile digital scrapbooks.
+            Configure participant email addresses, write completed trip summaries, upload custom memory banners, and compile digital scrapbooks.
           </p>
         </div>
       </div>
@@ -222,6 +255,25 @@ export default function AdminTripMemoriesPage() {
             </button>
           </div>
 
+          {/* Custom Memory Banner / Cover Image */}
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block font-bold">
+              Custom Scrapbook Visuals
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/5 border border-white/5 rounded-xl p-4">
+              <CloudinaryUpload
+                value={memoryImage}
+                onChange={(url) => setMemoryImage(url)}
+                label="Scrapbook Card Image (Thumbnail)"
+              />
+              <CloudinaryUpload
+                value={memoryCoverImage}
+                onChange={(url) => setMemoryCoverImage(url)}
+                label="Scrapbook Header Cover (Banner)"
+              />
+            </div>
+          </div>
+
           {/* Recap */}
           <div className="space-y-2">
             <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block font-bold">
@@ -230,7 +282,7 @@ export default function AdminTripMemoriesPage() {
             <textarea
               rows={4}
               required
-              placeholder="Provide a written summary of the trip itinerary highlights, group dynamic, and memories (e.g. We had a gorgeous sunset trek with 12 amazing people!)."
+              placeholder="Provide a written summary of the trip highlights (e.g. We had a gorgeous sunset trek with 12 amazing people!)."
               value={recapText}
               onChange={(e) => setRecapText(e.target.value)}
               className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none resize-none"
@@ -245,7 +297,7 @@ export default function AdminTripMemoriesPage() {
                   Registered Attending Participants
                 </label>
                 <p className="text-[11px] text-soloz-ash/40">
-                  Only attendees listed here can request OTPs and contribute memories.
+                  Attendees must match by email to receive verification codes and post.
                 </p>
               </div>
               <div className="flex gap-3">
@@ -271,29 +323,36 @@ export default function AdminTripMemoriesPage() {
                 No participants registered. Click "Add Attendee" or "Import Attendee List" to authorize travelers.
               </div>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2 max-h-[300px] overflow-y-auto pr-1">
+              <div className="grid gap-3 max-h-[300px] overflow-y-auto pr-1">
                 {participantsList.map((p, idx) => (
-                  <div key={idx} className="flex gap-2 items-center">
+                  <div key={idx} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center bg-white/5 p-3 rounded-lg border border-white/5">
                     <input
                       type="text"
                       required
                       placeholder="Full Name"
                       value={p.name}
                       onChange={(e) => updateParticipant(idx, "name", e.target.value)}
-                      className="h-10 flex-1 rounded-lg border border-white/10 bg-white/5 px-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none"
+                      className="h-10 w-full sm:w-1/3 rounded-lg border border-white/10 bg-[#14110d] px-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none"
+                    />
+                    <input
+                      type="email"
+                      required
+                      placeholder="Email Address (for login OTP)"
+                      value={p.email || ""}
+                      onChange={(e) => updateParticipant(idx, "email", e.target.value)}
+                      className="h-10 flex-1 w-full rounded-lg border border-white/10 bg-[#14110d] px-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none"
                     />
                     <input
                       type="tel"
-                      required
-                      placeholder="Phone Number"
-                      value={p.phone}
+                      placeholder="Phone Number (Optional)"
+                      value={p.phone || ""}
                       onChange={(e) => updateParticipant(idx, "phone", e.target.value)}
-                      className="h-10 flex-1 rounded-lg border border-white/10 bg-white/5 px-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none"
+                      className="h-10 w-full sm:w-1/4 rounded-lg border border-white/10 bg-[#14110d] px-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none"
                     />
                     <button
                       type="button"
                       onClick={() => removeParticipant(idx)}
-                      className="grid size-10 place-items-center rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 shrink-0"
+                      className="grid size-10 place-items-center rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 shrink-0 self-end sm:self-auto"
                     >
                       <X size={15} />
                     </button>
@@ -390,7 +449,7 @@ export default function AdminTripMemoriesPage() {
                 Bulk Import Attendees
               </h3>
               <p className="text-xs text-soloz-ash/60">
-                Paste list of participants (One per line). Supported format: <code className="text-soloz-amber">Name - Phone</code> or <code className="text-soloz-amber">Name, Phone</code>.
+                Paste list of participants (One per line). Format: <code className="text-soloz-amber">Name - email@example.com</code> or <code className="text-soloz-amber">Name, email@example.com</code>.
               </p>
             </div>
 
@@ -398,7 +457,7 @@ export default function AdminTripMemoriesPage() {
               <textarea
                 required
                 rows={8}
-                placeholder="Akhil - 9876543210&#10;Praneeth - 7330820239&#10;Rahul - 9123456789"
+                placeholder="Akhil - akhil@gmail.com&#10;Praneeth - praneeth@gmail.com&#10;Rahul - rahul@gmail.com"
                 value={importText}
                 onChange={(e) => setImportText(e.target.value)}
                 className="w-full rounded-lg border border-white/10 bg-[#1a1712] p-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none resize-none font-mono"

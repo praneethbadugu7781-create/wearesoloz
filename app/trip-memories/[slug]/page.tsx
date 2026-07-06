@@ -49,7 +49,8 @@ interface MemoryPost {
 
 interface Participant {
   name: string;
-  phone: string;
+  phone?: string;
+  email: string;
 }
 
 interface CompletedTrip {
@@ -68,6 +69,8 @@ interface CompletedTrip {
   likes: string[];
   comments: Comment[];
   recap?: string;
+  memoryImage?: string;
+  memoryCoverImage?: string;
 }
 
 export default function TripMemoryDetailPage() {
@@ -82,8 +85,8 @@ export default function TripMemoryDetailPage() {
 
   // Verification state
   const [showVerifyModal, setShowVerifyModal] = useState(false);
-  const [otpStep, setOtpStep] = useState(1); // 1 = Phone, 2 = OTP
-  const [phoneInput, setPhoneInput] = useState("");
+  const [otpStep, setOtpStep] = useState(1); // 1 = Email, 2 = OTP
+  const [emailInput, setEmailInput] = useState("");
   const [otpInput, setOtpInput] = useState("");
   const [devOtp, setDevOtp] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
@@ -91,7 +94,7 @@ export default function TripMemoryDetailPage() {
 
   // Persisted token states
   const [verifiedToken, setVerifiedToken] = useState<string | null>(null);
-  const [verifiedPhone, setVerifiedPhone] = useState<string | null>(null);
+  const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
   const [verifiedName, setVerifiedName] = useState<string | null>(null);
 
   // New post creation
@@ -124,7 +127,7 @@ export default function TripMemoryDetailPage() {
       if (savedSession) {
         const parsed = JSON.parse(savedSession);
         setVerifiedToken(parsed.token);
-        setVerifiedPhone(parsed.phone);
+        setVerifiedEmail(parsed.email);
         setVerifiedName(parsed.name);
       }
 
@@ -143,7 +146,7 @@ export default function TripMemoryDetailPage() {
 
   const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phoneInput || !trip) return;
+    if (!emailInput || !trip) return;
 
     setVerifying(true);
     setVerifyError("");
@@ -154,12 +157,12 @@ export default function TripMemoryDetailPage() {
       const res = await fetch(`${API_URL}/memories/otp/request`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tripId: trip._id, phone: phoneInput })
+        body: JSON.stringify({ tripId: trip._id, email: emailInput })
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Failed to send OTP. Phone number may not be registered.");
+        throw new Error(data.error || "Failed to send OTP. Email address may not be registered.");
       }
 
       setOtpStep(2);
@@ -185,7 +188,7 @@ export default function TripMemoryDetailPage() {
       const res = await fetch(`${API_URL}/memories/otp/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tripId: trip._id, phone: phoneInput, otp: otpInput })
+        body: JSON.stringify({ tripId: trip._id, email: emailInput, otp: otpInput })
       });
 
       const data = await res.json();
@@ -194,16 +197,16 @@ export default function TripMemoryDetailPage() {
       }
 
       // Success! Persist to localStorage
-      const session = { token: data.token, phone: data.phone, name: data.name };
+      const session = { token: data.token, email: data.email, name: data.name };
       localStorage.setItem(`soloz_verified_trip_${trip._id}`, JSON.stringify(session));
 
       setVerifiedToken(data.token);
-      setVerifiedPhone(data.phone);
+      setVerifiedEmail(data.email);
       setVerifiedName(data.name);
 
       setShowVerifyModal(false);
       setOtpStep(1);
-      setPhoneInput("");
+      setEmailInput("");
       setOtpInput("");
       setDevOtp(null);
     } catch (err: any) {
@@ -364,7 +367,7 @@ export default function TripMemoryDetailPage() {
     if (trip) {
       localStorage.removeItem(`soloz_verified_trip_${trip._id}`);
       setVerifiedToken(null);
-      setVerifiedPhone(null);
+      setVerifiedEmail(null);
       setVerifiedName(null);
     }
   };
@@ -401,7 +404,7 @@ export default function TripMemoryDetailPage() {
       {/* Cinematic Banner */}
       <section className="relative h-[40vh] md:h-[50vh] w-full bg-stone-950 overflow-hidden">
         <img
-          src={getOptimizedImageUrl(trip.image, 1200)}
+          src={getOptimizedImageUrl(trip.memoryCoverImage || trip.image, 1200)}
           alt={trip.destination}
           className="absolute inset-0 w-full h-full object-cover opacity-60"
         />
@@ -453,7 +456,7 @@ export default function TripMemoryDetailPage() {
               <p className="text-xs text-stone-500">
                 {verifiedToken 
                   ? "You have full access to add memory posts, upload photos, react, and comment." 
-                  : "Verify your phone number to upload photos, share memory cards, comment, and like."}
+                  : "Verify your email address to upload photos, share memory cards, comment, and like."}
               </p>
             </div>
             {verifiedToken ? (
@@ -498,7 +501,7 @@ export default function TripMemoryDetailPage() {
             ) : (
               <div className="space-y-6">
                 {posts.map((post) => {
-                  const hasLiked = verifiedPhone && post.likes.includes(verifiedPhone);
+                  const hasLiked = verifiedEmail && post.likes.includes(verifiedEmail);
                   return (
                     <div 
                       key={post._id}
@@ -642,10 +645,10 @@ export default function TripMemoryDetailPage() {
               <button
                 onClick={handleLikeTrip}
                 className={`flex items-center gap-1 text-xs font-bold uppercase tracking-wider transition-colors ${
-                  verifiedPhone && (trip.likes || []).includes(verifiedPhone) ? "text-rose-500" : "text-stone-500 hover:text-rose-500"
+                  verifiedEmail && (trip.likes || []).includes(verifiedEmail) ? "text-rose-500" : "text-stone-500 hover:text-rose-500"
                 }`}
               >
-                <Heart className={`w-3.5 h-3.5 ${verifiedPhone && (trip.likes || []).includes(verifiedPhone) ? "fill-rose-500" : ""}`} /> 
+                <Heart className={`w-3.5 h-3.5 ${verifiedEmail && (trip.likes || []).includes(verifiedEmail) ? "fill-rose-500" : ""}`} /> 
                 {(trip.likes || []).length} Likes
               </button>
             </div>
@@ -715,7 +718,7 @@ export default function TripMemoryDetailPage() {
               <button
                 onClick={() => {
                   setShowVerifyModal(false);
-                  setPhoneInput("");
+                  setEmailInput("");
                   setOtpInput("");
                   setVerifyError("");
                   setDevOtp(null);
@@ -732,8 +735,8 @@ export default function TripMemoryDetailPage() {
                 </h3>
                 <p className="text-xs text-stone-500">
                   {otpStep === 1 
-                    ? "Enter the phone number registered for this trip to receive a mock verification code." 
-                    : "Enter the 6-digit OTP code sent to your phone."}
+                    ? "Enter the email address registered for this trip to receive a verification code." 
+                    : "Enter the 6-digit OTP code sent to your email."}
                 </p>
               </div>
 
@@ -747,14 +750,14 @@ export default function TripMemoryDetailPage() {
                 <form onSubmit={handleRequestOtp} className="space-y-4 pt-2">
                   <div className="space-y-1">
                     <label className="text-[10px] uppercase tracking-wider text-stone-500 block font-bold">
-                      Phone Number
+                      Email Address
                     </label>
                     <input
-                      type="tel"
+                      type="email"
                       required
-                      placeholder="e.g. 9876543210"
-                      value={phoneInput}
-                      onChange={(e) => setPhoneInput(e.target.value)}
+                      placeholder="e.g. travel@wearesoloz.com"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
                       className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm text-stone-900 focus:bg-white focus:outline-none focus:border-stone-400 transition"
                     />
                   </div>

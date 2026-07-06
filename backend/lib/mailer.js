@@ -139,6 +139,24 @@ async function sendEmailChangeOtp(email, otpCode) {
   return sendResendEmail({ to: email, subject, text, html });
 }
 
+async function sendTripMemoryOtpEmail(email, name, destination, otpCode) {
+  const subject = `Your WeAreSoloz Verification Code for ${destination}`;
+  const title = `Trip Scrapbook Verification`;
+  const content = `
+    Hi ${name},<br><br>
+    Use the following One-Time Password (OTP) to verify your participation on the completed trip <strong>${destination}</strong> and contribute to the digital scrapbook:<br><br>
+    <div style="text-align: center; margin: 20px 0;">
+      <h2 style="letter-spacing: 4px; font-size: 32px; color: #ea580c; font-family: monospace; background: #f9f9f9; padding: 12px; display: inline-block; border-radius: 8px; border: 1px solid #eee; margin: 0;">${otpCode}</h2>
+    </div>
+    This code is valid for <strong>5 minutes</strong>.<br><br>
+    If you did not request this code, you can safely ignore this email.
+  `;
+  const html = wrapPremiumEmail(title, content);
+  const text = `Hi ${name}, your verification code for the trip scrapbook "${destination}" is: ${otpCode}. It is valid for 5 minutes.`;
+
+  return sendResendEmail({ to: email, subject, text, html });
+}
+
 async function sendEmailChangeInitiatedAlert(oldEmail, newEmail) {
   const subject = "Security Alert: Admin Email Change Initiated";
   const title = "Security Alert: Email Change Initiated";
@@ -624,5 +642,6 @@ module.exports = {
   sendContactStatusEmail,
   sendContactApprovalEmail,
   sendFarmerRejectionEmail,
-  sendCareerRejectionEmail
+  sendCareerRejectionEmail,
+  sendTripMemoryOtpEmail
 };
