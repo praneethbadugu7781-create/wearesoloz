@@ -159,6 +159,7 @@ export default function HomeClient({
   // Testimonials State
   const [allTestimonials, setAllTestimonials] = useState(testimonials);
   const [showWriteReview, setShowWriteReview] = useState(false);
+  const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
 
   const handleNewReview = (newReview: any) => {
     setAllTestimonials([newReview, ...allTestimonials]);
@@ -452,37 +453,57 @@ export default function HomeClient({
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  className="h-full"
                 >
-                  <Card3D maxRotate={5} scale={1.01} className="h-full">
-                    <div className="bg-white rounded-2xl p-6 sm:p-8 border border-stone-200 shadow-sm h-full flex flex-col justify-between">
-                      <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <Quote className="w-7 h-7 text-soloz-primary" />
-                          <div className="flex items-center gap-0.5">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Star
-                                key={i}
-                                size={14}
-                                className={i < (t.rating || 5) ? "fill-amber-400 text-amber-400" : "text-stone-200"}
-                              />
-                            ))}
-                          </div>
+                  <div className="bg-white rounded-2xl p-6 sm:p-8 border border-stone-200 shadow-sm h-full flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <Quote className="w-7 h-7 text-soloz-primary" />
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star
+                              key={i}
+                              size={14}
+                              className={i < (t.rating || 5) ? "fill-amber-400 text-amber-400" : "text-stone-200"}
+                            />
+                          ))}
                         </div>
-                        <p className="font-display text-lg sm:text-xl font-light leading-relaxed text-stone-900">
-                          {(t.quote || t.message || "").length > 180 
-                            ? (t.quote || t.message || "").slice(0, 180) + "..." 
-                            : (t.quote || t.message || "")}
-                        </p>
                       </div>
-                      <div className="flex items-center gap-3 mt-6">
-                        {t.avatar && <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover" />}
-                        <div>
-                          <div className="font-medium text-stone-900">{t.name}</div>
-                          <div className="text-xs text-soloz-textMuted">{t.location || t.role}</div>
-                        </div>
+                      <p className="font-display text-lg sm:text-xl font-light leading-relaxed text-stone-900">
+                        {(() => {
+                          const isExpanded = !!expandedCards[t._id || t.name];
+                          const rawText = t.quote || t.message || "";
+                          const shouldTruncate = rawText.length > 180;
+                          const displayText = shouldTruncate && !isExpanded ? rawText.slice(0, 180) + "..." : rawText;
+                          return (
+                            <>
+                              {displayText}
+                              {shouldTruncate && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setExpandedCards({ ...expandedCards, [t._id || t.name]: !isExpanded });
+                                  }}
+                                  className="ml-1 text-xs font-semibold text-[#ea580c] hover:underline uppercase tracking-wider block mt-2 text-left"
+                                >
+                                  {isExpanded ? "Collapse Review" : "Click to see full review"}
+                                </button>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 mt-6 border-t border-stone-100 pt-4">
+                      {t.avatar && <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover border border-stone-200" />}
+                      <div>
+                        <div className="font-semibold text-sm text-stone-900 leading-none">{t.name}</div>
+                        <div className="text-[10px] text-soloz-textMuted mt-1 font-medium">{t.location || t.role}</div>
                       </div>
                     </div>
-                  </Card3D>
+                  </div>
                 </motion.div>
               ))}
             </div>
