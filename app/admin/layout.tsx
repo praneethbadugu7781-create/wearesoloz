@@ -18,13 +18,15 @@ import {
   X,
   Briefcase,
   HeartHandshake,
-  Video
+  Video,
+  Camera
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/trips", label: "Trips", icon: Compass },
+  { href: "/admin/trip-memories", label: "Trip Memories", icon: Camera },
   { href: "/admin/destinations", label: "Destinations", icon: MapPin },
   { href: "/admin/blogs", label: "Stories", icon: BookOpen },
   { href: "/admin/gallery", label: "Gallery", icon: ImageIcon },

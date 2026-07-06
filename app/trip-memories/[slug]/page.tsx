@@ -291,7 +291,7 @@ export default function TripMemoryDetailPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setTrip({ ...trip, comments: [...trip.comments, data] });
+        setTrip({ ...trip, comments: [...(trip.comments || []), data] });
         setTripComment("");
       }
     } catch (err) {
@@ -642,27 +642,27 @@ export default function TripMemoryDetailPage() {
               <button
                 onClick={handleLikeTrip}
                 className={`flex items-center gap-1 text-xs font-bold uppercase tracking-wider transition-colors ${
-                  verifiedPhone && trip.likes.includes(verifiedPhone) ? "text-rose-500" : "text-stone-500 hover:text-rose-500"
+                  verifiedPhone && (trip.likes || []).includes(verifiedPhone) ? "text-rose-500" : "text-stone-500 hover:text-rose-500"
                 }`}
               >
-                <Heart className={`w-3.5 h-3.5 ${verifiedPhone && trip.likes.includes(verifiedPhone) ? "fill-rose-500" : ""}`} /> 
-                {trip.likes.length} Likes
+                <Heart className={`w-3.5 h-3.5 ${verifiedPhone && (trip.likes || []).includes(verifiedPhone) ? "fill-rose-500" : ""}`} /> 
+                {(trip.likes || []).length} Likes
               </button>
             </div>
 
             {/* Overall Trip Comments Timeline */}
             <div className="space-y-4">
               <h4 className="text-[10px] uppercase tracking-wider text-stone-500 font-bold flex items-center gap-1">
-                <MessageSquare className="w-3.5 h-3.5" /> Comments ({trip.comments.length})
+                <MessageSquare className="w-3.5 h-3.5" /> Comments ({(trip.comments || []).length})
               </h4>
               
-              {trip.comments.length === 0 ? (
+              {(trip.comments || []).length === 0 ? (
                 <div className="text-xs text-stone-400 italic py-4 text-center">
                   No comments yet. Leave a note!
                 </div>
               ) : (
                 <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                  {trip.comments.map((comm, idx) => (
+                  {(trip.comments || []).map((comm, idx) => (
                     <div key={idx} className="text-xs space-y-0.5 border-b border-stone-100 pb-2 last:border-0 last:pb-0">
                       <div className="flex items-center gap-2 justify-between">
                         <span className="font-bold text-stone-900">{comm.authorName}</span>
