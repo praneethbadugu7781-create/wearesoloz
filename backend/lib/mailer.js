@@ -55,6 +55,7 @@ async function sendResendEmail({ to, subject, text, html }) {
 
 async function sendContactEmail(contactData) {
   const adminEmail = await getAdminEmail();
+  const recipients = Array.from(new Set([adminEmail, "wearesoloz@gmail.com"].filter(Boolean))).join(", ");
   
   const subject = `New Contact/Booking Enquiry from ${contactData.fullName}`;
   const title = "New Enquiry Received";
@@ -74,11 +75,12 @@ async function sendContactEmail(contactData) {
   const html = wrapPremiumEmail(title, content, "Open Admin Console", "https://wearesoloz.com/admin/enquiries");
   const text = `New Enquiry from ${contactData.fullName} (${contactData.mobile}) regarding ${contactData.destination || "General / Other"}. Message: ${contactData.message}`;
 
-  return sendResendEmail({ to: adminEmail, subject, text, html });
+  return sendResendEmail({ to: recipients, subject, text, html });
 }
 
 async function sendCareerEmail(careerData) {
   const adminEmail = await getAdminEmail();
+  const recipients = Array.from(new Set([adminEmail, "wearesoloz@gmail.com"].filter(Boolean))).join(", ");
 
   const subject = `New Careers Application from ${careerData.fullName}`;
   const title = "New Careers Application Received";
@@ -102,7 +104,7 @@ async function sendCareerEmail(careerData) {
   const html = wrapPremiumEmail(title, content, "Open Admin Console", "https://wearesoloz.com/admin/careers");
   const text = `New Careers Application from ${careerData.fullName} (${careerData.mobile}). Experience: ${careerData.experience}`;
 
-  return sendResendEmail({ to: adminEmail, subject, text, html });
+  return sendResendEmail({ to: recipients, subject, text, html });
 }
 
 async function sendOtpEmail(email, otpCode) {
@@ -217,6 +219,7 @@ async function sendEmailChangeCompletedAlert(oldEmail, newEmail) {
 
 async function sendFarmerApplicationEmail(farmerData) {
   const adminEmail = await getAdminEmail();
+  const recipients = Array.from(new Set([adminEmail, "wearesoloz@gmail.com"].filter(Boolean))).join(", ");
 
   const subject = `New Farmer Free Trip Application from ${farmerData.fullName}`;
   const title = "New Farmer Free-Trip Application Received";
@@ -239,7 +242,7 @@ async function sendFarmerApplicationEmail(farmerData) {
   const html = wrapPremiumEmail(title, content, "Open Admin Console", "https://wearesoloz.com/admin/farmers");
   const text = `New Farmer Application from ${farmerData.fullName} (${farmerData.mobile}) from ${farmerData.district}, ${farmerData.state}`;
 
-  return sendResendEmail({ to: adminEmail, subject, text, html });
+  return sendResendEmail({ to: recipients, subject, text, html });
 }
 
 function wrapPremiumEmail(title, content, ctaText = null, ctaUrl = null) {
@@ -582,8 +585,10 @@ async function sendContactApprovalEmail(contactData) {
   // Send to Customer
   const customerSent = await sendResendEmail({ to: contactData.email, subject, text, html });
 
-  // Send copy/detailed notification to Admin
+  // Send copy/detailed notification to Admin & Client
   const adminEmail = await getAdminEmail();
+  const recipients = Array.from(new Set([adminEmail, "wearesoloz@gmail.com"].filter(Boolean))).join(", ");
+  
   const adminSubject = `[Admin Notification] Booking Approved: ${contactData.fullName} - ${contactData.destination || "General/Other Trips"}`;
   const adminTitle = "Booking Approved & Confirmed";
   const adminContent = `
@@ -621,7 +626,7 @@ async function sendContactApprovalEmail(contactData) {
   const adminHtml = wrapPremiumEmail(adminTitle, adminContent, "Open Admin Console", "https://wearesoloz.com/admin/enquiries");
   const adminText = `Booking approved for ${contactData.fullName} regarding ${contactData.destination || "General/Other Trips"}. Price: ${contactData.pricePoints || "N/A"}.`;
   
-  const adminSent = await sendResendEmail({ to: adminEmail, subject: adminSubject, text: adminText, html: adminHtml });
+  const adminSent = await sendResendEmail({ to: recipients, subject: adminSubject, text: adminText, html: adminHtml });
 
   return customerSent && adminSent;
 }
