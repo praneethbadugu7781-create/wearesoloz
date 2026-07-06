@@ -345,7 +345,6 @@ export default function HomeClient({
           <motion.div {...stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {localizedWHY.map((w) => (
               <motion.div key={w.title} variants={item}>
-                <Card3D maxRotate={7} scale={1.02} className="h-full">
                   <div className="bg-white/80 border border-stone-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)] backdrop-blur-md rounded-2xl p-6 md:p-8 hover-lift hover:shadow-md hover:border-orange-500/20 transition-all duration-300 h-full">
                     <div className="w-12 h-12 rounded-full bg-soloz-primary/10 border border-soloz-primary/20 flex items-center justify-center mb-5">
                       <w.icon className="w-5 h-5 text-soloz-primary" />
@@ -353,7 +352,6 @@ export default function HomeClient({
                     <div className="font-display text-xl font-semibold text-stone-900">{w.title}</div>
                     <div className="text-sm text-stone-600 mt-2 leading-relaxed font-body">{w.text}</div>
                   </div>
-                </Card3D>
               </motion.div>
             ))}
           </motion.div>
@@ -806,50 +804,57 @@ export default function HomeClient({
 
 export function TripCard({ trip, showDate = false }: { trip: any; showDate?: boolean }) {
   const tripSlug = trip.slug || trip.destination?.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const isTripCompleted = trip.date && new Date(trip.date).getTime() < new Date().setHours(0, 0, 0, 0);
+  
   return (
     <Link href={`/upcoming-trips/${tripSlug}`} data-testid={`trip-card-${trip.id || trip._id}`} className="block group h-full">
-      <Card3D maxRotate={6} scale={1.02} className="h-full">
-        <div className="bg-white rounded-2xl overflow-hidden border border-stone-200/80 shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col justify-between">
-          <div>
-            <div className="relative aspect-[4/3] overflow-hidden">
-              <img
-                src={getOptimizedImageUrl(trip.image || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80", 600)}
-                alt={trip.title || trip.destination}
-                loading="lazy"
-                className="w-full h-full object-cover image-zoom"
-              />
-              {trip.date && (showDate || trip.destination?.toLowerCase().includes("sabarimala")) && (
-                <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-white/90 backdrop-blur-md border border-stone-200 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[10px] uppercase tracking-widest text-stone-900 font-semibold">
-                  {trip.destination?.toLowerCase().includes("sabarimala")
-                    ? "Every Month"
-                    : new Date(trip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                </div>
-              )}
-              {trip.state?.toLowerCase() === "sri lanka" && (
-                <div className="absolute top-2 right-2 md:top-4 md:right-4 bg-[#ea580c] border border-orange-500 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[9px] uppercase tracking-widest text-white font-extrabold shadow-md animate-pulse">
-                  Budget <span className="hidden sm:inline">International</span><span className="sm:hidden">Intl</span>
-                </div>
-              )}
-            </div>
-            <div className="p-3 md:p-6">
-              <div className="flex items-center justify-between gap-1.5 text-[8px] md:text-[10px] uppercase font-semibold">
-                <span className="tracking-[0.1em] md:tracking-[0.2em] text-[#ea580c] truncate max-w-[60%] sm:max-w-none">{trip.destination}</span>
-                <span className="tracking-wider text-stone-500 bg-stone-100/80 rounded-md px-1 md:px-1.5 py-0.5 scale-90 md:scale-100 origin-right shrink-0">{trip.category || "Adventure"}</span>
+      <div className="bg-white rounded-2xl overflow-hidden border border-stone-200/80 shadow-sm hover:shadow-md hover:border-stone-300 hover:-translate-y-0.5 transition-all duration-300 h-full flex flex-col justify-between">
+        <div>
+          <div className="relative aspect-[4/3] overflow-hidden">
+            <img
+              src={getOptimizedImageUrl(trip.image || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80", 600)}
+              alt={trip.title || trip.destination}
+              loading="lazy"
+              className="w-full h-full object-cover image-zoom"
+            />
+            {trip.date && (showDate || trip.destination?.toLowerCase().includes("sabarimala")) && (
+              <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-white/90 backdrop-blur-md border border-stone-200 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[10px] uppercase tracking-widest text-stone-900 font-semibold">
+                {trip.destination?.toLowerCase().includes("sabarimala")
+                  ? "Every Month"
+                  : new Date(trip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               </div>
-              <div className="font-display text-sm md:text-xl font-medium mt-1 md:mt-2 text-stone-900 truncate">{trip.title || `${trip.destination} Expedition`}</div>
-              <div className="flex items-center gap-2 md:gap-4 mt-2 md:mt-4 text-[10px] md:text-xs text-stone-600">
-                {trip.duration && <span className="inline-flex items-center gap-0.5 md:gap-1"><Clock className="w-3 h-3 text-stone-500 shrink-0" /> {trip.duration}</span>}
+            )}
+            {trip.state?.toLowerCase() === "sri lanka" && (
+              <div className="absolute top-2 right-2 md:top-4 md:right-4 bg-[#ea580c] border border-orange-500 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[9px] uppercase tracking-widest text-white font-extrabold shadow-md animate-pulse">
+                Budget <span className="hidden sm:inline">International</span><span className="sm:hidden">Intl</span>
               </div>
-            </div>
+            )}
+            {isTripCompleted && (
+              <div className="absolute inset-0 bg-stone-900/35 backdrop-blur-[0.5px] flex items-center justify-center">
+                <span className="bg-red-600/90 text-white border border-red-500/50 rounded-full px-4 py-1.5 text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-extrabold shadow-lg">
+                  Completed
+                </span>
+              </div>
+            )}
           </div>
-          <div className="p-3 md:p-6 pt-0">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-3 pt-3 md:mt-5 md:pt-4 border-t border-stone-100 gap-1 sm:gap-2">
-              <div className="text-[10px] md:text-sm font-semibold text-stone-500">Contact for Price</div>
-              <div className="text-[10px] md:text-xs text-soloz-primary inline-flex items-center gap-0.5 md:gap-1 font-bold group-hover:text-orange-600 transition-colors">Join trip <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" /></div>
+          <div className="p-3 md:p-6">
+            <div className="flex items-center justify-between gap-1.5 text-[8px] md:text-[10px] uppercase font-semibold">
+              <span className="tracking-[0.1em] md:tracking-[0.2em] text-[#ea580c] truncate max-w-[60%] sm:max-w-none">{trip.destination}</span>
+              <span className="tracking-wider text-stone-500 bg-stone-100/80 rounded-md px-1 md:px-1.5 py-0.5 scale-90 md:scale-100 origin-right shrink-0">{trip.category || "Adventure"}</span>
+            </div>
+            <div className="font-display text-sm md:text-xl font-medium mt-1 md:mt-2 text-stone-900 truncate">{trip.title || `${trip.destination} Expedition`}</div>
+            <div className="flex items-center gap-2 md:gap-4 mt-2 md:mt-4 text-[10px] md:text-xs text-stone-600">
+              {trip.duration && <span className="inline-flex items-center gap-0.5 md:gap-1"><Clock className="w-3 h-3 text-stone-500 shrink-0" /> {trip.duration}</span>}
             </div>
           </div>
         </div>
-      </Card3D>
+        <div className="p-3 md:p-6 pt-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-3 pt-3 md:mt-5 md:pt-4 border-t border-stone-100 gap-1 sm:gap-2">
+            <div className="text-[10px] md:text-sm font-semibold text-stone-500">Contact for Price</div>
+            <div className="text-[10px] md:text-xs text-soloz-primary inline-flex items-center gap-0.5 md:gap-1 font-bold group-hover:text-orange-600 transition-colors">Join trip <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" /></div>
+          </div>
+        </div>
+      </div>
     </Link>
   );
 }
