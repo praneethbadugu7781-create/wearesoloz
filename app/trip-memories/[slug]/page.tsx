@@ -22,7 +22,10 @@ import {
   Lock,
   ArrowLeft,
   X,
-  Compass
+  Compass,
+  Play,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -96,6 +99,11 @@ export default function TripMemoryDetailPage() {
   const [verifiedToken, setVerifiedToken] = useState<string | null>(null);
   const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
   const [verifiedName, setVerifiedName] = useState<string | null>(null);
+
+  // Lightbox state
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxMediaIndex, setLightboxMediaIndex] = useState(0);
+  const [lightboxMediaList, setLightboxMediaList] = useState<{ url: string; authorName: string; text: string; date: string }[]>([]);
 
   // New post creation
   const [showPostModal, setShowPostModal] = useState(false);
@@ -372,6 +380,41 @@ export default function TripMemoryDetailPage() {
     }
   };
 
+  const isVideo = (url: string) => {
+    if (!url) return false;
+    const cleanUrl = url.split("?")[0].toLowerCase();
+    return (
+      cleanUrl.endsWith(".mp4") ||
+      cleanUrl.endsWith(".webm") ||
+      cleanUrl.endsWith(".ogg") ||
+      cleanUrl.endsWith(".mov") ||
+      url.includes("/video/upload/")
+    );
+  };
+
+  const openLightbox = (url: string) => {
+    const mediaList: { url: string; authorName: string; text: string; date: string }[] = [];
+    posts.forEach(post => {
+      if (post.photos) {
+        post.photos.forEach(ph => {
+          mediaList.push({
+            url: ph,
+            authorName: post.authorName,
+            text: post.title || post.text,
+            date: formatDateTime(post.createdAt)
+          });
+        });
+      }
+    });
+
+    const index = mediaList.findIndex(item => item.url === url);
+    if (index !== -1) {
+      setLightboxMediaList(mediaList);
+      setLightboxMediaIndex(index);
+      setLightboxOpen(true);
+    }
+  };
+
   // Compile all photos uploaded by travelers for the public gallery
   const allPostPhotos = posts.reduce<string[]>((acc, post) => {
     if (post.photos && post.photos.length > 0) {
@@ -529,20 +572,42 @@ export default function TripMemoryDetailPage() {
                           {post.text}
                         </p>
 
-                        {/* Post Photos Grid */}
+                        {/* Post Media Grid */}
                         {post.photos && post.photos.length > 0 && (
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-2">
-                            {post.photos.map((ph, idx) => (
-                              <div key={idx} className="relative aspect-video rounded-xl overflow-hidden bg-stone-100 border border-stone-100">
-                                <a href={ph} target="_blank" rel="noopener noreferrer">
-                                  <img 
-                                    src={getOptimizedImageUrl(ph, 400)}
-                                    alt="Travel scrap" 
-                                    className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"
-                                  />
-                                </a>
-                              </div>
-                            ))}
+                            {post.photos.map((ph, idx) => {
+                              const isVid = isVideo(ph);
+                              return (
+                                <div 
+                                  key={idx} 
+                                  onClick={() => openLightbox(ph)}
+                                  className="relative aspect-video rounded-xl overflow-hidden bg-stone-100 border border-stone-200/50 cursor-pointer group shadow-sm select-none"
+                                >
+                                  {isVid ? (
+                                    <div className="relative w-full h-full">
+                                      <video 
+                                        src={ph}
+                                        className="object-cover w-full h-full pointer-events-none"
+                                        muted
+                                        playsInline
+                                      />
+                                      {/* Play overlay button */}
+                                      <div className="absolute inset-0 bg-black/10 flex items-center justify-center group-hover:bg-black/35 transition-colors">
+                                        <div className="size-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 transition transform group-hover:scale-110 shadow-md">
+                                          <Play className="w-3.5 h-3.5 fill-white ml-0.5" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <img 
+                                      src={getOptimizedImageUrl(ph, 400)}
+                                      alt="Travel scrap" 
+                                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
@@ -616,22 +681,43 @@ export default function TripMemoryDetailPage() {
             </h3>
             {allPostPhotos.length === 0 ? (
               <div className="text-xs text-stone-400 italic py-6 text-center">
-                No photos uploaded by travelers yet.
+                No photos or videos uploaded by travelers yet.
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-2">
-                {allPostPhotos.slice(0, 12).map((pic, idx) => (
-                  <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-stone-100 border border-stone-100">
-                    <a href={pic} target="_blank" rel="noopener noreferrer">
-                      <img 
-                        src={getOptimizedImageUrl(pic, 250)}
-                        alt="Scrapbook snapshot"
-                        className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                    </a>
-                  </div>
-                ))}
+                {allPostPhotos.slice(0, 12).map((pic, idx) => {
+                  const isVid = isVideo(pic);
+                  return (
+                    <div 
+                      key={idx} 
+                      onClick={() => openLightbox(pic)}
+                      className="relative aspect-square rounded-lg overflow-hidden bg-stone-100 border border-stone-200/50 cursor-pointer group shadow-sm select-none"
+                    >
+                      {isVid ? (
+                        <div className="relative w-full h-full">
+                          <video 
+                            src={pic}
+                            className="object-cover w-full h-full pointer-events-none"
+                            muted
+                            playsInline
+                          />
+                          <div className="absolute inset-0 bg-black/10 flex items-center justify-center group-hover:bg-black/35 transition-colors">
+                            <div className="size-6 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 transition transform group-hover:scale-110 shadow-sm">
+                              <Play className="w-2.5 h-2.5 fill-white ml-0.5" />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <img 
+                          src={getOptimizedImageUrl(pic, 250)}
+                          alt="Scrapbook snapshot"
+                          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -864,25 +950,32 @@ export default function TripMemoryDetailPage() {
                   />
                 </div>
 
-                {/* Upload Photos Section */}
+                {/* Upload Photos or Videos Section */}
                 <div className="space-y-2">
                   <label className="text-[10px] uppercase tracking-wider text-stone-500 block font-bold">
-                    Attach Photos ({newPhotos.length} Added)
+                    Attach Photos or Videos ({newPhotos.length} Added)
                   </label>
                   {newPhotos.length > 0 && (
                     <div className="grid grid-cols-3 gap-2 pb-2">
-                      {newPhotos.map((url, idx) => (
-                        <div key={idx} className="relative aspect-video rounded-lg overflow-hidden border border-stone-200 bg-stone-55">
-                          <img src={url} alt="Thumbnail preview" className="object-cover w-full h-full" />
-                          <button
-                            type="button"
-                            onClick={() => setNewPhotos(newPhotos.filter((_, i) => i !== idx))}
-                            className="absolute right-1 top-1 grid size-5 place-items-center rounded-full bg-red-500 text-white"
-                          >
-                            <X size={10} />
-                          </button>
-                        </div>
-                      ))}
+                      {newPhotos.map((url, idx) => {
+                        const isVid = isVideo(url);
+                        return (
+                          <div key={idx} className="relative aspect-video rounded-lg overflow-hidden border border-stone-200 bg-stone-50 flex items-center justify-center">
+                            {isVid ? (
+                              <video src={url} className="object-cover w-full h-full" muted />
+                            ) : (
+                              <img src={url} alt="Thumbnail preview" className="object-cover w-full h-full" />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setNewPhotos(newPhotos.filter((_, i) => i !== idx))}
+                              className="absolute right-1 top-1 grid size-5 place-items-center rounded-full bg-red-500 text-white"
+                            >
+                              <X size={10} />
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
 
@@ -892,7 +985,8 @@ export default function TripMemoryDetailPage() {
                       onChange={(url) => {
                         if (url) setNewPhotos([...newPhotos, url]);
                       }}
-                      label="Upload Trip Image"
+                      accept="image/*,video/*"
+                      label="Upload Trip Media (Image or Video)"
                     />
                   )}
                 </div>
@@ -916,6 +1010,104 @@ export default function TripMemoryDetailPage() {
                 </div>
               </form>
             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Cinematic Lightbox Modal */}
+      <AnimatePresence>
+        {lightboxOpen && lightboxMediaList.length > 0 && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
+            <button
+              onClick={() => setLightboxOpen(false)}
+              className="absolute right-6 top-6 text-white/70 hover:text-white transition-colors z-50 bg-white/10 hover:bg-white/20 p-2 rounded-full backdrop-blur-md"
+            >
+              <X size={20} />
+            </button>
+
+            {/* Previous Button */}
+            {lightboxMediaList.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxMediaIndex((prev) => (prev === 0 ? lightboxMediaList.length - 1 : prev - 1));
+                }}
+                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-50 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-md transition-colors"
+              >
+                <ChevronLeft size={24} />
+              </button>
+            )}
+
+            {/* Next Button */}
+            {lightboxMediaList.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxMediaIndex((prev) => (prev === lightboxMediaList.length - 1 ? 0 : prev + 1));
+                }}
+                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-md transition-colors"
+              >
+                <ChevronRight size={24} />
+              </button>
+            )}
+
+            {/* Media Content Wrapper */}
+            <div 
+              className="w-full max-w-5xl h-[80vh] flex flex-col md:flex-row rounded-2xl overflow-hidden bg-stone-900 border border-white/10 shadow-2xl relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Left Column: Media Display */}
+              <div className="flex-1 bg-black flex items-center justify-center relative group min-h-[40vh] md:min-h-0">
+                {isVideo(lightboxMediaList[lightboxMediaIndex].url) ? (
+                  <video
+                    key={lightboxMediaList[lightboxMediaIndex].url}
+                    src={lightboxMediaList[lightboxMediaIndex].url}
+                    controls
+                    autoPlay
+                    playsInline
+                    className="max-w-full max-h-[75vh] object-contain"
+                  />
+                ) : (
+                  <img
+                    src={lightboxMediaList[lightboxMediaIndex].url}
+                    alt="Lightbox media preview"
+                    className="max-w-full max-h-[75vh] object-contain select-none"
+                  />
+                )}
+              </div>
+
+              {/* Right Column: Author Info & Story Description */}
+              <div className="w-full md:w-80 bg-stone-950 p-6 flex flex-col justify-between text-white shrink-0 border-t md:border-t-0 md:border-l border-white/10">
+                <div className="space-y-4 overflow-y-auto max-h-[25vh] md:max-h-full">
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-full bg-orange-600 flex items-center justify-center text-xs font-bold text-white uppercase select-none">
+                      {lightboxMediaList[lightboxMediaIndex].authorName.slice(0, 2)}
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-white leading-tight">
+                        {lightboxMediaList[lightboxMediaIndex].authorName}
+                      </div>
+                      <div className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider">
+                        {lightboxMediaList[lightboxMediaIndex].date}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-white/10 pt-4 space-y-2">
+                    <h5 className="text-[10px] uppercase tracking-wider text-orange-400 font-bold">Memory Share</h5>
+                    <p className="text-xs text-stone-300 leading-relaxed font-body whitespace-pre-line">
+                      {lightboxMediaList[lightboxMediaIndex].text}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 border-t border-white/10 pt-4 flex items-center justify-between text-[10px] text-stone-500 font-bold uppercase tracking-wider">
+                  <span>WeAreSoloz Scrapbook</span>
+                  <span>{lightboxMediaIndex + 1} of {lightboxMediaList.length}</span>
+                </div>
+              </div>
+
+            </div>
           </div>
         )}
       </AnimatePresence>
