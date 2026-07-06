@@ -10,6 +10,8 @@ const Contact = require("../models/Contact");
 const SiteSetting = require("../models/SiteSetting");
 const Career = require("../models/Career");
 const Farmer = require("../models/Farmer");
+const jwt = require("jsonwebtoken");
+const MemoryPost = require("../models/MemoryPost");
 
 const router = express.Router();
 
@@ -389,6 +391,299 @@ router.post("/upload/signature-public", (req, res) => {
   } catch (error) {
     console.error("Public upload signature error:", error);
     res.status(500).json({ error: "Failed to generate signature" });
+  }
+});
+
+// --- Trip Memories scrapbook APIs ---
+
+const otps = new Map();
+
+// OTP Request
+router.post("/memories/otp/request", async (req, res) => {
+  try {
+    const { tripId, phone } = req.body;
+    if (!tripId || !phone) {
+      return res.status(400).json({ error: "Trip ID and phone number are required" });
+    }
+
+    await connectDB();
+    const trip = await Trip.findById(tripId);
+    if (!trip) {
+      return res.status(404).json({ error: "Trip not found" });
+    }
+
+    const cleanedInputPhone = phone.trim().replace(/[\s-()]/g, "");
+
+    const participant = trip.participants.find(p => {
+      const cleanedPartPhone = p.phone.trim().replace(/[\s-()]/g, "");
+      return cleanedPartPhone === cleanedInputPhone || cleanedPartPhone.endsWith(cleanedInputPhone) || cleanedInputPhone.endsWith(cleanedPartPhone);
+    });
+
+    if (!participant) {
+      return res.status(400).json({ error: "This phone number is not registered as a participant for this trip." });
+    }
+
+    const otp = "123456";
+    const expiresAt = Date.now() + 5 * 60 * 1000;
+    otps.set(`${cleanedInputPhone}_${tripId}`, { otp, expiresAt, name: participant.name });
+
+    console.log(`\n[OTP VERIFICATION] code for participant ${participant.name} (${phone}) on trip ${trip.destination}: ${otp}\n`);
+
+    res.json({
+      success: true,
+      message: "OTP sent successfully. (For testing, use code: 123456)",
+      devOtp: otp
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// OTP Verify
+router.post("/memories/otp/verify", async (req, res) => {
+  try {
+    const { tripId, phone, otp } = req.body;
+    if (!tripId || !phone || !otp) {
+      return res.status(400).json({ error: "Trip ID, phone, and OTP are required" });
+    }
+
+    const cleanedPhone = phone.trim().replace(/[\s-()]/g, "");
+    const otpRecord = otps.get(`${cleanedPhone}_${tripId}`);
+
+    if (!otpRecord) {
+      return res.status(400).json({ error: "No verification request found for this phone number" });
+    }
+
+    if (Date.now() > otpRecord.expiresAt) {
+      otps.delete(`${cleanedPhone}_${tripId}`);
+      return res.status(400).json({ error: "OTP has expired. Please request a new one." });
+    }
+
+    if (otpRecord.otp !== otp.trim()) {
+      return res.status(400).json({ error: "Invalid verification code. Please try again." });
+    }
+
+    const token = jwt.sign(
+      { tripId, phone: cleanedPhone, name: otpRecord.name, role: "participant" },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
+    otps.delete(`${cleanedPhone}_${tripId}`);
+
+    res.json({
+      success: true,
+      token,
+      name: otpRecord.name,
+      phone: cleanedPhone
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get Completed Trips
+router.get("/memories/completed-trips", async (req, res) => {
+  try {
+    await connectDB();
+    const trips = await Trip.find({
+      date: { $lt: new Date() },
+      status: "published"
+    }).sort({ date: -1 }).lean();
+
+    const tripsWithCounts = await Promise.all(trips.map(async (trip) => {
+      const posts = await MemoryPost.find({ tripId: trip._id }).lean();
+      const memoriesCount = posts.length;
+      const photosCount = posts.reduce((sum, p) => sum + (p.photos?.length || 0), 0);
+      return {
+        ...trip,
+        memoriesCount,
+        photosCount
+      };
+    }));
+
+    res.json(tripsWithCounts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get Traveler Memory Posts for a Trip
+router.get("/memories/trips/:tripId/posts", async (req, res) => {
+  try {
+    await connectDB();
+    const posts = await MemoryPost.find({ tripId: req.params.tripId })
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Helper Middleware for checking Participant JWT
+const verifyParticipantToken = (req, res, next) => {
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Access denied. Verification token required" });
+  }
+  const token = header.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== "participant") {
+      return res.status(403).json({ error: "Invalid role inside session token" });
+    }
+    req.participant = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: "Session expired, please re-verify" });
+  }
+};
+
+// Create traveler memory post
+router.post("/memories/posts", verifyParticipantToken, async (req, res) => {
+  try {
+    const { tripId, title, text, photos } = req.body;
+    if (!tripId || !text) {
+      return res.status(400).json({ error: "Trip ID and memory text are required" });
+    }
+
+    if (req.participant.tripId !== tripId) {
+      return res.status(403).json({ error: "Forbidden. Verified trip mismatch" });
+    }
+
+    await connectDB();
+    const post = await MemoryPost.create({
+      tripId,
+      title: title || "",
+      text,
+      photos: photos || [],
+      authorName: req.participant.name,
+      authorPhone: req.participant.phone,
+      likes: [],
+      comments: []
+    });
+
+    res.status(201).json(post);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Toggle Like on Post
+router.post("/memories/posts/:postId/like", verifyParticipantToken, async (req, res) => {
+  try {
+    const { tripId } = req.body;
+    if (req.participant.tripId !== tripId) {
+      return res.status(403).json({ error: "Forbidden. Verified trip mismatch" });
+    }
+
+    await connectDB();
+    const post = await MemoryPost.findById(req.params.postId);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
+    const phone = req.participant.phone;
+    const index = post.likes.indexOf(phone);
+
+    if (index === -1) {
+      post.likes.push(phone);
+    } else {
+      post.likes.splice(index, 1);
+    }
+
+    await post.save();
+    res.json({ success: true, likes: post.likes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Add Comment on Post
+router.post("/memories/posts/:postId/comment", verifyParticipantToken, async (req, res) => {
+  try {
+    const { tripId, text } = req.body;
+    if (!text || text.trim() === "") {
+      return res.status(400).json({ error: "Comment text is required" });
+    }
+    if (req.participant.tripId !== tripId) {
+      return res.status(403).json({ error: "Forbidden. Verified trip mismatch" });
+    }
+
+    await connectDB();
+    const post = await MemoryPost.findById(req.params.postId);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
+    const newComment = {
+      authorName: req.participant.name,
+      authorPhone: req.participant.phone,
+      text: text.trim(),
+      createdAt: new Date()
+    };
+
+    post.comments.push(newComment);
+    await post.save();
+
+    res.status(201).json(newComment);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Toggle Like on Trip
+router.post("/memories/trips/:tripId/like", verifyParticipantToken, async (req, res) => {
+  try {
+    if (req.participant.tripId !== req.params.tripId) {
+      return res.status(403).json({ error: "Forbidden. Verified trip mismatch" });
+    }
+
+    await connectDB();
+    const trip = await Trip.findById(req.params.tripId);
+    if (!trip) return res.status(404).json({ error: "Trip not found" });
+
+    const phone = req.participant.phone;
+    const index = trip.likes.indexOf(phone);
+
+    if (index === -1) {
+      trip.likes.push(phone);
+    } else {
+      trip.likes.splice(index, 1);
+    }
+
+    await trip.save();
+    res.json({ success: true, likes: trip.likes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Add Comment on Trip
+router.post("/memories/trips/:tripId/comment", verifyParticipantToken, async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text || text.trim() === "") {
+      return res.status(400).json({ error: "Comment text is required" });
+    }
+    if (req.participant.tripId !== req.params.tripId) {
+      return res.status(403).json({ error: "Forbidden. Verified trip mismatch" });
+    }
+
+    await connectDB();
+    const trip = await Trip.findById(req.params.tripId);
+    if (!trip) return res.status(404).json({ error: "Trip not found" });
+
+    const newComment = {
+      authorName: req.participant.name,
+      authorPhone: req.participant.phone,
+      text: text.trim(),
+      createdAt: new Date()
+    };
+
+    trip.comments.push(newComment);
+    await trip.save();
+
+    res.status(201).json(newComment);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

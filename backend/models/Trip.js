@@ -17,6 +17,24 @@ const tripSchema = new mongoose.Schema(
     images: { type: [String], default: [] },
     featured: { type: Boolean, default: false },
     status: { type: String, enum: ["draft", "published"], default: "published" },
+    participants: {
+      type: [{
+        name: { type: String, required: true },
+        phone: { type: String, required: true }
+      }],
+      default: []
+    },
+    likes: { type: [String], default: [] },
+    comments: {
+      type: [{
+        authorName: { type: String, required: true },
+        authorPhone: { type: String, required: true },
+        text: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+      }],
+      default: []
+    },
+    recap: { type: String, default: "" }
   },
   { timestamps: true }
 );

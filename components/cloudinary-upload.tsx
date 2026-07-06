@@ -26,9 +26,13 @@ export function CloudinaryUpload({ value, onChange, label = "Upload Image" }: Cl
       // 1. Get signed configuration from our backend API
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
       const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
-      const sigRes = await fetch(`${API_URL}/admin/upload/signature`, {
+      const isPublic = !token || window.location.pathname.includes("/trip-memories");
+      const sigUrl = isPublic ? `${API_URL}/upload/signature-public` : `${API_URL}/admin/upload/signature`;
+      const headersObj: any = isPublic ? {} : (token ? { Authorization: `Bearer ${token}` } : {});
+      
+      const sigRes = await fetch(sigUrl, {
         method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers: headersObj,
       });
       if (!sigRes.ok) {
         throw new Error("Failed to get upload signature. Make sure you are logged in.");

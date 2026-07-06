@@ -14,6 +14,11 @@ interface ItineraryItem {
   description: string;
 }
 
+interface Participant {
+  name: string;
+  phone: string;
+}
+
 interface TripData {
   _id?: string;
   destination: string;
@@ -31,6 +36,8 @@ interface TripData {
   status: "draft" | "published";
   itinerary: ItineraryItem[];
   inclusions: string[];
+  participants?: Participant[];
+  recap?: string;
 }
 
 const indianStates = [
@@ -89,7 +96,9 @@ const emptyForm: TripData = {
   itinerary: [
     { day: "Day 1", title: "Arrival", description: "Arrive at pickup location." }
   ],
-  inclusions: ["Shared accommodation (AC/Non-AC)", "Transfers (AC/Non-AC)", "Breakfast & Dinner", "Tour Guide"]
+  inclusions: ["Shared accommodation (AC/Non-AC)", "Transfers (AC/Non-AC)", "Breakfast & Dinner", "Tour Guide"],
+  participants: [],
+  recap: ""
 };
 
 export default function AdminTripsPage() {
@@ -107,6 +116,9 @@ export default function AdminTripsPage() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [scheduleDate, setScheduleDate] = useState<string>("");
   const [scheduling, setScheduling] = useState(false);
+
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importText, setImportText] = useState("");
 
   useEffect(() => {
     fetchTrips();
@@ -133,12 +145,100 @@ export default function AdminTripsPage() {
     setFormData({
       ...trip,
       date: formattedDate,
-      images: trip.images || []
+      images: trip.images || [],
+      participants: trip.participants || [],
+      recap: trip.recap || ""
     });
     setEditId(trip._id || null);
     const isInter = trip.state ? !indianStates.includes(trip.state) : false;
     setIsInternational(isInter);
     setView("form");
+  };
+
+  const addParticipant = () => {
+    const current = formData.participants || [];
+    setFormData({
+      ...formData,
+      participants: [...current, { name: "", phone: "" }]
+    });
+  };
+
+  const removeParticipant = (idxToRemove: number) => {
+    const current = formData.participants || [];
+    setFormData({
+      ...formData,
+      participants: current.filter((_, idx) => idx !== idxToRemove)
+    });
+  };
+
+  const updateParticipant = (index: number, field: "name" | "phone", value: string) => {
+    const current = formData.participants || [];
+    const updated = current.map((p, idx) => {
+      if (idx === index) {
+        return { ...p, [field]: value };
+      }
+      return p;
+    });
+    setFormData({
+      ...formData,
+      participants: updated
+    });
+  };
+
+  const handleImportParticipants = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!importText.trim()) return;
+
+    const lines = importText.split("\n");
+    const parsed: Participant[] = [];
+
+    lines.forEach(line => {
+      if (!line.trim()) return;
+      let name = "";
+      let phone = "";
+
+      const separators = [" - ", " – ", " -", "- ", "-", " , ", ", ", ",", " : ", ": ", ":"];
+      let foundSeparator = false;
+
+      for (const sep of separators) {
+        if (line.includes(sep)) {
+          const parts = line.split(sep);
+          if (parts.length >= 2) {
+            name = parts[0].trim();
+            phone = parts.slice(1).join(sep).trim().replace(/[\s-()]/g, "");
+            foundSeparator = true;
+            break;
+          }
+        }
+      }
+
+      if (!foundSeparator) {
+        const phoneMatch = line.match(/\+?\d[\d\s-()]{7,14}/);
+        if (phoneMatch) {
+          phone = phoneMatch[0].trim().replace(/[\s-()]/g, "");
+          name = line.replace(phoneMatch[0], "").trim().replace(/^[-–,:\s]+|[-–,:\s]+$/g, "");
+        } else {
+          name = line.trim();
+        }
+      }
+
+      if (phone) {
+        parsed.push({ name: name || "Guest", phone });
+      }
+    });
+
+    if (parsed.length > 0) {
+      const current = formData.participants || [];
+      setFormData({
+        ...formData,
+        participants: [...current, ...parsed]
+      });
+      setImportText("");
+      setShowImportModal(false);
+      alert(`Successfully imported ${parsed.length} participants!`);
+    } else {
+      alert("Could not parse any valid phone numbers. Ensure input has names and phone numbers.");
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -795,6 +895,83 @@ export default function AdminTripsPage() {
             </div>
           </div>
 
+          {/* Trip Recap Section */}
+          <div className="space-y-4 pt-4 border-t border-white/5">
+            <div>
+              <h4 className="text-sm font-bold uppercase tracking-wider text-soloz-amber">Trip Recap</h4>
+              <p className="text-xs text-soloz-ash/60 mt-1">Written recap of this completed trip for the scrapbook page.</p>
+            </div>
+            <textarea
+              rows={3}
+              placeholder="e.g. We had an amazing time trekking through the Ananthagiri Hills! 12 travelers joined and we experienced a beautiful sunset..."
+              value={formData.recap || ""}
+              onChange={(e) => setFormData({ ...formData, recap: e.target.value })}
+              className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none resize-none"
+            />
+          </div>
+
+          {/* Participants section */}
+          <div className="space-y-4 pt-4 border-t border-white/5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold uppercase tracking-wider text-soloz-amber">Trip Participants</h4>
+                <p className="text-xs text-soloz-ash/60 mt-1">Attendees who are verified to upload/comment/react to memories.</p>
+              </div>
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => setShowImportModal(true)}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-soloz-ember hover:underline"
+                >
+                  Import List
+                </button>
+                <button
+                  type="button"
+                  onClick={addParticipant}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-soloz-ember hover:underline"
+                >
+                  + Add Attendee
+                </button>
+              </div>
+            </div>
+
+            {(formData.participants || []).length === 0 ? (
+              <div className="text-xs text-soloz-ash/40 italic p-3 border border-white/5 rounded-lg bg-black/10">
+                No participants added yet. Add participants manually or import a list so they can verify and post memories.
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {(formData.participants || []).map((part, index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Full Name (e.g. Akhil)"
+                      value={part.name}
+                      onChange={(e) => updateParticipant(index, "name", e.target.value)}
+                      className="h-10 flex-1 rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      required
+                      placeholder="Phone (e.g. 9876543210)"
+                      value={part.phone}
+                      onChange={(e) => updateParticipant(index, "phone", e.target.value)}
+                      className="h-10 flex-1 rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeParticipant(index)}
+                      className="grid size-10 shrink-0 place-items-center rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Dynamic Inclusions builder */}
           <div className="space-y-4 pt-4 border-t border-white/5">
             <div className="flex items-center justify-between">
@@ -992,6 +1169,59 @@ export default function AdminTripsPage() {
                     New from Scratch
                   </button>
                 </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Import Participants Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-xl border border-white/10 bg-[#14110d] p-6 shadow-2xl relative space-y-4">
+            <button
+              onClick={() => {
+                setShowImportModal(false);
+                setImportText("");
+              }}
+              className="absolute right-4 top-4 text-soloz-ash/60 hover:text-white transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="space-y-1">
+              <h3 className="font-display text-lg font-bold text-white">
+                Import Attendees
+              </h3>
+              <p className="text-xs text-soloz-ash/60">
+                Paste names and phone numbers. Format: One participant per line, e.g. <code className="text-soloz-amber">Name - 9876543210</code> or <code className="text-soloz-amber">Name, 9876543210</code>.
+              </p>
+            </div>
+
+            <form onSubmit={handleImportParticipants} className="space-y-4 pt-2">
+              <textarea
+                required
+                rows={8}
+                placeholder="Akhil - 9876543210&#10;Praneeth - 7330820239&#10;Rahul - 9123456789"
+                value={importText}
+                onChange={(e) => setImportText(e.target.value)}
+                className="w-full rounded-lg border border-white/10 bg-[#1a1712] p-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none resize-none font-mono"
+              />
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    setShowImportModal(false);
+                    setImportText("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  Parse & Add
+                </Button>
               </div>
             </form>
           </div>

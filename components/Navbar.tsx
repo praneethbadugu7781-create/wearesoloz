@@ -35,6 +35,7 @@ export function Navbar() {
     pathname.startsWith("/farmer-registration") ||
     pathname.startsWith("/gallery") ||
     pathname.startsWith("/contact") ||
+    pathname.startsWith("/trip-memories") ||
     pathname.startsWith("/admin");
 
   const showScrolled = scrolled || isPlainPage;
@@ -44,6 +45,7 @@ export function Navbar() {
     { href: "/upcoming-trips", labelKey: "nav_trips" },
     { href: "/soloz-community", labelKey: "nav_community" },
     { href: "/gallery", labelKey: "nav_gallery" },
+    { href: "/trip-memories", labelKey: "nav_memories" },
     { href: "/about-akhil", labelKey: "nav_about" },
     { href: "/careers", labelKey: "nav_careers" },
     { href: "/farmer-registration", labelKey: "nav_farmer_trip" },
