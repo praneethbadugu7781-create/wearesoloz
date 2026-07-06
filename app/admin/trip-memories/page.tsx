@@ -254,6 +254,36 @@ export default function AdminTripMemoriesPage() {
     e.preventDefault();
     if (!activeTrip) return;
 
+    // Auto-save pending memory card if they filled out description but forgot to click Add
+    if (newPost.text.trim()) {
+      const confirmSave = confirm("You have filled out a new memory card. Would you like to add this memory card to the trip before saving settings?");
+      if (confirmSave) {
+        const filteredPhotos = newPost.photos.filter(Boolean);
+        try {
+          const res = await fetch(`${API_URL}/admin/memories`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...getAuthHeaders()
+            },
+            body: JSON.stringify({
+              tripId: activeTrip._id,
+              title: newPost.title,
+              text: newPost.text,
+              authorName: newPost.authorName || "Admin",
+              authorEmail: newPost.authorEmail || "admin@wearesoloz.com",
+              photos: filteredPhotos
+            })
+          });
+          if (!res.ok) throw new Error("Failed to auto-create memory card.");
+          alert("Memory card added successfully!");
+        } catch (err: any) {
+          alert("Error saving pending memory card: " + err.message);
+          return; // Stop submission
+        }
+      }
+    }
+
     setSaving(true);
     try {
       const res = await fetch(`${API_URL}/admin/trips/${activeTrip._id}`, {
