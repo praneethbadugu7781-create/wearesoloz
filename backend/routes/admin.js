@@ -13,6 +13,7 @@ const SiteSetting = require("../models/SiteSetting");
 const Career = require("../models/Career");
 const Farmer = require("../models/Farmer");
 const Reel = require("../models/Reel");
+const MemoryPost = require("../models/MemoryPost");
 
 const { sendFarmerApprovalEmail, sendFarmerRejectionEmail, sendCareerReviewedEmail, sendCareerRejectionEmail, sendContactStatusEmail, sendContactApprovalEmail } = require("../lib/mailer");
 
@@ -27,6 +28,7 @@ const models = {
   careers: Career,
   farmers: Farmer,
   reels: Reel,
+  memories: MemoryPost,
 };
 
 const router = express.Router();
@@ -59,6 +61,17 @@ router.post("/upload/signature", (req, res) => {
   } catch (error) {
     console.error("Upload signature error:", error);
     res.status(500).json({ error: "Failed to generate signature" });
+  }
+});
+
+// GET /api/admin/trips/:tripId/memories
+router.get("/trips/:tripId/memories", async (req, res) => {
+  try {
+    await connectDB();
+    const records = await MemoryPost.find({ tripId: req.params.tripId }).sort({ createdAt: -1 }).lean();
+    res.json(records);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
 

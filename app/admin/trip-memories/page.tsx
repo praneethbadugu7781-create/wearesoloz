@@ -40,11 +40,21 @@ export default function AdminTripMemoriesPage() {
   const [memoryImage, setMemoryImage] = useState("");
   const [memoryCoverImage, setMemoryCoverImage] = useState("");
 
-  // Participant List Edit States
   const [recapText, setRecapText] = useState("");
   const [participantsList, setParticipantsList] = useState<Participant[]>([]);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importText, setImportText] = useState("");
+
+  // Individual Memory Posts States
+  const [memories, setMemories] = useState<any[]>([]);
+  const [loadingMemories, setLoadingMemories] = useState(false);
+  const [newPost, setNewPost] = useState({
+    title: "",
+    text: "",
+    authorName: "Admin",
+    authorEmail: "admin@wearesoloz.com",
+    photos: [""]
+  });
 
   useEffect(() => {
     fetchCompletedTrips();
@@ -65,12 +75,90 @@ export default function AdminTripMemoriesPage() {
     }
   };
 
+  const fetchTripMemories = async (tripId: string) => {
+    setLoadingMemories(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/trips/${tripId}/memories`, {
+        headers: getAuthHeaders()
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMemories(data);
+      }
+    } catch (err) {
+      console.error("Error loading memories:", err);
+    } finally {
+      setLoadingMemories(false);
+    }
+  };
+
+  const handleAddMemoryPost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeTrip) return;
+    if (!newPost.text) {
+      alert("Please enter memory description text.");
+      return;
+    }
+    const filteredPhotos = newPost.photos.filter(Boolean);
+
+    try {
+      const res = await fetch(`${API_URL}/admin/memories`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders()
+        },
+        body: JSON.stringify({
+          tripId: activeTrip._id,
+          title: newPost.title,
+          text: newPost.text,
+          authorName: newPost.authorName || "Admin",
+          authorEmail: newPost.authorEmail || "admin@wearesoloz.com",
+          photos: filteredPhotos
+        })
+      });
+
+      if (!res.ok) throw new Error("Failed to create memory post");
+      alert("Scrapbook memory card added!");
+      setNewPost({
+        title: "",
+        text: "",
+        authorName: "Admin",
+        authorEmail: "admin@wearesoloz.com",
+        photos: [""]
+      });
+      fetchTripMemories(activeTrip._id);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Error adding scrapbook card.");
+    }
+  };
+
+  const handleDeleteMemoryPost = async (postId: string) => {
+    if (!confirm("Are you sure you want to delete this memory card?")) return;
+    try {
+      const res = await fetch(`${API_URL}/admin/memories/${postId}`, {
+        method: "DELETE",
+        headers: getAuthHeaders()
+      });
+      if (!res.ok) throw new Error("Failed to delete memory post");
+      alert("Memory card deleted successfully!");
+      if (activeTrip) {
+        fetchTripMemories(activeTrip._id);
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Error deleting memory card.");
+    }
+  };
+
   const handleEdit = (trip: CompletedTrip) => {
     setActiveTrip(trip);
     setRecapText(trip.recap || "");
     setParticipantsList(trip.participants || []);
     setMemoryImage(trip.memoryImage || "");
     setMemoryCoverImage(trip.memoryCoverImage || "");
+    fetchTripMemories(trip._id);
   };
 
   const handleCancel = () => {
@@ -79,6 +167,7 @@ export default function AdminTripMemoriesPage() {
     setParticipantsList([]);
     setMemoryImage("");
     setMemoryCoverImage("");
+    setMemories([]);
   };
 
   const addParticipant = () => {
@@ -165,13 +254,6 @@ export default function AdminTripMemoriesPage() {
     e.preventDefault();
     if (!activeTrip) return;
 
-    // Validate emails are present
-    const hasMissingEmails = participantsList.some(p => !p.email || !p.email.trim());
-    if (hasMissingEmails) {
-      alert("All participants must have a valid email address configured for verification purposes.");
-      return;
-    }
-
     setSaving(true);
     try {
       const res = await fetch(`${API_URL}/admin/trips/${activeTrip._id}`, {
@@ -182,7 +264,6 @@ export default function AdminTripMemoriesPage() {
         },
         body: JSON.stringify({
           recap: recapText,
-          participants: participantsList,
           memoryImage,
           memoryCoverImage
         })
@@ -289,77 +370,144 @@ export default function AdminTripMemoriesPage() {
             />
           </div>
 
-          {/* Participants */}
-          <div className="space-y-4 pt-2 border-t border-white/5">
-            <div className="flex items-center justify-between">
-              <div>
-                <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block font-bold">
-                  Registered Attending Participants
-                </label>
-                <p className="text-[11px] text-soloz-ash/40">
-                  Attendees must match by email to receive verification codes and post.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowImportModal(true)}
-                  className="inline-flex items-center gap-1.5 text-xs text-soloz-ember hover:underline font-bold"
-                >
-                  Import Attendee List
-                </button>
-                <button
-                  type="button"
-                  onClick={addParticipant}
-                  className="inline-flex items-center gap-1.5 text-xs text-soloz-ember hover:underline font-bold"
-                >
-                  + Add Attendee
-                </button>
-              </div>
+          {/* Trip Scrapbook Memory Posts */}
+          <div className="space-y-4 pt-4 border-t border-white/5">
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block font-bold">
+                Scrapbook Memory Cards
+              </label>
+              <p className="text-[11px] text-soloz-ash/40">
+                Create and manage the individual story cards, photos, and descriptions displayed in this trip's digital scrapbook.
+              </p>
             </div>
 
-            {participantsList.length === 0 ? (
+            {/* List of existing memories for this trip */}
+            {loadingMemories ? (
+              <div className="flex justify-center items-center py-6 gap-2 text-soloz-ash/40">
+                <Loader2 className="animate-spin text-soloz-ember" size={16} />
+                <span className="text-xs">Loading memory cards...</span>
+              </div>
+            ) : memories.length === 0 ? (
               <div className="p-4 bg-white/5 border border-dashed border-white/10 rounded-lg text-center text-xs text-soloz-ash/50">
-                No participants registered. Click "Add Attendee" or "Import Attendee List" to authorize travelers.
+                No individual memory cards created for this trip yet. Use the form below to add one.
               </div>
             ) : (
               <div className="grid gap-3 max-h-[300px] overflow-y-auto pr-1">
-                {participantsList.map((p, idx) => (
-                  <div key={idx} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center bg-white/5 p-3 rounded-lg border border-white/5">
-                    <input
-                      type="text"
-                      required
-                      placeholder="Full Name"
-                      value={p.name}
-                      onChange={(e) => updateParticipant(idx, "name", e.target.value)}
-                      className="h-10 w-full sm:w-1/3 rounded-lg border border-white/10 bg-[#14110d] px-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none"
-                    />
-                    <input
-                      type="email"
-                      required
-                      placeholder="Email Address (for login OTP)"
-                      value={p.email || ""}
-                      onChange={(e) => updateParticipant(idx, "email", e.target.value)}
-                      className="h-10 flex-1 w-full rounded-lg border border-white/10 bg-[#14110d] px-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none"
-                    />
-                    <input
-                      type="tel"
-                      placeholder="Phone Number (Optional)"
-                      value={p.phone || ""}
-                      onChange={(e) => updateParticipant(idx, "phone", e.target.value)}
-                      className="h-10 w-full sm:w-1/4 rounded-lg border border-white/10 bg-[#14110d] px-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none"
-                    />
+                {memories.map((post) => (
+                  <div key={post._id} className="flex justify-between items-start bg-white/5 p-4 rounded-lg border border-white/5 gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-white">{post.authorName}</span>
+                        {post.title && <span className="text-[10px] bg-white/10 text-soloz-ash px-2 py-0.5 rounded font-mono">{post.title}</span>}
+                      </div>
+                      <p className="text-xs text-soloz-ash/80 line-clamp-2 leading-relaxed">{post.text}</p>
+                      {post.photos && post.photos.length > 0 && (
+                        <div className="flex gap-1.5 pt-1.5 flex-wrap">
+                          {post.photos.map((ph: string, i: number) => (
+                            <img key={i} src={ph} className="w-8.5 h-8.5 rounded object-cover border border-white/10" alt="media" />
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <button
                       type="button"
-                      onClick={() => removeParticipant(idx)}
-                      className="grid size-10 place-items-center rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 shrink-0 self-end sm:self-auto"
+                      onClick={() => handleDeleteMemoryPost(post._id)}
+                      className="text-red-400 hover:text-red-500 text-xs font-semibold shrink-0"
                     >
-                      <X size={15} />
+                      Delete Card
                     </button>
                   </div>
                 ))}
               </div>
             )}
+
+            {/* Add New Memory Card form container */}
+            <div className="bg-white/[0.02] border border-white/5 p-4 rounded-xl space-y-4">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Add New Memory Card</h4>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] uppercase tracking-wider text-soloz-ash/50 block font-bold">Author Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Admin or Traveler Name"
+                    value={newPost.authorName}
+                    onChange={(e) => setNewPost({ ...newPost, authorName: e.target.value })}
+                    className="h-9 w-full rounded-lg border border-white/10 bg-[#14110d] px-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] uppercase tracking-wider text-soloz-ash/50 block font-bold">Card Title (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Golden Hour Trek"
+                    value={newPost.title}
+                    onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                    className="h-9 w-full rounded-lg border border-white/10 bg-[#14110d] px-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase tracking-wider text-soloz-ash/50 block font-bold">Story Description / Caption</label>
+                <textarea
+                  rows={3}
+                  placeholder="Describe the memory detail or quote..."
+                  value={newPost.text}
+                  onChange={(e) => setNewPost({ ...newPost, text: e.target.value })}
+                  className="w-full rounded-lg border border-white/10 bg-[#14110d] p-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none resize-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[9px] uppercase tracking-wider text-soloz-ash/50 block font-bold">Upload Photos & Videos</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {newPost.photos.map((ph, idx) => (
+                    <div key={idx} className="relative">
+                      <CloudinaryUpload
+                        value={ph}
+                        onChange={(url) => {
+                          const updated = [...newPost.photos];
+                          updated[idx] = url;
+                          setNewPost({ ...newPost, photos: updated });
+                        }}
+                        accept="image/*,video/*"
+                        label={`Item #${idx + 1}`}
+                      />
+                      {newPost.photos.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewPost({
+                              ...newPost,
+                              photos: newPost.photos.filter((_, i) => i !== idx)
+                            });
+                          }}
+                          className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full p-1"
+                        >
+                          <X size={10} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setNewPost({ ...newPost, photos: [...newPost.photos, ""] })}
+                  className="text-xs text-soloz-ember hover:underline font-bold"
+                >
+                  + Add Another Photo/Video Slot
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleAddMemoryPost}
+                className="px-4 py-2 bg-soloz-ember hover:bg-orange-600 text-white rounded-lg text-xs font-bold uppercase tracking-widest transition-colors shadow-sm"
+              >
+                Add Memory Card
+              </button>
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 border-t border-white/5 pt-4">
