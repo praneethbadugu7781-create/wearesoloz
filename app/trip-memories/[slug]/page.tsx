@@ -743,13 +743,6 @@ export default function TripMemoryDetailPage() {
                 </div>
               )}
 
-              {devOtp && (
-                <div className="p-3 bg-orange-50 border border-orange-200 text-orange-700 text-xs rounded-lg flex flex-col gap-1">
-                  <span className="font-semibold uppercase tracking-wider text-[9px] text-orange-500">Developer Testing Code:</span>
-                  <span className="font-mono text-base font-bold tracking-widest">{devOtp}</span>
-                </div>
-              )}
-
               {otpStep === 1 ? (
                 <form onSubmit={handleRequestOtp} className="space-y-4 pt-2">
                   <div className="space-y-1">

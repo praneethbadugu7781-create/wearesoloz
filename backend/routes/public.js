@@ -423,16 +423,15 @@ router.post("/memories/otp/request", async (req, res) => {
       return res.status(400).json({ error: "This phone number is not registered as a participant for this trip." });
     }
 
-    const otp = "123456";
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = Date.now() + 5 * 60 * 1000;
     otps.set(`${cleanedInputPhone}_${tripId}`, { otp, expiresAt, name: participant.name });
 
-    console.log(`\n[OTP VERIFICATION] code for participant ${participant.name} (${phone}) on trip ${trip.destination}: ${otp}\n`);
+    console.log(`\n[OTP VERIFICATION CODE] For participant: ${participant.name} (${phone}) on trip "${trip.destination}" -> code is: ${otp}\n`);
 
     res.json({
       success: true,
-      message: "OTP sent successfully. (For testing, use code: 123456)",
-      devOtp: otp
+      message: "OTP sent successfully."
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
