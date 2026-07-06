@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { getApiUrl } from "@/lib/api";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -70,12 +70,9 @@ interface CompletedTrip {
   recap?: string;
 }
 
-interface PageProps {
-  params: Promise<{ slug: string }>;
-}
-
-export default function TripMemoryDetailPage({ params }: PageProps) {
-  const { slug } = use(params);
+export default function TripMemoryDetailPage() {
+  const params = useParams();
+  const slug = params.slug as string;
   const router = useRouter();
   const { locale, t } = useLanguage();
 
