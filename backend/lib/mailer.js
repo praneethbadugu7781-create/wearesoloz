@@ -55,7 +55,7 @@ async function sendResendEmail({ to, subject, text, html }) {
 
 async function sendContactEmail(contactData) {
   const adminEmail = await getAdminEmail();
-  const recipients = Array.from(new Set([adminEmail, "wearesoloz@gmail.com"].filter(Boolean))).join(", ");
+  const recipients = Array.from(new Set([adminEmail, "wearesoloz@gmail.com"].filter(Boolean)));
   
   const subject = `New Contact/Booking Enquiry from ${contactData.fullName}`;
   const title = "New Enquiry Received";
@@ -80,7 +80,7 @@ async function sendContactEmail(contactData) {
 
 async function sendCareerEmail(careerData) {
   const adminEmail = await getAdminEmail();
-  const recipients = Array.from(new Set([adminEmail, "wearesoloz@gmail.com"].filter(Boolean))).join(", ");
+  const recipients = Array.from(new Set([adminEmail, "wearesoloz@gmail.com"].filter(Boolean)));
 
   const subject = `New Careers Application from ${careerData.fullName}`;
   const title = "New Careers Application Received";
@@ -219,7 +219,7 @@ async function sendEmailChangeCompletedAlert(oldEmail, newEmail) {
 
 async function sendFarmerApplicationEmail(farmerData) {
   const adminEmail = await getAdminEmail();
-  const recipients = Array.from(new Set([adminEmail, "wearesoloz@gmail.com"].filter(Boolean))).join(", ");
+  const recipients = Array.from(new Set([adminEmail, "wearesoloz@gmail.com"].filter(Boolean)));
 
   const subject = `New Farmer Free Trip Application from ${farmerData.fullName}`;
   const title = "New Farmer Free-Trip Application Received";
@@ -587,7 +587,7 @@ async function sendContactApprovalEmail(contactData) {
 
   // Send copy/detailed notification to Admin & Client
   const adminEmail = await getAdminEmail();
-  const recipients = Array.from(new Set([adminEmail, "wearesoloz@gmail.com"].filter(Boolean))).join(", ");
+  const recipients = Array.from(new Set([adminEmail, "wearesoloz@gmail.com"].filter(Boolean)));
   
   const adminSubject = `[Admin Notification] Booking Approved: ${contactData.fullName} - ${contactData.destination || "General/Other Trips"}`;
   const adminTitle = "Booking Approved & Confirmed";
