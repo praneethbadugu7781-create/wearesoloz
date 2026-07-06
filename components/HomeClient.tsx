@@ -468,7 +468,11 @@ export default function HomeClient({
                             ))}
                           </div>
                         </div>
-                        <p className="font-display text-lg sm:text-xl font-light leading-relaxed text-stone-900">{t.quote || t.message}</p>
+                        <p className="font-display text-lg sm:text-xl font-light leading-relaxed text-stone-900">
+                          {(t.quote || t.message || "").length > 180 
+                            ? (t.quote || t.message || "").slice(0, 180) + "..." 
+                            : (t.quote || t.message || "")}
+                        </p>
                       </div>
                       <div className="flex items-center gap-3 mt-6">
                         {t.avatar && <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover" />}
@@ -483,6 +487,18 @@ export default function HomeClient({
               ))}
             </div>
           )}
+
+          {allTestimonials.length > 0 && (
+            <Reveal className="text-center mt-12 flex justify-center">
+              <Link
+                href="/reviews"
+                className="inline-flex items-center gap-2 bg-stone-900 hover:bg-stone-850 text-white font-bold uppercase tracking-wider text-[11px] px-8 py-3.5 rounded-full transition-all duration-300 shadow-md hover:shadow-lg active:scale-95"
+              >
+                {locale === "te" ? "అన్ని సమీక్షలను చూడండి" : locale === "hi" ? "सभी समीक्षाएं देखें" : "See All Reviews"}
+              </Link>
+            </Reveal>
+          )}
+
         </div>
       </section>
 

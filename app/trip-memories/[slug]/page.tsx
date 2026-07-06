@@ -490,51 +490,36 @@ export default function TripMemoryDetailPage() {
             </div>
           )}
 
-          {/* Verification Status Banner */}
-          <div className="bg-white border border-stone-200/80 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <h4 className="text-sm font-bold text-stone-900">
-                {verifiedToken ? `Verified Attendee: ${verifiedName}` : "Attended this Trip?"}
-              </h4>
-              <p className="text-xs text-stone-500">
-                {verifiedToken 
-                  ? "You have full access to add memory posts, upload photos, react, and comment." 
-                  : "Verify your email address to upload photos, share memory cards, comment, and like."}
-              </p>
-            </div>
-            {verifiedToken ? (
-              <button 
-                onClick={handleSignOut}
-                className="text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-600 transition-colors shrink-0"
-              >
-                Disconnect Session
-              </button>
-            ) : (
-              <button 
-                onClick={() => setShowVerifyModal(true)}
-                className="px-4 py-2 bg-stone-900 hover:bg-stone-850 text-white rounded-lg text-xs font-bold uppercase tracking-widest transition-colors shrink-0 flex items-center gap-1.5"
-              >
-                <Lock className="w-3.5 h-3.5" /> Verify Participation
-              </button>
-            )}
-          </div>
-
           {/* Traveler Memory Posts */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="font-display text-xl font-medium text-stone-900 flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-[#ea580c]" /> Traveler Memory Cards
               </h3>
-              <button 
-                onClick={() => {
-                  if (handleActionPrecheck()) {
-                    setShowPostModal(true);
-                  }
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#ea580c] hover:bg-orange-600 text-white rounded-lg text-xs font-bold uppercase tracking-widest transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" /> Add Memory
-              </button>
+              <div className="flex items-center gap-4">
+                {verifiedToken && (
+                  <div className="hidden sm:flex items-center gap-2 text-xs text-stone-500 font-semibold bg-stone-100/80 px-2.5 py-1.5 rounded-lg border border-stone-200/50">
+                    <span>Logged in: <strong className="text-stone-850 font-bold">{verifiedName}</strong></span>
+                    <span className="text-stone-300">|</span>
+                    <button 
+                      onClick={handleSignOut}
+                      className="text-[10px] uppercase tracking-wider text-red-500 hover:text-red-600 font-bold transition-colors"
+                    >
+                      Disconnect
+                    </button>
+                  </div>
+                )}
+                <button 
+                  onClick={() => {
+                    if (handleActionPrecheck()) {
+                      setShowPostModal(true);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#ea580c] hover:bg-orange-600 text-white rounded-lg text-xs font-bold uppercase tracking-widest transition-colors shadow-sm active:scale-95"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Memory
+                </button>
+              </div>
             </div>
 
             {posts.length === 0 ? (
