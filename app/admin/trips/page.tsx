@@ -451,6 +451,16 @@ export default function AdminTripsPage() {
     // Clone the template data without ID so it saves as a NEW trip copy!
     const { _id, __v, createdAt, updatedAt, id, ...cloneData } = template as any;
 
+    // Ensure slug is unique by appending the scheduleDate
+    const baseSlug = (cloneData.slug || cloneData.destination || "trip")
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .replace(/-\d{4}-\d{2}-\d{2}$/, "");
+    const newSlug = `${baseSlug}-${scheduleDate}`;
+
     setScheduling(true);
     try {
       const res = await fetch(`${API_URL}/admin/trips`, {
@@ -458,6 +468,7 @@ export default function AdminTripsPage() {
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({
           ...cloneData,
+          slug: newSlug,
           date: scheduleDate,
           status: "published"
         })
@@ -487,8 +498,18 @@ export default function AdminTripsPage() {
     // Clone the template data without ID so it saves as a NEW trip copy when they save!
     const { _id, __v, createdAt, updatedAt, id, ...cloneData } = template as any;
 
+    const baseSlug = (cloneData.slug || cloneData.destination || "trip")
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .replace(/-\d{4}-\d{2}-\d{2}$/, "");
+    const newSlug = `${baseSlug}-${scheduleDate}`;
+
     setFormData({
       ...cloneData,
+      slug: newSlug,
       date: scheduleDate,
       status: "published"
     });
