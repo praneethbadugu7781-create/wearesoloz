@@ -8,6 +8,7 @@ import { Preloader } from "@/components/Preloader";
 import { brand } from "@/lib/data";
 import { Toaster } from "sonner";
 import { LanguageProvider } from "@/lib/LanguageContext";
+import Script from "next/script";
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", weight: ["300", "400", "500", "600", "700"] });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
@@ -51,9 +52,34 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
   return (
     <html lang="en" className={`${outfit.variable} ${playfair.variable} ${dmSans.variable}`}>
       <body className="font-sans antialiased bg-white text-[#1c1917]">
+        {gaId && (
+          <>
+            <Script
+              strategy="afterInteractive"
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            />
+            <Script
+              id="google-analytics"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${gaId}', {
+                    page_path: window.location.pathname,
+                  });
+                `,
+              }}
+            />
+          </>
+        )}
+
         {/* Gooey SVG Filter used by premium buttons */}
         <svg width="0" height="0" className="absolute hidden" colorInterpolationFilters="sRGB">
           <defs>
@@ -70,6 +96,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <Preloader />
           <Navbar />
           {children}
+          {/* Footer has already been modified to handle static checks */}
           <Footer />
           <BookingModal />
           <Toaster theme="light" richColors closeButton position="bottom-right" />
