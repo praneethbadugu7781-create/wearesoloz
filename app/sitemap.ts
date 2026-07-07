@@ -13,7 +13,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/contact",
     "/soloz-community",
     "/gallery",
-    "/farmer-registration"
+    "/farmer-registration",
+    "/reviews",
+    "/trip-memories"
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
@@ -40,5 +42,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("Sitemap dynamic trips generation error:", error);
   }
 
-  return [...staticRoutes, ...tripRoutes];
+  // Dynamic trip memories routes
+  let memoryRoutes: any[] = [];
+  try {
+    const completedTrips = await fetchPublic("/memories/completed-trips", []);
+    if (completedTrips && completedTrips.length > 0) {
+      memoryRoutes = completedTrips.map((trip: any) => {
+        const slug = trip.slug || trip.destination?.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        return {
+          url: `${baseUrl}/trip-memories/${slug}`,
+          lastModified: new Date(trip.updatedAt || new Date()),
+          changeFrequency: "weekly" as const,
+          priority: 0.6
+        };
+      });
+    }
+  } catch (error) {
+    console.error("Sitemap dynamic memories generation error:", error);
+  }
+
+  return [...staticRoutes, ...tripRoutes, ...memoryRoutes];
 }
