@@ -48,11 +48,10 @@ function parseItineraryDetails(text: string) {
       content: cleanContent
     });
   }
-  
   return items.filter(item => item.content || item.time);
 }
 
-const generateBrochurePdf = (trip: any, locale: string) => {
+const generateBrochurePdf = async (trip: any, locale: string) => {
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -64,10 +63,117 @@ const generateBrochurePdf = (trip: any, locale: string) => {
   const lightGray = [245, 245, 244];   // #f5f5f4 (light stone background)
   const textColor = [68, 64, 60];      // #44403c (secondary text)
 
-  let y = 15;
+  // --- PAGE 1: COVER PAGE ---
+  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.rect(0, 0, 210, 10, "F");
+
+  let y = 25;
+
+  try {
+    const logoImg = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = '/logo.png';
+      img.onload = () => resolve(img);
+      img.onerror = (err) => reject(err);
+    });
+    doc.addImage(logoImg, 'PNG', 95, y, 20, 20);
+    y += 25;
+  } catch (e) {
+    console.error('Failed to load logo for PDF brochure:', e);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text("WeAreSoloz", 105, y + 10, { align: "center" });
+    y += 20;
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("OFFICIAL TRIP BROCHURE", 105, y, { align: "center" });
+  y += 12;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+  const destName = trip.title || `${trip.destination} Expedition`;
+  const splitTitle = doc.splitTextToSize(destName, 170);
+  doc.text(splitTitle, 105, y, { align: "center" });
+  y += (splitTitle.length * 8) + 8;
+
+  doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+  doc.rect(15, y, 180, 24, "F");
+  doc.setDrawColor(220, 220, 220);
+  doc.rect(15, y, 180, 24, "D");
+
+  const duration = trip.duration || "N/A";
+  const price = trip.price || "Contact for Price";
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("TRIP DURATION", 45, y + 8, { align: "center" });
+  doc.text("TRIP PRICE", 135, y + 8, { align: "center" });
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(12);
+  doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+  doc.text(duration, 45, y + 16, { align: "center" });
+  doc.text(price, 135, y + 16, { align: "center" });
+  y += 38;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("ABOUT THIS TRIP", 15, y);
+  
+  y += 8;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10.5);
+  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+  
+  const aboutText = trip.description || "Join WeAreSoloz on a spectacular curated trip.";
+  const splitAbout = doc.splitTextToSize(aboutText, 180);
+  doc.text(splitAbout, 15, y, { lineHeightFactor: 1.35 });
+
+  doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+  doc.rect(0, 272, 210, 25, "F");
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+  doc.text("WeAreSoloz Solo Travel Community", 15, 279);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+  doc.text("WhatsApp: +91 99660 85310  |  Email: wearesoloz@gmail.com  |  Web: wearesoloz.com", 15, 284);
+
+  // --- PAGE 2: DETAILS & ITINERARY ---
+  doc.addPage();
+  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.rect(0, 0, 210, 8, "F");
+
+  y = 20;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+  doc.text("WeAreSoloz", 15, y);
+  doc.setFontSize(8);
+  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+  doc.text(`${destName} - Detailed Itinerary`, 15, y + 4.5);
+  y += 12;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("DETAILED ITINERARY", 15, y);
+  y += 6;
 
   const checkPageLimit = (neededHeight: number) => {
-    if (y + neededHeight > 280) {
+    if (y + neededHeight > 265) {
       doc.addPage();
       y = 15;
       doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -75,115 +181,6 @@ const generateBrochurePdf = (trip: any, locale: string) => {
       y += 8;
     }
   };
-
-  // Banner
-  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.rect(0, 0, 210, 8, "F");
-  
-  y += 5;
-
-  // Header Brand
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
-  doc.text("WeAreSoloz", 15, y);
-  
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.text("TRAVEL SOLO • YOU'RE NOT ALONE", 15, y + 4.5);
-
-  doc.setFontSize(8);
-  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-  doc.text("Email: travel@wearesoloz.com", 145, y);
-  doc.text("WhatsApp: +91 99660 85310", 145, y + 4.5);
-  doc.text("Web: wearesoloz.com", 145, y + 9);
-
-  y += 18;
-
-  // Title Box
-  doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-  doc.rect(15, y, 180, 32, "F");
-  doc.setDrawColor(230, 230, 230);
-  doc.rect(15, y, 180, 32, "D");
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
-  const destName = trip.title || `${trip.destination} Expedition`;
-  const splitTitle = doc.splitTextToSize(destName, 170);
-  doc.text(splitTitle, 20, y + 9);
-
-  const duration = trip.duration || "N/A";
-  const price = trip.price || "Contact for Price";
-  
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9.5);
-  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.text("DURATION:", 20, y + 25);
-  doc.text("PRICE:", 100, y + 25);
-
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-  doc.text(duration, 45, y + 25);
-  doc.text(price, 115, y + 25);
-
-  y += 42;
-
-  // Description
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.text("ABOUT THIS TRIP", 15, y);
-  
-  y += 6;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9.5);
-  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-  
-  const aboutText = trip.description || "Join WeAreSoloz on a spectacular curated trip.";
-  const splitAbout = doc.splitTextToSize(aboutText, 180);
-  doc.text(splitAbout, 15, y, { lineHeightFactor: 1.3 });
-  
-  y += (splitAbout.length * 5) + 8;
-
-  // Inclusions
-  checkPageLimit(35);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.text("WHAT'S INCLUDED", 15, y);
-
-  y += 6;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9.5);
-  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-
-  const inclusions = trip.inclusions || [];
-  if (inclusions.length > 0) {
-    inclusions.forEach((inc: string) => {
-      checkPageLimit(8);
-      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.circle(18, y - 1, 1, "F");
-      const splitInc = doc.splitTextToSize(inc, 170);
-      doc.text(splitInc, 22, y);
-      y += (splitInc.length * 4.5) + 1.5;
-    });
-  } else {
-    doc.text("Standard group yatra logistics, guides, and double/triple sharing stays included.", 15, y);
-    y += 8;
-  }
-
-  y += 6;
-
-  // Detailed Itinerary
-  checkPageLimit(35);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.text("DETAILED ITINERARY", 15, y);
-
-  y += 8;
 
   const itinerary = trip.itinerary || [];
   if (itinerary.length > 0) {
@@ -230,30 +227,82 @@ const generateBrochurePdf = (trip: any, locale: string) => {
     });
   }
 
+  y += 4;
+
+  checkPageLimit(45);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("WHAT'S INCLUDED", 15, y);
   y += 6;
 
-  // Policy Alert Box
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+
+  const inclusions = trip.inclusions || [];
+  if (inclusions.length > 0) {
+    inclusions.forEach((inc: string) => {
+      checkPageLimit(8);
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.circle(18, y - 1, 0.8, "F");
+      const splitInc = doc.splitTextToSize(inc, 170);
+      doc.text(splitInc, 22, y);
+      y += (splitInc.length * 4.5) + 1;
+    });
+  }
+
+  y += 6;
+
   checkPageLimit(35);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("WHAT'S EXCLUDED", 15, y);
+  y += 6;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+
+  const exclusions = [
+    "Train tickets, flight tickets, or personal transit to the starting point.",
+    "Lunch on all days (unless specifically mentioned).",
+    "Personal expenses (shopping, tips, mineral water, beverages, etc.).",
+    "Any entry fees, activity costs, or permits not explicitly listed in inclusions."
+  ];
+
+  exclusions.forEach((exc: string) => {
+    checkPageLimit(8);
+    doc.setFillColor(150, 150, 150);
+    doc.circle(18, y - 1, 0.8, "F");
+    const splitExc = doc.splitTextToSize(exc, 170);
+    doc.text(splitExc, 22, y);
+    y += (splitExc.length * 4.5) + 1;
+  });
+
+  y += 8;
+
+  checkPageLimit(30);
   doc.setFillColor(254, 243, 199);
-  doc.rect(15, y - 5, 180, 22, "F");
+  doc.rect(15, y - 5, 180, 20, "F");
   doc.setDrawColor(251, 191, 36);
-  doc.rect(15, y - 5, 180, 22, "D");
+  doc.rect(15, y - 5, 180, 20, "D");
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9.5);
+  doc.setFontSize(9);
   doc.setTextColor(180, 83, 9);
   doc.text("⚠️ IMPORTANT TRAVEL & TRANSPORTATION POLICY", 18, y);
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setTextColor(120, 53, 4);
-  const policyText = "Please note that train tickets and flight tickets are not included in the trip cost. All travellers must reach the designated meeting point in the starting city by themselves. Akhil will communicate the exact starting location and meeting coordinates prior to the trip departure.";
+  const policyText = "Please note that train tickets and flight tickets are not included in the trip cost. All travelers must reach the designated meeting point in the starting city by themselves. Akhil will communicate the exact starting location and meeting details prior to the trip departure.";
   const splitPolicy = doc.splitTextToSize(policyText, 172);
-  doc.text(splitPolicy, 18, y + 4.5, { lineHeightFactor: 1.2 });
+  doc.text(splitPolicy, 18, y + 4.5, { lineHeightFactor: 1.25 });
 
-  y += 24;
+  y += 22;
 
-  // Footer branding
   checkPageLimit(15);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
@@ -268,6 +317,7 @@ const generateBrochurePdf = (trip: any, locale: string) => {
   const filename = `${trip.destination.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-brochure.pdf`;
   doc.save(filename);
 };
+
 
 export default function TripDetailClient({ trip }: TripDetailClientProps) {
   const { t, locale } = useLanguage();
