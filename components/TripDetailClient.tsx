@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Calendar, Clock, Users, MapPin, ArrowRight } from "lucide-react";
+import { Calendar, Clock, Users, MapPin, ArrowRight, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import TermsModal from "./TermsModal";
 import SuccessModal from "./SuccessModal";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
+import { jsPDF } from "jspdf";
 
 interface TripDetailClientProps {
   trip: any;
@@ -50,6 +51,223 @@ function parseItineraryDetails(text: string) {
   
   return items.filter(item => item.content || item.time);
 }
+
+const generateBrochurePdf = (trip: any, locale: string) => {
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4"
+  });
+
+  const primaryColor = [234, 88, 12]; // #ea580c (orange)
+  const darkColor = [28, 25, 23];     // #1c1917 (dark stone)
+  const lightGray = [245, 245, 244];   // #f5f5f4 (light stone background)
+  const textColor = [68, 64, 60];      // #44403c (secondary text)
+
+  let y = 15;
+
+  const checkPageLimit = (neededHeight: number) => {
+    if (y + neededHeight > 280) {
+      doc.addPage();
+      y = 15;
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.rect(0, 0, 210, 4, "F");
+      y += 8;
+    }
+  };
+
+  // Banner
+  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.rect(0, 0, 210, 8, "F");
+  
+  y += 5;
+
+  // Header Brand
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+  doc.text("WeAreSoloz", 15, y);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("TRAVEL SOLO • YOU'RE NOT ALONE", 15, y + 4.5);
+
+  doc.setFontSize(8);
+  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+  doc.text("Email: travel@wearesoloz.com", 145, y);
+  doc.text("WhatsApp: +91 99660 85310", 145, y + 4.5);
+  doc.text("Web: wearesoloz.com", 145, y + 9);
+
+  y += 18;
+
+  // Title Box
+  doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+  doc.rect(15, y, 180, 32, "F");
+  doc.setDrawColor(230, 230, 230);
+  doc.rect(15, y, 180, 32, "D");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+  const destName = trip.title || `${trip.destination} Expedition`;
+  const splitTitle = doc.splitTextToSize(destName, 170);
+  doc.text(splitTitle, 20, y + 9);
+
+  const duration = trip.duration || "N/A";
+  const price = trip.price || "Contact for Price";
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("DURATION:", 20, y + 25);
+  doc.text("PRICE:", 100, y + 25);
+
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+  doc.text(duration, 45, y + 25);
+  doc.text(price, 115, y + 25);
+
+  y += 42;
+
+  // Description
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("ABOUT THIS TRIP", 15, y);
+  
+  y += 6;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9.5);
+  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+  
+  const aboutText = trip.description || "Join WeAreSoloz on a spectacular curated trip.";
+  const splitAbout = doc.splitTextToSize(aboutText, 180);
+  doc.text(splitAbout, 15, y, { lineHeightFactor: 1.3 });
+  
+  y += (splitAbout.length * 5) + 8;
+
+  // Inclusions
+  checkPageLimit(35);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("WHAT'S INCLUDED", 15, y);
+
+  y += 6;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9.5);
+  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+
+  const inclusions = trip.inclusions || [];
+  if (inclusions.length > 0) {
+    inclusions.forEach((inc: string) => {
+      checkPageLimit(8);
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.circle(18, y - 1, 1, "F");
+      const splitInc = doc.splitTextToSize(inc, 170);
+      doc.text(splitInc, 22, y);
+      y += (splitInc.length * 4.5) + 1.5;
+    });
+  } else {
+    doc.text("Standard group yatra logistics, guides, and double/triple sharing stays included.", 15, y);
+    y += 8;
+  }
+
+  y += 6;
+
+  // Detailed Itinerary
+  checkPageLimit(35);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("DETAILED ITINERARY", 15, y);
+
+  y += 8;
+
+  const itinerary = trip.itinerary || [];
+  if (itinerary.length > 0) {
+    itinerary.forEach((item: any, index: number) => {
+      checkPageLimit(30);
+      
+      doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+      doc.rect(15, y - 5, 180, 8, "F");
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      const dayLabel = item.day || `Day ${index + 1}`;
+      doc.text(dayLabel.toUpperCase(), 18, y);
+
+      doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+      doc.text(item.title || "Explorer Schedule", 40, y);
+
+      y += 8;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+
+      const parsedLines = parseItineraryDetails(item.description);
+      if (parsedLines.length > 0) {
+        parsedLines.forEach((line: any) => {
+          const displayContent = line.time ? `[${line.time}]  ${line.content}` : line.content;
+          const splitContent = doc.splitTextToSize(displayContent, 170);
+          
+          checkPageLimit(splitContent.length * 5 + 4);
+          
+          doc.setFillColor(200, 200, 200);
+          doc.circle(20, y - 1, 0.7, "F");
+          doc.text(splitContent, 24, y, { lineHeightFactor: 1.25 });
+          y += (splitContent.length * 4.5) + 2.5;
+        });
+      } else {
+        const splitDesc = doc.splitTextToSize(item.description || "Schedule details pending.", 170);
+        doc.text(splitDesc, 20, y);
+        y += (splitDesc.length * 4.5) + 2;
+      }
+      y += 4;
+    });
+  }
+
+  y += 6;
+
+  // Policy Alert Box
+  checkPageLimit(35);
+  doc.setFillColor(254, 243, 199);
+  doc.rect(15, y - 5, 180, 22, "F");
+  doc.setDrawColor(251, 191, 36);
+  doc.rect(15, y - 5, 180, 22, "D");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.setTextColor(180, 83, 9);
+  doc.text("⚠️ IMPORTANT TRAVEL & TRANSPORTATION POLICY", 18, y);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(120, 53, 4);
+  const policyText = "Please note that train tickets and flight tickets are not included in the trip cost. All travellers must reach the designated meeting point in the starting city by themselves. Akhil will communicate the exact starting location and meeting coordinates prior to the trip departure.";
+  const splitPolicy = doc.splitTextToSize(policyText, 172);
+  doc.text(splitPolicy, 18, y + 4.5, { lineHeightFactor: 1.2 });
+
+  y += 24;
+
+  // Footer branding
+  checkPageLimit(15);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("Ready to Join Us?", 15, y);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+  doc.text("Contact Akhil on WhatsApp (+91 99660 85310) or book via wearesoloz.com.", 15, y + 4.5);
+
+  const filename = `${trip.destination.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-brochure.pdf`;
+  doc.save(filename);
+};
 
 export default function TripDetailClient({ trip }: TripDetailClientProps) {
   const { t, locale } = useLanguage();
@@ -354,10 +572,23 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
           </div>
           <div>
             <form onSubmit={submit} data-testid="trip-join-form" className="glass rounded-2xl p-6 bg-stone-50 border border-stone-200 sticky top-28 space-y-4">
-              <div>
-                <div className="text-xs uppercase tracking-widest text-[#ea580c] font-semibold">{locale === "te" ? "ఈ ట్రిప్ కోసం విచారించండి" : locale === "hi" ? "इस यात्रा के लिए पूछताछ करें" : "Inquire for this Trip"}</div>
-                <div className="font-display text-2xl font-light text-stone-900 mt-1">
-                  {locale === "te" ? "ధర కోసం సంప్రదించండి" : locale === "hi" ? "कीमत के लिए संपर्क करें" : "Contact for Price"}
+              <div className="flex flex-col gap-4 border-b border-stone-200/60 pb-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-widest text-[#ea580c] font-bold">{locale === "te" ? "ఈ ట్రిప్ కోసం విచారించండి" : locale === "hi" ? "इस यात्रा के लिए पूछताछ करें" : "Inquire for this Trip"}</div>
+                    <div className="font-display text-xl font-medium text-stone-900 mt-1">
+                      {locale === "te" ? "ధర కోసం సంప్రదించండి" : locale === "hi" ? "कीमत के लिए संपर्क करें" : "Contact for Price"}
+                    </div>
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={() => generateBrochurePdf(trip, locale)}
+                    title="Download Brochure PDF"
+                    className="inline-flex items-center gap-1.5 bg-[#ea580c]/10 hover:bg-[#ea580c]/15 text-[#ea580c] border border-[#ea580c]/20 hover:border-[#ea580c]/30 text-[10px] font-bold uppercase tracking-wider rounded-lg px-3 py-2 transition-all duration-300 shrink-0"
+                  >
+                    <Download size={12} className="animate-pulse" /> Brochure
+                  </button>
                 </div>
               </div>
 
