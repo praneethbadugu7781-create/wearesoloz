@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
-import { ShieldAlert, Check, Loader2, Compass, Calendar, MapPin, User, FileText, Heart, CheckCircle2 } from "lucide-react";
+import { ShieldAlert, Check, Loader2, Compass, Calendar, MapPin, User, FileText, Heart, CheckCircle2, Download } from "lucide-react";
 import { CloudinaryUpload } from "@/components/cloudinary-upload";
 import Reveal from "@/components/Reveal";
 
@@ -187,11 +187,268 @@ export default function TripConfirmationPage() {
       setSubmissionId(resData.submissionId);
       setSuccess(true);
       toast.success("Liability Waiver submitted successfully!");
+
+      try {
+        await generateConfirmationPDF(resData.submissionId);
+      } catch (pdfErr) {
+        console.error("Auto PDF generation failed:", pdfErr);
+      }
     } catch (err: any) {
       toast.error(err.message || "An error occurred during submission.");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const generateConfirmationPDF = async (subId = submissionId) => {
+    if (!trip) return;
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4"
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // Header card background
+    doc.setFillColor(20, 17, 13);
+    doc.rect(0, 0, pageWidth, 42, "F");
+
+    // Add Logo
+    try {
+      const logoImg = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = (e) => reject(e);
+        img.src = "/logo.png";
+      });
+      doc.addImage(logoImg, "PNG", 15, 8, 12, 12);
+    } catch (e) {
+      console.error("Failed to load logo for PDF:", e);
+    }
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255);
+    doc.text("WeAreSoloZ", 32, 14);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(180, 180, 180);
+    doc.text("TRAVEL SOLO. YOU'RE NOT ALONE.", 32, 18);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(255, 122, 26);
+    doc.text("TRIP BOOKING CONFIRMATION & LIABILITY WAIVER", 15, 32);
+
+    let y = 52;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(20, 17, 13);
+    doc.text("TRIP DETAILS", 15, y);
+    y += 2;
+    doc.setDrawColor(230, 230, 230);
+    doc.line(15, y, pageWidth - 15, y);
+    y += 5;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Trip Name:", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(trip.title || `${trip.destination} Expedition`, 45, y);
+
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Departure Date:", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(new Date(trip.date).toLocaleDateString(), 45, y);
+
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Pickup Location:", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(trip.pickupLocation || "Default Meeting Point", 45, y);
+
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Submission ID:", 15, y);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(234, 88, 12);
+    doc.text(subId || "PENDING", 45, y);
+
+    y += 12;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(20, 17, 13);
+    doc.text("PASSENGER DETAILS", 15, y);
+    y += 2;
+    doc.line(15, y, pageWidth - 15, y);
+    y += 5;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Full Name:", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(form.fullName, 45, y);
+
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Age / Gender:", 110, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(`${form.age} / ${form.gender}`, 140, y);
+
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Mobile Number:", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(form.mobile, 45, y);
+
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Email Address:", 110, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(form.email || "N/A", 140, y);
+
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Home Address:", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(form.address || "N/A", 45, y);
+
+    y += 12;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(20, 17, 13);
+    doc.text("EMERGENCY CONTACT & MEDICAL PROFILE", 15, y);
+    y += 2;
+    doc.line(15, y, pageWidth - 15, y);
+    y += 5;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Emergency Name:", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(`${form.emergencyContactName} (${form.emergencyContactRelationship})`, 45, y);
+
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Emergency Mobile:", 110, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(form.emergencyContactMobile, 140, y);
+
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Blood Group:", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(form.bloodGroup || "N/A", 45, y);
+
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Allergies:", 110, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(form.allergies || "None", 140, y);
+
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Conditions:", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(form.medicalConditions || "None", 45, y);
+
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Medications:", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(form.medications || "None", 45, y);
+
+    y += 12;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(20, 17, 13);
+    doc.text("IDENTITY VERIFICATION", 15, y);
+    y += 2;
+    doc.line(15, y, pageWidth - 15, y);
+    y += 5;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Document Type:", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(form.idType, 45, y);
+
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Document Number:", 110, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(form.idNumber, 140, y);
+
+    y += 12;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(20, 17, 13);
+    doc.text("DECLARATION & SIGNATURE", 15, y);
+    y += 2;
+    doc.line(15, y, pageWidth - 15, y);
+    y += 5;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    const stmt = "I hereby confirm that I have read and voluntarily agree to all general rules, travel risks, and liability waiver terms of WeAreSoloZ.";
+    doc.text(stmt, 15, y);
+    y += 8;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Digital Signature:", 15, y);
+    doc.setFont("helvetica", "bolditalic");
+    doc.setTextColor(20, 17, 13);
+    doc.text(form.signedName, 45, y);
+
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Date Signed:", 110, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(new Date().toLocaleDateString(), 140, y);
+
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(160, 160, 160);
+    doc.text("WeAreSoloZ - Travel Solo, You're Not Alone.", pageWidth / 2, pageHeight - 10, { align: "center" });
+
+    doc.save(`Confirmation_${subId}.pdf`);
   };
 
   if (loadingTrip) {
@@ -241,7 +498,13 @@ export default function TripConfirmationPage() {
             <p className="font-display text-stone-800 text-right">— Team WeAreSoloZ 🌿</p>
           </div>
 
-          <div className="pt-4">
+          <div className="pt-2 flex flex-col items-center gap-3">
+            <button
+              onClick={() => generateConfirmationPDF(submissionId)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#ea580c] hover:bg-[#ea580c]/90 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md"
+            >
+              <Download size={14} /> Download Confirmation PDF
+            </button>
             <button
               onClick={() => window.close()}
               className="text-stone-400 hover:text-stone-600 text-xs font-semibold hover:underline"
