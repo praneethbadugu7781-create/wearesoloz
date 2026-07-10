@@ -98,22 +98,54 @@ function fetchImageAsBase64(url) {
   });
 }
 
+function callGroqApi(apiKey, payload) {
+  return new Promise((resolve, reject) => {
+    const postData = JSON.stringify(payload);
+    const req = https.request({
+      hostname: 'api.groq.com',
+      path: '/openai/v1/chat/completions',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        if (res.statusCode !== 200) {
+          return reject(new Error(`Groq returned status ${res.statusCode}: ${data}`));
+        }
+        try {
+          resolve(JSON.parse(data));
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.write(postData);
+    req.end();
+  });
+}
+
 router.post("/extract-itinerary", async (req, res) => {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(400).json({
-        error: "Missing GEMINI_API_KEY in environment. Please add it to your server configuration on Render."
-      });
-    }
-
     const { text, imageUrl } = req.body;
     if (!text && !imageUrl) {
       return res.status(400).json({ error: "Please provide either text or an imageUrl to extract itinerary details." });
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const groqKey = process.env.GROQ_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY;
+
+    if (!groqKey && !geminiKey) {
+      return res.status(400).json({
+        error: "Missing API Key. Please configure either GROQ_API_KEY or GEMINI_API_KEY in your server environment variables on Render."
+      });
+    }
 
     const prompt = `
 You are an expert travel assistant. Analyze the provided image or text of a travel itinerary/trip poster and extract the trip details in the following JSON format. Do not return any other text, markdown formatting, or HTML wrappers. Return ONLY raw JSON.
@@ -141,31 +173,75 @@ JSON Schema:
 }
 `;
 
-    let contentParts = [prompt];
-
+    // 1. Fetch image if URL is provided
+    let base64 = "";
+    let mimeType = "image/jpeg";
     if (imageUrl) {
-      const { base64, mimeType } = await fetchImageAsBase64(imageUrl);
-      contentParts.push({
-        inlineData: {
-          data: base64,
-          mimeType: mimeType
-        }
-      });
+      const imgData = await fetchImageAsBase64(imageUrl);
+      base64 = imgData.base64;
+      mimeType = imgData.mimeType;
     }
 
-    if (text) {
-      contentParts.push(text);
+    let parsedData = null;
+
+    // 2. Use Groq if key is present (Highly Recommended / Free and fast!)
+    if (groqKey) {
+      const content = [{ type: "text", text: prompt }];
+      if (imageUrl) {
+        content.push({
+          type: "image_url",
+          image_url: {
+            url: `data:${mimeType};base64,${base64}`
+          }
+        });
+      }
+      if (text) {
+        content.push({
+          type: "text",
+          text: `Raw text reference:\n${text}`
+        });
+      }
+
+      const payload = {
+        model: "llama-3.2-11b-vision-preview",
+        messages: [{ role: "user", content }],
+        temperature: 0.1,
+        response_format: { type: "json_object" }
+      };
+
+      const groqRes = await callGroqApi(groqKey, payload);
+      const choiceText = groqRes.choices[0].message.content;
+      parsedData = JSON.parse(choiceText.trim());
+    } 
+    // 3. Fallback to Gemini
+    else if (geminiKey) {
+      const genAI = new GoogleGenerativeAI(geminiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); // Use 2.0-flash as it's the standard free model
+
+      let contentParts = [prompt];
+      if (imageUrl) {
+        contentParts.push({
+          inlineData: {
+            data: base64,
+            mimeType: mimeType
+          }
+        });
+      }
+      if (text) {
+        contentParts.push(text);
+      }
+
+      const result = await model.generateContent(contentParts);
+      const responseText = await result.response.text();
+
+      const cleanJsonString = responseText
+        .replace(/^```json\s*/i, "")
+        .replace(/```\s*$/, "")
+        .trim();
+
+      parsedData = JSON.parse(cleanJsonString);
     }
 
-    const result = await model.generateContent(contentParts);
-    const responseText = await result.response.text();
-
-    const cleanJsonString = responseText
-      .replace(/^```json\s*/i, "")
-      .replace(/```\s*$/, "")
-      .trim();
-
-    const parsedData = JSON.parse(cleanJsonString);
     res.json(parsedData);
   } catch (error) {
     console.error("AI Extractor error:", error);
