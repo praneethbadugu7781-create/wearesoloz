@@ -16,6 +16,38 @@ interface TripDetailClientProps {
   trip: any;
 }
 
+function parseItineraryDetails(text: string) {
+  if (!text) return [];
+  
+  let lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  
+  if (lines.length <= 1) {
+    const timeRegex = /(?=\b(?:0?[1-9]|1[0-2]):[0-5][0-9]\s*(?:AM|PM|am|pm)\b|\b(?:[0-1]?[0-9]|2[0-3]):[0-5][0-9]\b|\b\d{2}\s*(?:AM|PM|am|pm)\b)/i;
+    lines = text.split(timeRegex).map(l => l.trim()).filter(Boolean);
+  }
+  
+  return lines.map(line => {
+    const timeMatch = line.match(/^(\b(?:0?[1-9]|1[0-2]):[0-5][0-9]\s*(?:AM|PM|am|pm)\b|\b(?:[0-1]?[0-9]|2[0-3]):[0-5][0-9]\b|\b\d{2}\s*(?:AM|PM|am|pm)\b)(?:\s*[-–—:]\s*)?(.*)/i);
+    if (timeMatch) {
+      return {
+        time: timeMatch[1],
+        content: timeMatch[2] || ""
+      };
+    }
+    const bulletMatch = line.match(/^[-*•]\s*(.*)/);
+    if (bulletMatch) {
+      return {
+        time: null,
+        content: bulletMatch[1]
+      };
+    }
+    return {
+      time: null,
+      content: line
+    };
+  });
+}
+
 export default function TripDetailClient({ trip }: TripDetailClientProps) {
   const { t, locale } = useLanguage();
   const [form, setForm] = useState({ full_name: "", mobile: "", email: "", travelers: 1, message: "", age: "", bloodGroup: "" });
@@ -237,21 +269,52 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
             {/* If itinerary exists, let's render it */}
             {trip.itinerary && trip.itinerary.length > 0 && (
               <div className="mt-12 space-y-6">
-                <h3 className="font-display text-2xl mb-4 text-stone-900">{locale === "te" ? "వివరణాత్మక ప్రయాణ ప్రణాళిక" : locale === "hi" ? "विस्तृत यात्रा कार्यक्रम" : "Detailed Itinerary"}</h3>
-                <div className="space-y-4">
-                  {trip.itinerary.map((item: any, i: number) => (
-                    <div key={i} className="glass rounded-2xl p-6 border border-stone-200">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-semibold text-soloz-primary uppercase tracking-wider">
-                          {item.day || (locale === "te" ? `రోజు ${i + 1}` : locale === "hi" ? `दिन ${i + 1}` : `Day ${i + 1}`)}
-                        </span>
-                        <h4 className="font-display text-lg font-medium text-stone-900">{item.title}</h4>
+                <h3 className="font-display text-2xl mb-4 text-stone-900">
+                  {locale === "te" ? "వివరణాత్మక ప్రయాణ ప్రణాళిక" : locale === "hi" ? "विस्तृत यात्रा कार्यक्रम" : "Detailed Itinerary"}
+                </h3>
+                <div className="space-y-6">
+                  {trip.itinerary.map((item: any, i: number) => {
+                    const parsedLines = parseItineraryDetails(item.description);
+                    
+                    return (
+                      <div 
+                        key={i} 
+                        className="glass rounded-2xl p-6 border border-stone-200 hover:border-soloz-primary/30 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-500 group"
+                      >
+                        <div className="flex items-center gap-3 border-b border-stone-100 pb-4 mb-5">
+                          <span className="inline-flex items-center justify-center rounded-full bg-soloz-primary/10 px-3 py-1 text-xs font-semibold text-soloz-primary uppercase tracking-wider">
+                            {item.day || (locale === "te" ? `రోజు ${i + 1}` : locale === "hi" ? `दिन ${i + 1}` : `Day ${i + 1}`)}
+                          </span>
+                          <h4 className="font-display text-lg font-bold text-stone-900 group-hover:text-soloz-primary transition-colors duration-300">
+                            {item.title}
+                          </h4>
+                        </div>
+
+                        {/* Dotted Vertical Timeline */}
+                        <div className="relative border-l-2 border-dashed border-stone-200/60 pl-6 ml-3 space-y-6">
+                          {parsedLines.map((line: any, idx: number) => (
+                            <div key={idx} className="relative group/item transition-all duration-300">
+                              {/* Hollow hover-fill timeline node */}
+                              <div className="absolute -left-[32px] top-1.5 size-3.5 rounded-full bg-white border-2 border-stone-300 group-hover/item:border-soloz-primary transition-all duration-300 flex items-center justify-center">
+                                <div className="size-1.5 rounded-full bg-stone-300 group-hover/item:bg-soloz-primary transition-colors duration-300" />
+                              </div>
+
+                              <div className="flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-4">
+                                {line.time && (
+                                  <span className="inline-block shrink-0 bg-soloz-primary/5 border border-soloz-primary/15 rounded px-2 py-0.5 text-[10px] font-bold text-soloz-primary font-mono tracking-wider w-fit select-none">
+                                    {line.time}
+                                  </span>
+                                )}
+                                <p className="text-sm text-stone-600 leading-relaxed font-body">
+                                  {line.content}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <p className="text-sm text-soloz-textSecondary mt-2 leading-relaxed font-body">
-                        {item.description}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
