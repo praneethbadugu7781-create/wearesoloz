@@ -28,6 +28,8 @@ export default function AdminEnquiriesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [tripFilter, setTripFilter] = useState("All");
+  const [monthFilter, setMonthFilter] = useState("All");
   const [selectedEnquiry, setSelectedEnquiry] = useState<EnquiryData | null>(null);
 
   // Approval modal states
@@ -179,6 +181,25 @@ export default function AdminEnquiriesPage() {
     }
   };
 
+  const getMonthYearString = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleString("en-US", { month: "long", year: "numeric" });
+    } catch (e) {
+      return "Unknown Month";
+    }
+  };
+
+  // Get all unique trips for dropdown filter
+  const tripOptions = Array.from(
+    new Set(enquiries.map((e) => e.destination || "General / Other"))
+  ).sort();
+
+  // Get all unique months for dropdown filter (sorted newest first)
+  const monthOptions = Array.from(
+    new Set(enquiries.map((e) => getMonthYearString(e.createdAt)))
+  ).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
   const filtered = enquiries.filter((enq) => {
     const matchesSearch =
       enq.fullName.toLowerCase().includes(search.toLowerCase()) ||
@@ -190,7 +211,15 @@ export default function AdminEnquiriesPage() {
       statusFilter === "All" ||
       enq.status === statusFilter.toLowerCase();
 
-    return matchesSearch && matchesStatus;
+    const matchesTrip =
+      tripFilter === "All" ||
+      (enq.destination || "General / Other") === tripFilter;
+
+    const matchesMonth =
+      monthFilter === "All" ||
+      getMonthYearString(enq.createdAt) === monthFilter;
+
+    return matchesSearch && matchesStatus && matchesTrip && matchesMonth;
   });
 
   return (
@@ -242,34 +271,90 @@ export default function AdminEnquiriesPage() {
       </div>
 
       {/* Filters Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-        {/* Search */}
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={15} />
-          <input
-            type="text"
-            placeholder="Search leads..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 pl-9 pr-4 text-xs text-stone-900 placeholder-stone-400 focus:border-soloz-ember/50 focus:outline-none"
-          />
+      <div className="flex flex-col gap-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
+          {/* Search */}
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={15} />
+            <input
+              type="text"
+              placeholder="Search leads..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 pl-9 pr-4 text-xs text-stone-900 placeholder-stone-400 focus:border-soloz-ember/50 focus:outline-none"
+            />
+          </div>
+
+          {/* Month & Trip Dropdowns */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Trip Dropdown */}
+            <div className="flex flex-col gap-1 min-w-[180px]">
+              <label className="text-[9px] uppercase tracking-wider text-stone-500 font-bold">Filter by Trip</label>
+              <select
+                value={tripFilter}
+                onChange={(e) => setTripFilter(e.target.value)}
+                className="h-10 rounded-lg border border-stone-200 bg-stone-50 px-3 text-xs text-stone-955 font-medium focus:border-soloz-ember/50 focus:outline-none"
+              >
+                <option value="All">All Trips</option>
+                {tripOptions.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Month Dropdown */}
+            <div className="flex flex-col gap-1 min-w-[150px]">
+              <label className="text-[9px] uppercase tracking-wider text-stone-500 font-bold">Filter by Month</label>
+              <select
+                value={monthFilter}
+                onChange={(e) => setMonthFilter(e.target.value)}
+                className="h-10 rounded-lg border border-stone-200 bg-stone-50 px-3 text-xs text-stone-955 font-medium focus:border-soloz-ember/50 focus:outline-none"
+              >
+                <option value="All">All Months</option>
+                {monthOptions.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Status filters */}
-        <div className="flex flex-wrap gap-2 text-xs font-semibold">
-          {["All", "New", "Contacted", "Approved", "Closed"].map((s) => (
+        <div className="flex flex-wrap items-center justify-between border-t border-stone-100 pt-3 gap-3">
+          <div className="flex flex-wrap gap-2 text-xs font-semibold">
+            {["All", "New", "Contacted", "Approved", "Closed"].map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`rounded-full px-4 py-1.5 transition ${
+                  statusFilter === s
+                    ? "bg-soloz-ember text-white shadow-sm font-bold"
+                    : "border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-600"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+
+          {/* Active filters display / Clear filters */}
+          {(tripFilter !== "All" || monthFilter !== "All" || statusFilter !== "All" || search !== "") && (
             <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={`rounded-full px-4 py-1.5 transition ${
-                statusFilter === s
-                  ? "bg-soloz-ember text-white shadow-sm font-bold"
-                  : "border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-600"
-              }`}
+              onClick={() => {
+                setTripFilter("All");
+                setMonthFilter("All");
+                setStatusFilter("All");
+                setSearch("");
+              }}
+              className="text-[11px] text-soloz-ember hover:underline font-bold"
             >
-              {s}
+              Clear all filters
             </button>
-          ))}
+          )}
         </div>
       </div>
 
