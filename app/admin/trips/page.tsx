@@ -120,6 +120,12 @@ export default function AdminTripsPage() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [importText, setImportText] = useState("");
 
+  // State for AI Itinerary Extractor
+  const [aiText, setAiText] = useState("");
+  const [aiImageUrl, setAiImageUrl] = useState("");
+  const [aiExtracting, setAiExtracting] = useState(false);
+  const [showAiImport, setShowAiImport] = useState(false);
+
   useEffect(() => {
     fetchTrips();
   }, []);
@@ -238,6 +244,65 @@ export default function AdminTripsPage() {
       alert(`Successfully imported ${parsed.length} participants!`);
     } else {
       alert("Could not parse any valid phone numbers. Ensure input has names and phone numbers.");
+    }
+  };
+
+  const handleAiExtract = async () => {
+    if (!aiText && !aiImageUrl) {
+      alert("Please provide either text or upload an itinerary image.");
+      return;
+    }
+
+    setAiExtracting(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/extract-itinerary`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        body: JSON.stringify({
+          text: aiText,
+          imageUrl: aiImageUrl
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to extract itinerary details");
+      }
+
+      const data = await res.json();
+
+      // Populate form data from extracted details!
+      setFormData((prev) => ({
+        ...prev,
+        destination: data.destination || prev.destination,
+        state: data.state || prev.state,
+        category: data.category || prev.category,
+        duration: data.duration || prev.duration,
+        price: data.price || prev.price,
+        seats: data.seats || prev.seats,
+        description: data.description || prev.description,
+        inclusions: data.inclusions && data.inclusions.length > 0 ? data.inclusions : prev.inclusions,
+        itinerary: data.itinerary && data.itinerary.length > 0 ? data.itinerary : prev.itinerary,
+        slug: data.destination 
+          ? data.destination.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-").replace(/^-+|-+$/g, "")
+          : prev.slug
+      }));
+
+      // Update international/domestic toggle if state is international
+      if (data.state) {
+        const isInter = !indianStates.includes(data.state);
+        setIsInternational(isInter);
+      }
+
+      // Reset extractor state
+      setAiText("");
+      setAiImageUrl("");
+      setShowAiImport(false);
+      alert("✨ AI successfully extracted and filled the trip details!");
+    } catch (err: any) {
+      alert(err.message || "Error extracting itinerary.");
+    } finally {
+      setAiExtracting(false);
     }
   };
 
@@ -713,6 +778,84 @@ export default function AdminTripsPage() {
           <h3 className="font-display text-xl font-bold text-white border-b border-white/5 pb-3">
             {editId ? "Edit Trip Details" : "Create New Group Tour"}
           </h3>
+
+          {/* AI Import Collapsible Panel */}
+          <div className="rounded-xl border border-[#ff7a1a]/20 bg-[#ff7a1a]/5 p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="text-[#ff7a1a] animate-pulse" size={18} />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#ff7a1a]">
+                  ✨ AI Itinerary & Details Extractor
+                </h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAiImport(!showAiImport)}
+                className="text-xs font-semibold text-white/80 hover:text-white bg-white/10 hover:bg-white/15 px-3 py-1 rounded-md transition-all"
+              >
+                {showAiImport ? "Hide Extractor" : "Open Extractor"}
+              </button>
+            </div>
+
+            {showAiImport && (
+              <div className="space-y-4 pt-2 border-t border-[#ff7a1a]/10">
+                <p className="text-[11px] text-soloz-ash/80 leading-relaxed">
+                  Have an image (poster/flyer) or a text version of your itinerary? Upload or paste it below, and Gemini AI will automatically extract the destination, region, duration, price, Day-by-Day itinerary, and inclusions for you!
+                </p>
+
+                <div className="grid gap-6 sm:grid-cols-2">
+                  {/* Option A: Image Upload */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block font-semibold">
+                      Option A: Upload Itinerary Image
+                    </label>
+                    <div className="bg-[#14110d] rounded-lg p-2 border border-white/5">
+                      <CloudinaryUpload
+                        value={aiImageUrl}
+                        onChange={(url) => setAiImageUrl(url)}
+                        label="Itinerary Image / Flyer / Poster"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Option B: Text Paste */}
+                  <div className="space-y-2 flex flex-col justify-between">
+                    <div>
+                      <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block font-semibold mb-1">
+                        Option B: Paste Raw Text Itinerary
+                      </label>
+                      <textarea
+                        rows={6}
+                        placeholder="Paste details, message, or notes from WhatsApp/PDF/Word here..."
+                        value={aiText}
+                        onChange={(e) => setAiText(e.target.value)}
+                        className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none resize-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <Button
+                    type="button"
+                    disabled={aiExtracting || (!aiText && !aiImageUrl)}
+                    onClick={handleAiExtract}
+                    className="pt-0.5"
+                  >
+                    {aiExtracting ? (
+                      <>
+                        <Loader2 className="animate-spin mr-2" size={14} /> Extracting with Gemini...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2" size={14} /> Extract Details & Auto-Fill Form
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="grid gap-6 sm:grid-cols-4">
             <div>

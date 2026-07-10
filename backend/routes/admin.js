@@ -2,6 +2,8 @@ const express = require("express");
 const cloudinary = require("cloudinary").v2;
 const { connectDB } = require("../lib/db");
 const { requireAuth } = require("../middleware/auth");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const https = require("https");
 
 const Trip = require("../models/Trip");
 const Destination = require("../models/Destination");
@@ -72,6 +74,102 @@ router.get("/trips/:tripId/memories", async (req, res) => {
     res.json(records);
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
+
+// --- AI Itinerary Extractor ---
+function fetchImageAsBase64(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, (res) => {
+      if (res.statusCode !== 200) {
+        return reject(new Error(`Failed to get image, status code: ${res.statusCode}`));
+      }
+      const mimeType = res.headers["content-type"] || "image/jpeg";
+      const chunks = [];
+      res.on("data", (chunk) => chunks.push(chunk));
+      res.on("end", () => {
+        const buffer = Buffer.concat(chunks);
+        resolve({
+          base64: buffer.toString("base64"),
+          mimeType
+        });
+      });
+    }).on("error", reject);
+  });
+}
+
+router.post("/extract-itinerary", async (req, res) => {
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(400).json({
+        error: "Missing GEMINI_API_KEY in environment. Please add it to your server configuration on Render."
+      });
+    }
+
+    const { text, imageUrl } = req.body;
+    if (!text && !imageUrl) {
+      return res.status(400).json({ error: "Please provide either text or an imageUrl to extract itinerary details." });
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `
+You are an expert travel assistant. Analyze the provided image or text of a travel itinerary/trip poster and extract the trip details in the following JSON format. Do not return any other text, markdown formatting, or HTML wrappers. Return ONLY raw JSON.
+
+JSON Schema:
+{
+  "destination": "Name of the destination/trip",
+  "state": "State in India (or country if international)",
+  "category": "One of: Temples, Treks, Adventure",
+  "duration": "Duration description, e.g., '2 Days / 1 Night' or '6D / 5N'",
+  "price": "Price value, e.g., '18,999' or 'Contact for Price'",
+  "seats": 10,
+  "description": "Short summary description of the trip highlights",
+  "itinerary": [
+    {
+      "day": "Day 1",
+      "title": "Title of the day's activity",
+      "description": "Description of what travelers will do on this day"
+    }
+  ],
+  "inclusions": [
+    "Inclusion item 1",
+    "Inclusion item 2"
+  ]
+}
+`;
+
+    let contentParts = [prompt];
+
+    if (imageUrl) {
+      const { base64, mimeType } = await fetchImageAsBase64(imageUrl);
+      contentParts.push({
+        inlineData: {
+          data: base64,
+          mimeType: mimeType
+        }
+      });
+    }
+
+    if (text) {
+      contentParts.push(text);
+    }
+
+    const result = await model.generateContent(contentParts);
+    const responseText = await result.response.text();
+
+    const cleanJsonString = responseText
+      .replace(/^```json\s*/i, "")
+      .replace(/```\s*$/, "")
+      .trim();
+
+    const parsedData = JSON.parse(cleanJsonString);
+    res.json(parsedData);
+  } catch (error) {
+    console.error("AI Extractor error:", error);
+    res.status(500).json({ error: error.message || "Failed to extract itinerary" });
   }
 });
 
