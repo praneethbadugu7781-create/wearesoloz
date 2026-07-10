@@ -133,6 +133,25 @@ export default function AdminWaiversPage() {
     }
   };
 
+  const handleUpdateWaiverInDetail = async (updatedFields: Partial<TripData>) => {
+    if (!selectedTrip) return;
+    try {
+      const res = await fetch(`${API_URL}/admin/trips/${selectedTrip._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        body: JSON.stringify(updatedFields)
+      });
+
+      if (!res.ok) throw new Error("Failed to update confirmation link settings.");
+
+      const newTrip = { ...selectedTrip, ...updatedFields };
+      setSelectedTrip(newTrip);
+      setTrips(prev => prev.map(t => t._id === selectedTrip._id ? newTrip : t));
+    } catch (err: any) {
+      alert(err.message || "Failed to update confirmation settings.");
+    }
+  };
+
   // CSV download helper
   const downloadWaiversCSV = () => {
     if (!selectedTrip || waiverSubmissions.length === 0) return;
@@ -413,6 +432,82 @@ export default function AdminWaiversPage() {
                 </Button>
               </div>
             </div>
+
+            {/* Waiver Confirmation Link Container */}
+            <div className="border-t border-white/5 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/[0.01] p-3 rounded-lg border border-white/[0.05]">
+              <div className="space-y-1 flex-1">
+                <div className="text-[10px] uppercase font-bold text-soloz-ash/60">Shareable Trip Confirmation Link</div>
+                {selectedTrip.confirmationCode ? (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <span className="font-mono text-xs text-soloz-amber break-all">
+                      {`${typeof window !== "undefined" ? window.location.origin : ""}/trip-confirmation/${selectedTrip.confirmationCode}`}
+                    </span>
+                    <button
+                      onClick={() => {
+                        const link = `${window.location.origin}/trip-confirmation/${selectedTrip.confirmationCode}`;
+                        navigator.clipboard.writeText(link);
+                        alert("Confirmation Link Copied!");
+                      }}
+                      className="text-[10px] text-soloz-ember font-bold hover:underline flex items-center gap-1 shrink-0"
+                    >
+                      <Copy size={11} /> Copy URL
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm("Are you sure you want to regenerate the link code? The old link will stop working.")) {
+                          const newCode = Math.random().toString(36).substring(2, 9).toUpperCase();
+                          handleUpdateWaiverInDetail({ confirmationCode: newCode });
+                        }
+                      }}
+                      className="text-[10px] text-red-400 font-bold hover:underline flex items-center gap-1 shrink-0"
+                    >
+                      <RefreshCw size={11} /> Regenerate
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-xs text-soloz-ash/40 italic">No waiver link has been generated yet for this trip.</div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0">
+                {selectedTrip.confirmationCode ? (
+                  <>
+                    <span className="text-xs text-soloz-ash/60">Waiver Access:</span>
+                    <button
+                      onClick={() => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const isPast = selectedTrip.date ? new Date(selectedTrip.date) < today : false;
+                        if (isPast) {
+                          alert("This trip is in the past and waivers are closed.");
+                          return;
+                        }
+                        const isEnabled = selectedTrip.confirmationLinkEnabled !== false;
+                        handleUpdateWaiverInDetail({ confirmationLinkEnabled: !isEnabled });
+                      }}
+                      className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border transition-all ${
+                        (selectedTrip.confirmationLinkEnabled !== false)
+                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
+                          : "bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20"
+                      }`}
+                    >
+                      {selectedTrip.confirmationLinkEnabled !== false ? "Active" : "Disabled"}
+                    </button>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() => {
+                      const newCode = Math.random().toString(36).substring(2, 9).toUpperCase();
+                      handleUpdateWaiverInDetail({ confirmationCode: newCode, confirmationLinkEnabled: true });
+                    }}
+                    className="h-8 text-[10px] font-bold uppercase px-3"
+                  >
+                    Generate Waiver Link
+                  </Button>
+                )}
+              </div>
+            </div>
+
           </div>
 
           {/* Metrics summary cards */}
