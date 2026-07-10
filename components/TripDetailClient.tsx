@@ -342,6 +342,17 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
     return () => clearInterval(interval);
   }, [gallery.length]);
 
+  useEffect(() => {
+    import("@/lib/fpixel").then((pixel) => {
+      pixel.trackEvent("ViewContent", {
+        content_name: trip.title || `${trip.destination} Expedition`,
+        content_category: trip.category || "Adventure",
+        value: parseFloat(trip.price?.toString().replace(/[^0-9.]/g, "")) || 0,
+        currency: "INR"
+      });
+    });
+  }, [trip]);
+
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
   };
@@ -421,6 +432,23 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
       const generatedWaUrl = `https://wa.me/919966085310?text=${waText}`;
       setWaUrl(generatedWaUrl);
       window.open(generatedWaUrl, "_blank");
+
+      // Track conversion metrics
+      import("@/lib/fpixel").then((pixel) => {
+        pixel.trackEvent("Lead", {
+          content_name: trip.title || trip.destination,
+          content_category: trip.category || "Adventure",
+          value: parseFloat(trip.price?.toString().replace(/[^0-9.]/g, "")) || 0,
+          currency: "INR"
+        });
+      });
+
+      import("@/lib/fpixel").then((pixel) => {
+        pixel.trackEvent("Contact", {
+          content_name: "WhatsApp Booking Redirect",
+          content_category: trip.title || trip.destination
+        });
+      });
 
       setForm({ full_name: "", mobile: "", email: "", travelers: 1, message: "", age: "", bloodGroup: "" });
       setShowSuccess(true);

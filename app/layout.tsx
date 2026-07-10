@@ -10,6 +10,8 @@ import { Toaster } from "sonner";
 import { LanguageProvider } from "@/lib/LanguageContext";
 import Script from "next/script";
 import SolozAiChat from "@/components/SolozAiChat";
+import MetaPixel from "@/components/MetaPixel";
+import { Suspense } from "react";
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", weight: ["300", "400", "500", "600", "700"] });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
@@ -101,6 +103,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <Footer />
           <BookingModal />
           <SolozAiChat />
+          <Suspense fallback={null}>
+            <MetaPixel />
+          </Suspense>
           <Toaster theme="light" richColors closeButton position="bottom-right" />
         </LanguageProvider>
       </body>

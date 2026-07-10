@@ -109,6 +109,22 @@ export function BookingModal() {
       setWaUrl(waLink);
       window.open(waLink, "_blank");
 
+      // Track Meta Pixel conversion events
+      import("@/lib/fpixel").then((pixel) => {
+        pixel.trackEvent("Lead", {
+          content_name: selectedPackage || "General Enquiry",
+          value: 0,
+          currency: "INR"
+        });
+      });
+
+      import("@/lib/fpixel").then((pixel) => {
+        pixel.trackEvent("Contact", {
+          content_name: "WhatsApp Booking Modal Redirect",
+          content_category: selectedPackage || "General Enquiry"
+        });
+      });
+
       setSuccess(true);
       // Reset form
       setFullName("");

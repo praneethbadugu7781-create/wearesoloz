@@ -133,6 +133,14 @@ export default function ContactClient({ settings = {}, trips = [] }: ContactClie
       setWaUrl(generatedWaUrl);
       window.open(generatedWaUrl, "_blank");
 
+      // Track Contact conversion
+      import("@/lib/fpixel").then((pixel) => {
+        pixel.trackEvent("Contact", {
+          content_name: "Contact Page Form Submission",
+          content_category: combinedDestination
+        });
+      });
+
       setForm({ full_name: "", mobile: "", email: "", destination: "", message: "", age: "", bloodGroup: "" });
       setSelectedState("");
       setShowSuccess(true);

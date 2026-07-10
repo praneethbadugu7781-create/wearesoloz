@@ -55,6 +55,14 @@ export function ContactForm() {
       const waUrl = `https://wa.me/919966085310?text=${waText}`;
       window.open(waUrl, "_blank");
 
+      // Track Contact conversion
+      import("@/lib/fpixel").then((pixel) => {
+        pixel.trackEvent("Contact", {
+          content_name: "Contact Form Submission",
+          content_category: formData.destination || "General"
+        });
+      });
+
       setSuccess(true);
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please try again.");

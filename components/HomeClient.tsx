@@ -264,6 +264,14 @@ export default function HomeClient({
       setWaUrl(generatedWaUrl);
       window.open(generatedWaUrl, "_blank");
 
+      // Track Contact conversion
+      import("@/lib/fpixel").then((pixel) => {
+        pixel.trackEvent("Contact", {
+          content_name: "Homepage Form Submission",
+          content_category: combinedDestination
+        });
+      });
+
       setForm({ full_name: "", mobile: "", email: "", destination: "", message: "", age: "", bloodGroup: "" });
       setSelectedState("");
       setShowSuccess(true);
