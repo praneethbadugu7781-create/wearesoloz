@@ -690,4 +690,137 @@ router.post("/memories/trips/:tripId/comment", verifyParticipantToken, async (re
   }
 });
 
+// --- Public AI Chat ---
+router.post("/ai/chat", async (req, res) => {
+  try {
+    const { messages } = req.body;
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "Please provide a valid messages array." });
+    }
+
+    const groqKey = process.env.GROQ_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY;
+
+    if (!groqKey && !geminiKey) {
+      return res.status(500).json({ error: "AI services are not configured on this server." });
+    }
+
+    await connectDB();
+    const trips = await Trip.find({ status: "published" }).lean();
+    
+    const tripsContext = trips.map(t => {
+      return `- Trip Title: ${t.title || `${t.destination} Expedition`}
+  Destination: ${t.destination}
+  State: ${t.state || "India"}
+  Category: ${t.category}
+  Duration: ${t.duration}
+  Price: INR ${t.price}
+  Seats Left: ${t.seats}
+  Date: ${t.date ? new Date(t.date).toDateString() : "N/A"}
+  Highlights: ${t.description}
+  Inclusions: ${t.inclusions ? t.inclusions.slice(0, 10).join(", ") : "Standard group travel logistics stays"}`;
+    }).join("\n\n");
+
+    const systemPrompt = `You are "SoloZ AI", the friendly, highly enthusiastic travel assistant for the WeAreSoloz solo travel community founded by Akhil Pasupuleti.
+Your job is to match travelers with their perfect trips, answer questions about itineraries, pricing, community policies, and support inquiries.
+
+Available Upcoming Trips:
+${tripsContext}
+
+General Rules & Details:
+1. Contact / Registration: To book a trip, ask questions, or register for the farmer program, travelers should contact Akhil Pasupuleti on WhatsApp (+91 99660 85310) or fill out the booking form on the trip pages.
+2. Inclusions/Exclusions: Train/flight tickets are not included. Travelers must reach the designated meeting point in the starting city by themselves.
+3. YouTube Channel: Akhil runs "Akhill Rockstar Travel Stories" on YouTube.
+4. Farmer Program: WeAreSoloz sponsors one free trip every month for a deserving farmer.
+5. Be warm and friendly. Keep answers relatively concise and format with bullet points for easy reading.
+6. Speak in the user's language (English, Telugu, Hindi, etc.).`;
+
+    const fullMessages = [
+      { role: "system", content: systemPrompt },
+      ...messages.slice(-8)
+    ];
+
+    let aiText = "";
+
+    if (groqKey) {
+      try {
+        const payload = {
+          model: "meta-llama/llama-4-scout-17b-16e-instruct",
+          messages: fullMessages,
+          temperature: 0.7,
+          max_tokens: 800
+        };
+        const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${groqKey}`
+          },
+          body: JSON.stringify(payload)
+        });
+        if (groqRes.ok) {
+          const data = await groqRes.json();
+          aiText = data.choices[0].message.content;
+        } else {
+          const errorMsg = await groqRes.text();
+          console.error("Groq API error response:", errorMsg);
+        }
+      } catch (err) {
+        console.error("Groq chat failed, falling back to Gemini:", err);
+      }
+    }
+
+    if (!aiText && geminiKey) {
+      try {
+        const contents = fullMessages
+          .filter(m => m.role !== "system")
+          .map(m => ({
+            role: m.role === "user" ? "user" : "model",
+            parts: [{ text: m.content }]
+          }));
+
+        const payload = {
+          contents,
+          systemInstruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          generationConfig: {
+            maxOutputTokens: 800,
+            temperature: 0.7
+          }
+        };
+
+        const geminiRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          }
+        );
+
+        if (geminiRes.ok) {
+          const data = await geminiRes.json();
+          aiText = data.candidates[0].content.parts[0].text;
+        } else {
+          const errorMsg = await geminiRes.text();
+          console.error("Gemini API error response:", errorMsg);
+        }
+      } catch (err) {
+        console.error("Gemini chat failed:", err);
+      }
+    }
+
+    if (!aiText) {
+      return res.status(500).json({ error: "AI services failed to respond." });
+    }
+
+    res.json({ reply: aiText });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

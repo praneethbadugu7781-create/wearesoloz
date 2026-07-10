@@ -9,6 +9,7 @@ import { brand } from "@/lib/data";
 import { Toaster } from "sonner";
 import { LanguageProvider } from "@/lib/LanguageContext";
 import Script from "next/script";
+import SolozAiChat from "@/components/SolozAiChat";
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", weight: ["300", "400", "500", "600", "700"] });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
@@ -99,11 +100,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           {/* Footer has already been modified to handle static checks */}
           <Footer />
           <BookingModal />
+          <SolozAiChat />
           <Toaster theme="light" richColors closeButton position="bottom-right" />
         </LanguageProvider>
       </body>
     </html>
   );
 }
-
-
