@@ -19,33 +19,36 @@ interface TripDetailClientProps {
 function parseItineraryDetails(text: string) {
   if (!text) return [];
   
-  let lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const timePattern = /(\b\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?\b)/i;
+  const parts = text.split(timePattern);
   
-  if (lines.length <= 1) {
-    const timeRegex = /(?=\b(?:0?[1-9]|1[0-2]):[0-5][0-9]\s*(?:AM|PM|am|pm)\b|\b(?:[0-1]?[0-9]|2[0-3]):[0-5][0-9]\b|\b\d{2}\s*(?:AM|PM|am|pm)\b)/i;
-    lines = text.split(timeRegex).map(l => l.trim()).filter(Boolean);
+  const items: { time: string | null; content: string }[] = [];
+  
+  if (parts.length <= 1) {
+    const bullets = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    return bullets.map(b => {
+      const clean = b.replace(/^[-*•]\s*/, "");
+      return { time: null, content: clean };
+    });
   }
   
-  return lines.map(line => {
-    const timeMatch = line.match(/^(\b(?:0?[1-9]|1[0-2]):[0-5][0-9]\s*(?:AM|PM|am|pm)\b|\b(?:[0-1]?[0-9]|2[0-3]):[0-5][0-9]\b|\b\d{2}\s*(?:AM|PM|am|pm)\b)(?:\s*[-–—:]\s*)?(.*)/i);
-    if (timeMatch) {
-      return {
-        time: timeMatch[1],
-        content: timeMatch[2] || ""
-      };
-    }
-    const bulletMatch = line.match(/^[-*•]\s*(.*)/);
-    if (bulletMatch) {
-      return {
-        time: null,
-        content: bulletMatch[1]
-      };
-    }
-    return {
-      time: null,
-      content: line
-    };
-  });
+  const initialText = parts[0].trim();
+  if (initialText) {
+    items.push({ time: null, content: initialText });
+  }
+  
+  for (let i = 1; i < parts.length; i += 2) {
+    const time = parts[i];
+    const rawContent = parts[i + 1] || "";
+    const cleanContent = rawContent.replace(/^[\s\-–—:]+/, "").replace(/[\s\-–—:]+$/, "").trim();
+    
+    items.push({
+      time: time,
+      content: cleanContent
+    });
+  }
+  
+  return items.filter(item => item.content || item.time);
 }
 
 export default function TripDetailClient({ trip }: TripDetailClientProps) {
