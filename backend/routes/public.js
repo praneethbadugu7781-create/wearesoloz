@@ -828,4 +828,52 @@ General Rules & Details:
   }
 });
 
+// --- Public Trip Confirmation & Liability Waiver ---
+router.get("/trip-confirmation/:code", async (req, res) => {
+  try {
+    await connectDB();
+    const trip = await Trip.findOne({ confirmationCode: req.params.code }).lean();
+    if (!trip) {
+      return res.status(404).json({ error: "Trip confirmation link not found or expired." });
+    }
+    if (trip.confirmationLinkEnabled === false) {
+      return res.status(400).json({ error: "This confirmation link has been disabled by the administrator." });
+    }
+    res.json({
+      _id: trip._id,
+      destination: trip.destination,
+      title: trip.title,
+      date: trip.date,
+      pickupLocation: trip.pickupLocation || "Default Meeting Point"
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.post("/trip-confirmation/:code", async (req, res) => {
+  try {
+    const WaiverSubmission = require("../models/WaiverSubmission");
+    await connectDB();
+    const trip = await Trip.findOne({ confirmationCode: req.params.code });
+    if (!trip) {
+      return res.status(404).json({ error: "Trip not found." });
+    }
+    if (trip.confirmationLinkEnabled === false) {
+      return res.status(400).json({ error: "This confirmation link has been disabled." });
+    }
+
+    const submissionId = `SOL-WAV-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    await WaiverSubmission.create({
+      tripId: trip._id,
+      ...req.body,
+      submissionId
+    });
+
+    res.status(201).json({ success: true, submissionId });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

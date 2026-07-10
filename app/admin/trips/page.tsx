@@ -3,7 +3,7 @@ import { getAuthHeaders } from "@/lib/api";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 import { useEffect, useState } from "react";
-import { Compass, Plus, Edit2, Trash2, Check, Loader2, Calendar, Users, Sparkles, X, FileSpreadsheet, FileText } from "lucide-react";
+import { Compass, Plus, Edit2, Trash2, Check, Loader2, Calendar, Users, Sparkles, X, FileSpreadsheet, FileText, ClipboardCheck, Search, Printer, Download, ExternalLink, Copy, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CloudinaryUpload } from "@/components/cloudinary-upload";
 import { exportToCSV, exportToPDF, formatPriceForExport } from "@/lib/export";
@@ -38,6 +38,9 @@ interface TripData {
   inclusions: string[];
   participants?: Participant[];
   recap?: string;
+  confirmationCode?: string;
+  confirmationLinkEnabled?: boolean;
+  pickupLocation?: string;
 }
 
 const indianStates = [
@@ -98,14 +101,17 @@ const emptyForm: TripData = {
   ],
   inclusions: ["Shared accommodation (AC/Non-AC)", "Transfers (AC/Non-AC)", "Breakfast & Dinner", "Tour Guide"],
   participants: [],
-  recap: ""
+  recap: "",
+  confirmationCode: "",
+  confirmationLinkEnabled: true,
+  pickupLocation: "Default City Meeting Point"
 };
 
 export default function AdminTripsPage() {
   const [trips, setTrips] = useState<TripData[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [view, setView] = useState<"list" | "form">("list");
+  const [view, setView] = useState<"list" | "form" | "confirmations">("list");
   const [formData, setFormData] = useState<TripData>(emptyForm);
   const [editId, setEditId] = useState<string | null>(null);
   const [subView, setSubView] = useState<"all" | "months">("all");
@@ -125,6 +131,36 @@ export default function AdminTripsPage() {
   const [aiImageUrl, setAiImageUrl] = useState("");
   const [aiExtracting, setAiExtracting] = useState(false);
   const [showAiImport, setShowAiImport] = useState(false);
+
+  // Waiver Confirmations Dashboard States
+  const [selectedTripForWaivers, setSelectedTripForWaivers] = useState<TripData | null>(null);
+  const [waiverSubmissions, setWaiverSubmissions] = useState<any[]>([]);
+  const [loadingWaivers, setLoadingWaivers] = useState(false);
+  const [waiversSearch, setWaiversSearch] = useState("");
+  const [selectedWaiverDetail, setSelectedWaiverDetail] = useState<any | null>(null);
+
+  const fetchWaivers = async (tripId: string) => {
+    setLoadingWaivers(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/trips/${tripId}/waivers`, {
+        headers: getAuthHeaders()
+      });
+      if (!res.ok) throw new Error("Failed to load waiver submissions");
+      const data = await res.json();
+      setWaiverSubmissions(data);
+    } catch (err: any) {
+      alert(err.message || "Error loading waiver submissions.");
+    } finally {
+      setLoadingWaivers(false);
+    }
+  };
+
+  const handleOpenWaivers = (trip: TripData) => {
+    setSelectedTripForWaivers(trip);
+    setWaiverSubmissions([]);
+    fetchWaivers(trip._id!);
+    setView("confirmations");
+  };
 
   useEffect(() => {
     fetchTrips();
@@ -638,6 +674,13 @@ export default function AdminTripsPage() {
         <span className="text-base font-bold text-soloz-amber">{trip.price}</span>
         <div className="flex gap-2">
           <button
+            onClick={() => handleOpenWaivers(trip)}
+            title="Manage Confirmations & Waivers"
+            className="grid size-8 place-items-center rounded bg-orange-500/10 border border-orange-500/25 text-[#ea580c] hover:bg-orange-500/20"
+          >
+            <ClipboardCheck size={13} />
+          </button>
+          <button
             onClick={() => handleEdit(trip)}
             className="grid size-8 place-items-center rounded bg-white/5 border border-white/10 text-white hover:bg-white/10"
           >
@@ -666,7 +709,7 @@ export default function AdminTripsPage() {
           <p className="text-xs text-soloz-ash/75 mt-1">Configure tour packages, pricing itineraries, and seats.</p>
         </div>
 
-        {view === "list" ? (
+        {view === "list" && (
           <div className="flex flex-wrap gap-2">
             <Button onClick={handleExportCSV} variant="secondary" className="pt-0.5 border-white/10 hover:bg-white/5 text-white">
               <FileSpreadsheet size={16} className="mr-2 text-emerald-500" /> Export Excel
@@ -678,9 +721,10 @@ export default function AdminTripsPage() {
               <Plus size={16} className="mr-2" /> Create New Trip
             </Button>
           </div>
-        ) : (
+        )}
+        {view !== "list" && (
           <Button onClick={() => setView("list")} variant="secondary" className="pt-0.5">
-            Cancel Edit
+            Back to Trips
           </Button>
         )}
       </div>
@@ -710,7 +754,7 @@ export default function AdminTripsPage() {
         </div>
       )}
 
-      {view === "list" ? (
+      {view === "list" && (
         loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-soloz-ash/60">
             <Loader2 className="animate-spin text-soloz-ember mb-3" size={32} />
@@ -772,7 +816,9 @@ export default function AdminTripsPage() {
             )}
           </div>
         )
-      ) : (
+      )}
+
+      {view === "form" && (
         /* EDIT / CREATE FORM */
         <form onSubmit={handleSave} className="rounded-xl border border-white/10 bg-[#14110d] p-6 sm:p-8 space-y-6 max-w-4xl">
           <h3 className="font-display text-xl font-bold text-white border-b border-white/5 pb-3">
@@ -982,6 +1028,18 @@ export default function AdminTripsPage() {
           </div>
 
           <div>
+            <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Pickup Location *</label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Rajahmundry RJY Station"
+              value={formData.pickupLocation || ""}
+              onChange={(e) => setFormData({ ...formData, pickupLocation: e.target.value })}
+              className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none mb-4"
+            />
+          </div>
+
+          <div>
             <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Description</label>
             <textarea
               required
@@ -1082,6 +1140,83 @@ export default function AdminTripsPage() {
               onChange={(e) => setFormData({ ...formData, recap: e.target.value })}
               className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none resize-none"
             />
+          </div>
+
+          {/* Trip Confirmation Link Section */}
+          <div className="space-y-4 pt-4 border-t border-white/5 bg-white/5 p-4 rounded-xl border border-white/10">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold uppercase tracking-wider text-soloz-amber">Trip Confirmation & Waiver Link</h4>
+                <p className="text-xs text-soloz-ash/60 mt-1">
+                  Generate and share this link with participants after payment to get their digital signatures and medical disclosures.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-white/80">Waiver Link:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, confirmationLinkEnabled: !prev.confirmationLinkEnabled }));
+                  }}
+                  className={`px-3 py-1 rounded text-xs font-semibold uppercase tracking-wider transition-all ${
+                    formData.confirmationLinkEnabled 
+                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" 
+                      : "bg-red-500/20 text-red-400 border border-red-500/30"
+                  }`}
+                >
+                  {formData.confirmationLinkEnabled ? "Active" : "Disabled"}
+                </button>
+              </div>
+            </div>
+
+            {formData.confirmationCode ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/trip-confirmation/${formData.confirmationCode}`}
+                    className="h-10 flex-grow rounded-lg border border-white/10 bg-black/40 px-3 text-xs text-soloz-ash/80 select-all focus:outline-none"
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      const link = `${window.location.origin}/trip-confirmation/${formData.confirmationCode}`;
+                      navigator.clipboard.writeText(link);
+                      alert("Confirmation Link Copied!");
+                    }}
+                    className="h-10 px-4 text-xs"
+                  >
+                    <Copy size={12} className="mr-1.5" /> Copy Link
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      const newCode = Math.random().toString(36).substring(2, 9).toUpperCase();
+                      setFormData(prev => ({ ...prev, confirmationCode: newCode }));
+                    }}
+                    className="h-10 px-4 text-xs text-red-400 hover:text-red-300 border border-red-500/10"
+                  >
+                    <RefreshCw size={12} className="mr-1.5 animate-spin-hover" /> Regenerate
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-start">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    const newCode = Math.random().toString(36).substring(2, 9).toUpperCase();
+                    setFormData(prev => ({ ...prev, confirmationCode: newCode, confirmationLinkEnabled: true }));
+                  }}
+                  className="text-xs"
+                >
+                  <Plus size={12} className="mr-1.5" /> Generate Waiver & Confirmation Link
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Participants section */}
@@ -1247,6 +1382,394 @@ export default function AdminTripsPage() {
             </Button>
           </div>
         </form>
+      )}
+
+      {view === "confirmations" && selectedTripForWaivers && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          
+          {/* Header Card */}
+          <div className="rounded-xl border border-white/10 bg-[#14110d] p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <span className="bg-orange-500/10 text-[#ea580c] px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-orange-500/20">
+                  Liability Waivers & Confirmations
+                </span>
+                <h2 className="font-display text-2xl font-bold text-white mt-2">
+                  {selectedTripForWaivers.destination}
+                </h2>
+                <div className="flex flex-wrap gap-4 text-xs text-soloz-ash/60 mt-1">
+                  <span>Date: {new Date(selectedTripForWaivers.date).toLocaleDateString()}</span>
+                  <span>|</span>
+                  <span>Pickup: {selectedTripForWaivers.pickupLocation || "N/A"}</span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button 
+                  onClick={() => {
+                    const rowsHTML = waiverSubmissions.map(w => `
+                      <tr>
+                        <td>${w.submissionId}</td>
+                        <td>${w.fullName} (Age: ${w.age}, ${w.gender})</td>
+                        <td>${w.mobile}<br/>${w.email || ""}</td>
+                        <td>${w.idType}: ${w.idNumber}</td>
+                        <td>${w.emergencyContactName} (${w.emergencyContactRelationship})<br/>${w.emergencyContactMobile}</td>
+                        <td>${w.medicalConditions || "None"}</td>
+                        <td>${w.signedName}</td>
+                      </tr>
+                    `).join("");
+
+                    const printWindow = window.open("", "_blank");
+                    if (!printWindow) return;
+                    printWindow.document.write(`
+                      <html>
+                        <head>
+                          <title>Participant Waiver List - ${selectedTripForWaivers.destination}</title>
+                          <style>
+                            body { font-family: sans-serif; padding: 20px; }
+                            h1 { font-size: 20px; margin-bottom: 5px; }
+                            h2 { font-size: 14px; color: #555; margin-top: 0; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; }
+                            th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+                            th { background-color: #f4f4f4; }
+                          </style>
+                        </head>
+                        <body onload="window.print(); window.close();">
+                          <h1>WeAreSoloZ - Waiver Confirmations List</h1>
+                          <h2>Trip: ${selectedTripForWaivers.destination} | Date: ${new Date(selectedTripForWaivers.date).toLocaleDateString()} | Pickup: ${selectedTripForWaivers.pickupLocation || "N/A"}</h2>
+                          <p>Total Submissions: ${waiverSubmissions.length}</p>
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>Sub ID</th>
+                                <th>Participant</th>
+                                <th>Contact</th>
+                                <th>Identity</th>
+                                <th>Emergency Contact</th>
+                                <th>Medical Notes</th>
+                                <th>Signature</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              ${rowsHTML}
+                            </tbody>
+                          </table>
+                        </body>
+                      </html>
+                    `);
+                    printWindow.document.close();
+                  }}
+                  variant="secondary" 
+                  className="h-9 text-xs border-white/10 text-white hover:bg-white/5"
+                >
+                  <Printer size={14} className="mr-1.5 text-blue-400" /> Print Waiver List
+                </Button>
+                <Button 
+                  onClick={() => {
+                    const headers = [
+                      "Submission ID",
+                      "Full Name",
+                      "Age",
+                      "Gender",
+                      "Mobile",
+                      "Email",
+                      "Address",
+                      "Blood Group",
+                      "Medical Conditions",
+                      "Allergies",
+                      "Medications",
+                      "Emergency Notes",
+                      "Emergency Contact Name",
+                      "Emergency Contact Mobile",
+                      "Emergency Contact Relationship",
+                      "ID Type",
+                      "ID Number",
+                      "ID Upload URL",
+                      "Digital Signature",
+                      "Signed Date"
+                    ];
+
+                    const rows = waiverSubmissions.map(w => [
+                      w.submissionId,
+                      w.fullName,
+                      w.age,
+                      w.gender,
+                      w.mobile,
+                      w.email || "N/A",
+                      w.address || "N/A",
+                      w.bloodGroup || "N/A",
+                      w.medicalConditions || "None",
+                      w.allergies || "None",
+                      w.medications || "None",
+                      w.emergencyNotes || "None",
+                      w.emergencyContactName,
+                      w.emergencyContactMobile,
+                      w.emergencyContactRelationship,
+                      w.idType,
+                      w.idNumber,
+                      w.idUpload || "N/A",
+                      w.signedName,
+                      new Date(w.signedDate).toLocaleDateString()
+                    ]);
+
+                    const csvContent = "data:text/csv;charset=utf-8," 
+                      + [headers.join(","), ...rows.map(e => e.map(val => `"${val.toString().replace(/"/g, '""')}"`).join(","))].join("\n");
+                      
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", `Waivers_${selectedTripForWaivers.destination.replace(/\s+/g, "_")}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  variant="secondary" 
+                  className="h-9 text-xs border-white/10 text-white hover:bg-white/5"
+                >
+                  <Download size={14} className="mr-1.5 text-emerald-400" /> Export CSV
+                </Button>
+                <Button
+                  onClick={() => fetchWaivers(selectedTripForWaivers._id!)}
+                  variant="secondary"
+                  className="h-9 text-xs border-white/10 text-white hover:bg-white/5"
+                >
+                  <RefreshCw size={14} className="mr-1.5" /> Refresh
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Metrics summary cards */}
+          {(() => {
+            const registeredParticipants = selectedTripForWaivers.participants || [];
+            const submissionMobiles = new Set(waiverSubmissions.map(w => w.mobile?.trim().replace(/\s+/g, "")));
+            const submissionNames = new Set(waiverSubmissions.map(w => w.fullName?.trim().toLowerCase()));
+
+            const confirmedCount = waiverSubmissions.length;
+            const pendingParticipants = registeredParticipants.filter(p => {
+              const normalizedPhone = p.phone?.trim().replace(/\s+/g, "");
+              const normalizedName = p.name?.trim().toLowerCase();
+              return !submissionMobiles.has(normalizedPhone) && !submissionNames.has(normalizedName);
+            });
+            const pendingCount = pendingParticipants.length;
+
+            return (
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-xl border border-white/10 bg-[#14110d] p-5 space-y-1">
+                  <span className="text-[10px] uppercase tracking-wider text-soloz-ash/60 font-bold">Forms Submitted</span>
+                  <div className="text-3xl font-bold text-soloz-amber">{waiverSubmissions.length}</div>
+                  <p className="text-[10px] text-soloz-ash/40">Real-time waivers submitted by paid travelers</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-[#14110d] p-5 space-y-1">
+                  <span className="text-[10px] uppercase tracking-wider text-soloz-ash/60 font-bold">Confirmed Travelers</span>
+                  <div className="text-3xl font-bold text-emerald-400">{confirmedCount}</div>
+                  <p className="text-[10px] text-soloz-ash/40">Participants who completed verification</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-[#14110d] p-5 space-y-1">
+                  <span className="text-[10px] uppercase tracking-wider text-soloz-ash/60 font-bold">Pending Waivers</span>
+                  <div className="text-3xl font-bold text-orange-400">{pendingCount}</div>
+                  <p className="text-[10px] text-soloz-ash/40">Travelers in settings who haven't completed forms</p>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Submissions Table with search */}
+          <div className="rounded-xl border border-white/10 bg-[#14110d] p-6 space-y-4">
+            <div className="flex items-center gap-2 max-w-sm">
+              <Search className="text-soloz-ash/40" size={16} />
+              <input
+                type="text"
+                placeholder="Search participant name, phone, or email..."
+                value={waiversSearch}
+                onChange={(e) => setWaiversSearch(e.target.value)}
+                className="h-9 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none"
+              />
+            </div>
+
+            {loadingWaivers ? (
+              <div className="flex flex-col items-center justify-center py-10 text-soloz-ash/60">
+                <Loader2 className="animate-spin text-soloz-ember mb-2" size={24} />
+                <p className="text-[10px]">Retrieving waivers list...</p>
+              </div>
+            ) : waiverSubmissions.length === 0 ? (
+              <div className="text-center py-10 text-xs text-soloz-ash/40 italic">
+                No waivers submitted for this trip yet.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left text-white border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/10 text-[10px] uppercase tracking-wider text-soloz-ash/60">
+                      <th className="py-3 px-4 font-bold">Sub ID</th>
+                      <th className="py-3 px-4 font-bold">Full Name</th>
+                      <th className="py-3 px-4 font-bold">Contact</th>
+                      <th className="py-3 px-4 font-bold">Identity Doc</th>
+                      <th className="py-3 px-4 font-bold">Emergency Contact</th>
+                      <th className="py-3 px-4 font-bold">Date Submitted</th>
+                      <th className="py-3 px-4 font-bold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {waiverSubmissions
+                      .filter(w => {
+                        const term = waiversSearch.toLowerCase();
+                        return (
+                          w.fullName?.toLowerCase().includes(term) ||
+                          w.mobile?.includes(term) ||
+                          w.email?.toLowerCase().includes(term) ||
+                          w.submissionId?.toLowerCase().includes(term)
+                        );
+                      })
+                      .map((w) => (
+                        <tr key={w._id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                          <td className="py-3 px-4 font-mono font-bold text-soloz-amber">{w.submissionId}</td>
+                          <td className="py-3 px-4">
+                            <div className="font-bold">{w.fullName}</div>
+                            <div className="text-[10px] text-soloz-ash/50">Age: {w.age} | {w.gender}</div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div>{w.mobile}</div>
+                            <div className="text-[10px] text-soloz-ash/50">{w.email || "No Email"}</div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div>{w.idType}</div>
+                            <div className="text-[10px] text-soloz-ash/50">{w.idNumber || "N/A"}</div>
+                            {w.idUpload && (
+                              <a
+                                href={w.idUpload}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[10px] text-soloz-ember font-bold hover:underline inline-flex items-center gap-1 mt-0.5"
+                              >
+                                View Upload <ExternalLink size={10} />
+                              </a>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="font-bold">{w.emergencyContactName} ({w.emergencyContactRelationship})</div>
+                            <div className="text-[10px] text-soloz-ash/50">{w.emergencyContactMobile}</div>
+                          </td>
+                          <td className="py-3 px-4 text-soloz-ash/60">
+                            {new Date(w.createdAt || w.signedDate).toLocaleString()}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <button
+                              onClick={() => setSelectedWaiverDetail(w)}
+                              className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-white hover:bg-white/10 text-[10px] font-semibold"
+                            >
+                              View Details
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Details View Modal */}
+      {selectedWaiverDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-2xl rounded-xl border border-white/10 bg-[#14110d] p-6 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setSelectedWaiverDetail(null)}
+              className="absolute right-4 top-4 text-soloz-ash/60 hover:text-white transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="space-y-1 border-b border-white/5 pb-3">
+              <span className="text-[9px] uppercase tracking-wider text-soloz-amber font-mono font-bold">
+                Submission ID: {selectedWaiverDetail.submissionId}
+              </span>
+              <h3 className="font-display text-lg font-bold text-white">
+                Liability Waiver Disclosure
+              </h3>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2 text-xs">
+              
+              {/* Personal */}
+              <div className="space-y-2 bg-white/[0.02] p-4 rounded-lg border border-white/5">
+                <h4 className="font-bold text-soloz-amber uppercase tracking-wider text-[10px]">Personal Details</h4>
+                <div className="space-y-1 text-soloz-ash/80">
+                  <p><span className="text-white/60">Full Name:</span> {selectedWaiverDetail.fullName}</p>
+                  <p><span className="text-white/60">Age / Gender:</span> {selectedWaiverDetail.age} / {selectedWaiverDetail.gender}</p>
+                  <p><span className="text-white/60">Mobile:</span> {selectedWaiverDetail.mobile}</p>
+                  <p><span className="text-white/60">Email:</span> {selectedWaiverDetail.email || "N/A"}</p>
+                  <p><span className="text-white/60">Address:</span> {selectedWaiverDetail.address || "N/A"}</p>
+                </div>
+              </div>
+
+              {/* Emergency */}
+              <div className="space-y-2 bg-white/[0.02] p-4 rounded-lg border border-white/5">
+                <h4 className="font-bold text-soloz-amber uppercase tracking-wider text-[10px]">Emergency Contact</h4>
+                <div className="space-y-1 text-soloz-ash/80">
+                  <p><span className="text-white/60">Contact Name:</span> {selectedWaiverDetail.emergencyContactName}</p>
+                  <p><span className="text-white/60">Relationship:</span> {selectedWaiverDetail.emergencyContactRelationship}</p>
+                  <p><span className="text-white/60">Mobile:</span> {selectedWaiverDetail.emergencyContactMobile}</p>
+                </div>
+              </div>
+
+              {/* Identity */}
+              <div className="space-y-2 bg-white/[0.02] p-4 rounded-lg border border-white/5">
+                <h4 className="font-bold text-soloz-amber uppercase tracking-wider text-[10px]">Identity Proof</h4>
+                <div className="space-y-1 text-soloz-ash/80">
+                  <p><span className="text-white/60">ID Type:</span> {selectedWaiverDetail.idType}</p>
+                  <p><span className="text-white/60">ID Number:</span> {selectedWaiverDetail.idNumber || "N/A"}</p>
+                  {selectedWaiverDetail.idUpload && (
+                    <div className="mt-2">
+                      <a
+                        href={selectedWaiverDetail.idUpload}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1 rounded text-white font-semibold text-[10px]"
+                      >
+                        Open ID Proof Attachment <ExternalLink size={10} />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Medical */}
+              <div className="space-y-2 bg-white/[0.02] p-4 rounded-lg border border-white/5">
+                <h4 className="font-bold text-soloz-amber uppercase tracking-wider text-[10px]">Medical Profile</h4>
+                <div className="space-y-1 text-soloz-ash/80">
+                  <p><span className="text-white/60">Blood Group:</span> {selectedWaiverDetail.bloodGroup || "N/A"}</p>
+                  <p><span className="text-white/60">Chronic Conditions:</span> {selectedWaiverDetail.medicalConditions || "None declared"}</p>
+                  <p><span className="text-white/60">Allergies:</span> {selectedWaiverDetail.allergies || "None declared"}</p>
+                  <p><span className="text-white/60">Medications:</span> {selectedWaiverDetail.medications || "None declared"}</p>
+                  <p><span className="text-white/60">Emergency Notes:</span> {selectedWaiverDetail.emergencyNotes || "None declared"}</p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Signature Block */}
+            <div className="border-t border-white/5 pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs text-soloz-ash/70">
+              <div>
+                <span className="text-[10px] text-soloz-ash/40 uppercase block mb-1">Participant Digital Signature</span>
+                <span className="font-serif italic text-sm text-white">{selectedWaiverDetail.signedName}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-soloz-ash/40 uppercase block mb-1">Date Signed</span>
+                <span className="text-white font-bold">{new Date(selectedWaiverDetail.signedDate || selectedWaiverDetail.createdAt).toLocaleDateString()}</span>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button onClick={() => setSelectedWaiverDetail(null)} className="text-xs">
+                Close Details
+              </Button>
+            </div>
+
+          </div>
+        </div>
       )}
 
       {/* Scheduling Modal */}

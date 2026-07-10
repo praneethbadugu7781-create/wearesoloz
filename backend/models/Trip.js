@@ -17,6 +17,9 @@ const tripSchema = new mongoose.Schema(
     images: { type: [String], default: [] },
     featured: { type: Boolean, default: false },
     status: { type: String, enum: ["draft", "published"], default: "published" },
+    confirmationCode: { type: String, default: "" },
+    confirmationLinkEnabled: { type: Boolean, default: true },
+    pickupLocation: { type: String, default: "Default Meeting Point" },
     participants: {
       type: [{
         name: { type: String, required: true },

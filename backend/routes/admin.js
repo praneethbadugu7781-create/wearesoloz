@@ -330,4 +330,16 @@ router.delete("/:resource/:id", async (req, res) => {
   }
 });
 
+// --- GET Waiver Submissions for a Trip ---
+router.get("/trips/:id/waivers", async (req, res) => {
+  try {
+    const WaiverSubmission = require("../models/WaiverSubmission");
+    await connectDB();
+    const waivers = await WaiverSubmission.find({ tripId: req.params.id }).sort({ createdAt: -1 }).lean();
+    res.json(waivers);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;
