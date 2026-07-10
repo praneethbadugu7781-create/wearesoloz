@@ -11,6 +11,56 @@ interface Message {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
+function parseInlineBold(text: string) {
+  const parts = text.split(/\*\*([^*]+)\*\*/g);
+  return parts.map((part, i) => {
+    if (i % 2 === 1) {
+      return <strong key={i} className="font-bold text-stone-900">{part}</strong>;
+    }
+    return part;
+  });
+}
+
+function formatMessageContent(content: string) {
+  const lines = content.split("\n");
+  return lines.map((line, idx) => {
+    const cleanLine = line.trim();
+    if (cleanLine.startsWith("###")) {
+      const headingText = cleanLine.replace(/^###\s*/, "");
+      return (
+        <h4 key={idx} className="font-display text-xs font-bold text-[#ea580c] mt-2 mb-1 first:mt-0">
+          {parseInlineBold(headingText)}
+        </h4>
+      );
+    }
+    if (cleanLine.startsWith("##")) {
+      const headingText = cleanLine.replace(/^##\s*/, "");
+      return (
+        <h3 key={idx} className="font-display text-sm font-bold text-stone-900 mt-3 mb-1.5 first:mt-0">
+          {parseInlineBold(headingText)}
+        </h3>
+      );
+    }
+    if (cleanLine.startsWith("* ") || cleanLine.startsWith("- ")) {
+      const listText = cleanLine.replace(/^[\*\-]\s*/, "");
+      return (
+        <div key={idx} className="flex items-start gap-1.5 ml-2 my-1">
+          <span className="text-[#ea580c] text-xs font-bold select-none">•</span>
+          <span className="text-xs text-stone-700 leading-relaxed">{parseInlineBold(listText)}</span>
+        </div>
+      );
+    }
+    if (cleanLine === "") {
+      return <div key={idx} className="h-1.5" />;
+    }
+    return (
+      <p key={idx} className="text-xs leading-relaxed text-stone-700 my-1">
+        {parseInlineBold(cleanLine)}
+      </p>
+    );
+  });
+}
+
 export default function SolozAiChat() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -172,11 +222,10 @@ export default function SolozAiChat() {
                   className={`rounded-2xl p-3.5 text-xs leading-relaxed ${
                     m.role === "user" 
                       ? "bg-[#ea580c] text-white rounded-tr-none shadow-md font-medium" 
-                      : "bg-white text-stone-800 rounded-tl-none border border-stone-200/60 shadow-sm"
+                      : "bg-white text-[#1c1917] rounded-tl-none border border-stone-200/60 shadow-sm"
                   }`}
-                  style={{ whiteSpace: "pre-wrap" }}
                 >
-                  {m.content}
+                  {m.role === "user" ? m.content : formatMessageContent(m.content)}
                 </div>
               </div>
             ))}

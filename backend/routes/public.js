@@ -706,7 +706,12 @@ router.post("/ai/chat", async (req, res) => {
     }
 
     await connectDB();
-    const trips = await Trip.find({ status: "published" }).lean();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const trips = await Trip.find({
+      status: "published",
+      date: { $gte: today }
+    }).lean();
     
     const tripsContext = trips.map(t => {
       return `- Trip Title: ${t.title || `${t.destination} Expedition`}
