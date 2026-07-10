@@ -106,6 +106,33 @@ export default function AdminWaiversPage() {
     fetchWaivers(trip._id!);
   };
 
+  const handleToggleWaiverLink = async (trip: TripData) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const isPast = trip.date ? new Date(trip.date) < today : false;
+    if (isPast) {
+      alert("This trip has already completed. Past trip waiver links are automatically disabled and expired.");
+      return;
+    }
+
+    const currentStatus = trip.confirmationLinkEnabled !== false;
+    const newStatus = !currentStatus;
+
+    try {
+      const res = await fetch(`${API_URL}/admin/trips/${trip._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        body: JSON.stringify({ confirmationLinkEnabled: newStatus })
+      });
+
+      if (!res.ok) throw new Error("Failed to update status");
+
+      setTrips(prev => prev.map(t => t._id === trip._id ? { ...t, confirmationLinkEnabled: newStatus } : t));
+    } catch (err: any) {
+      alert(err.message || "Failed to toggle waiver link status.");
+    }
+  };
+
   // CSV download helper
   const downloadWaiversCSV = () => {
     if (!selectedTrip || waiverSubmissions.length === 0) return;
@@ -298,13 +325,34 @@ export default function AdminWaiversPage() {
                   </div>
 
                   <div className="pt-4 border-t border-white/5 flex items-center justify-between gap-4">
-                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${
-                      trip.confirmationLinkEnabled 
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
-                        : "bg-red-500/10 text-red-400 border border-red-500/20"
-                    }`}>
-                      {trip.confirmationLinkEnabled ? "Active Waiver Link" : "Disabled Link"}
-                    </span>
+                    {(() => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const isPast = trip.date ? new Date(trip.date) < today : false;
+                      const isLinkEnabled = trip.confirmationLinkEnabled !== false;
+
+                      if (isPast) {
+                        return (
+                          <span className="text-[10px] px-2.5 py-1 rounded font-bold uppercase tracking-wider bg-red-500/10 text-red-450 border border-red-500/15 select-none" title="This trip is in the past. Waivers are closed.">
+                            Expired (Disabled)
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <button
+                          onClick={() => handleToggleWaiverLink(trip)}
+                          title="Click to toggle waiver link status"
+                          className={`text-[10px] px-2.5 py-1 rounded font-bold uppercase tracking-wider border transition-all ${
+                            isLinkEnabled
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
+                              : "bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20"
+                          }`}
+                        >
+                          Link: {isLinkEnabled ? "Active" : "Disabled"}
+                        </button>
+                      );
+                    })()}
 
                     <button
                       onClick={() => handleSelectTrip(trip)}

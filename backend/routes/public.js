@@ -836,6 +836,14 @@ router.get("/trip-confirmation/:code", async (req, res) => {
     if (!trip) {
       return res.status(404).json({ error: "Trip confirmation link not found or expired." });
     }
+    
+    // Auto-disable if the trip date is in the past
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (trip.date && new Date(trip.date) < today) {
+      return res.status(400).json({ error: "This trip is already completed. The confirmation link has expired." });
+    }
+
     if (trip.confirmationLinkEnabled === false) {
       return res.status(400).json({ error: "This confirmation link has been disabled by the administrator." });
     }
@@ -859,6 +867,14 @@ router.post("/trip-confirmation/:code", async (req, res) => {
     if (!trip) {
       return res.status(404).json({ error: "Trip not found." });
     }
+
+    // Auto-disable if the trip date is in the past
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (trip.date && new Date(trip.date) < today) {
+      return res.status(400).json({ error: "This trip is already completed. The confirmation link has expired." });
+    }
+
     if (trip.confirmationLinkEnabled === false) {
       return res.status(400).json({ error: "This confirmation link has been disabled." });
     }
