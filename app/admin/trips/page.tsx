@@ -1219,11 +1219,11 @@ export default function AdminTripsPage() {
                   </div>
                   <textarea
                     required
-                    rows={2}
+                    rows={4}
                     placeholder="Describe what activities and trails are scheduled for this day..."
                     value={day.description}
                     onChange={(e) => updateItineraryDay(index, "description", e.target.value)}
-                    className="w-full rounded border border-white/10 bg-white/5 p-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none resize-none"
+                    className="w-full rounded border border-white/10 bg-white/5 p-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none resize-y"
                   />
                 </div>
               ))}

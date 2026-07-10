@@ -158,12 +158,12 @@ JSON Schema:
   "duration": "Duration description, e.g., '2 Days / 1 Night' or '6D / 5N'",
   "price": "Price value, e.g., '18,999' or 'Contact for Price'",
   "seats": 10,
-  "description": "Short summary description of the trip highlights",
+  "description": "Detailed, engaging summary description of the trip highlights and overall experience.",
   "itinerary": [
     {
       "day": "Day 1",
       "title": "Title of the day's activity",
-      "description": "Description of what travelers will do on this day"
+      "description": "EXTREMELY DETAILED day-by-day description. DO NOT SUMMARIZE. Extract all events, specific spots, timings, activities, transportation, sightseeing locations, and schedules for this day. Be as comprehensive as possible. Keep all information."
     }
   ],
   "inclusions": [
