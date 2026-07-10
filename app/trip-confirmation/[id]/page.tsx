@@ -25,6 +25,7 @@ export default function TripConfirmationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [submissionId, setSubmissionId] = useState("");
+  const [hasMedicalIssues, setHasMedicalIssues] = useState(false);
 
   // Form States
   const [form, setForm] = useState({
@@ -133,6 +134,10 @@ export default function TripConfirmationPage() {
       toast.error("Please enter your Identity Document Number.");
       return;
     }
+    if (!form.idUpload) {
+      toast.error("Please upload a copy of your ID Document (Aadhaar, Driving License, Passport, etc.).");
+      return;
+    }
 
     // Check all declarations
     const allAccepted = declarations.every(d => d);
@@ -167,10 +172,10 @@ export default function TripConfirmationPage() {
           emergencyContactMobile: form.emergencyContactMobile,
           emergencyContactRelationship: form.emergencyContactRelationship,
           bloodGroup: form.bloodGroup,
-          medicalConditions: form.medicalConditions,
-          allergies: form.allergies,
-          medications: form.medications,
-          emergencyNotes: form.emergencyNotes,
+          medicalConditions: hasMedicalIssues ? form.medicalConditions : "None",
+          allergies: hasMedicalIssues ? form.allergies : "None",
+          medications: hasMedicalIssues ? form.medications : "None",
+          emergencyNotes: hasMedicalIssues ? form.emergencyNotes : "None",
           idType: form.idType,
           idNumber: form.idNumber,
           idUpload: form.idUpload,
@@ -683,68 +688,102 @@ export default function TripConfirmationPage() {
                 Medical Information
               </h2>
 
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">Blood Group</label>
-                  <select
-                    value={form.bloodGroup}
-                    onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-stone-200 bg-[#fbfbfa] px-3 text-xs text-stone-900 focus:border-[#ea580c] focus:outline-none transition-all"
-                  >
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                  </select>
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-stone-50 p-4 rounded-xl border border-stone-100 justify-between">
+                <div className="space-y-0.5">
+                  <span className="text-xs font-bold text-stone-900">Do you have any medical conditions, active allergies, or take medications?</span>
+                  <p className="text-[10px] text-stone-500">Select 'Yes' if you require daily medications, have severe allergies, or chronic health notes.</p>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">Allergies (If any)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Dust, Peanuts, Gluten"
-                    value={form.allergies}
-                    onChange={(e) => setForm({ ...form, allergies: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50/50 px-3 text-xs text-stone-900 focus:border-[#ea580c] focus:bg-white focus:outline-none transition-all"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">Current Medications (If any)</label>
-                  <input
-                    type="text"
-                    placeholder="List details of current medications"
-                    value={form.medications}
-                    onChange={(e) => setForm({ ...form, medications: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50/50 px-3 text-xs text-stone-900 focus:border-[#ea580c] focus:bg-white focus:outline-none transition-all"
-                  />
+                <div className="flex gap-4 items-center shrink-0">
+                  <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                    <input
+                      type="radio"
+                      name="hasMedicalIssues"
+                      checked={!hasMedicalIssues}
+                      onChange={() => setHasMedicalIssues(false)}
+                      className="accent-[#ea580c] size-4"
+                    />
+                    No medical issues
+                  </label>
+                  <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                    <input
+                      type="radio"
+                      name="hasMedicalIssues"
+                      checked={hasMedicalIssues}
+                      onChange={() => setHasMedicalIssues(true)}
+                      className="accent-[#ea580c] size-4"
+                    />
+                    Yes
+                  </label>
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">Medical Conditions (If any)</label>
-                  <textarea
-                    rows={2}
-                    placeholder="Describe any chronic medical conditions (e.g. Asthma, Hypertension, Diabetes)..."
-                    value={form.medicalConditions}
-                    onChange={(e) => setForm({ ...form, medicalConditions: e.target.value })}
-                    className="w-full rounded-lg border border-stone-200 bg-stone-50/50 p-3 text-xs text-stone-900 focus:border-[#ea580c] focus:bg-white focus:outline-none resize-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">Emergency Medical Notes</label>
-                  <textarea
-                    rows={2}
-                    placeholder="Any critical notes for emergency responders..."
-                    value={form.emergencyNotes}
-                    onChange={(e) => setForm({ ...form, emergencyNotes: e.target.value })}
-                    className="w-full rounded-lg border border-stone-200 bg-stone-50/50 p-3 text-xs text-stone-900 focus:border-[#ea580c] focus:bg-white focus:outline-none resize-none"
-                  />
-                </div>
+              <div className="w-full max-w-xs space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">Blood Group *</label>
+                <select
+                  value={form.bloodGroup}
+                  onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}
+                  className="h-10 w-full rounded-lg border border-stone-200 bg-[#fbfbfa] px-3 text-xs text-stone-900 focus:border-[#ea580c] focus:outline-none transition-all"
+                >
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
               </div>
+
+              {hasMedicalIssues && (
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">Allergies (If any)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Dust, Peanuts, Gluten"
+                        value={form.allergies}
+                        onChange={(e) => setForm({ ...form, allergies: e.target.value })}
+                        className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50/50 px-3 text-xs text-stone-900 focus:border-[#ea580c] focus:bg-white focus:outline-none transition-all"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">Current Medications (If any)</label>
+                      <input
+                        type="text"
+                        placeholder="List details of current medications"
+                        value={form.medications}
+                        onChange={(e) => setForm({ ...form, medications: e.target.value })}
+                        className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50/50 px-3 text-xs text-stone-900 focus:border-[#ea580c] focus:bg-white focus:outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">Medical Conditions (If any)</label>
+                      <textarea
+                        rows={2}
+                        placeholder="Describe any chronic medical conditions (e.g. Asthma, Hypertension, Diabetes)..."
+                        value={form.medicalConditions}
+                        onChange={(e) => setForm({ ...form, medicalConditions: e.target.value })}
+                        className="w-full rounded-lg border border-stone-200 bg-stone-50/50 p-3 text-xs text-stone-900 focus:border-[#ea580c] focus:bg-white focus:outline-none resize-none"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">Emergency Medical Notes</label>
+                      <textarea
+                        rows={2}
+                        placeholder="Any critical notes for emergency responders..."
+                        value={form.emergencyNotes}
+                        onChange={(e) => setForm({ ...form, emergencyNotes: e.target.value })}
+                        className="w-full rounded-lg border border-stone-200 bg-stone-50/50 p-3 text-xs text-stone-900 focus:border-[#ea580c] focus:bg-white focus:outline-none resize-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Section 4: Identity Verification */}
@@ -780,7 +819,7 @@ export default function TripConfirmationPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">Optional ID Proof Copy Upload</label>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">ID Proof Copy Upload *</label>
                   <div className="bg-stone-50 rounded-lg p-1 border border-stone-200">
                     <CloudinaryUpload
                       value={form.idUpload}
@@ -788,6 +827,7 @@ export default function TripConfirmationPage() {
                       label="Upload ID Proof (Image)"
                     />
                   </div>
+                  <p className="text-[10px] text-stone-400 font-medium mt-1">Note: Uploading just a copy of Aadhaar Front is enough.</p>
                 </div>
               </div>
             </div>
