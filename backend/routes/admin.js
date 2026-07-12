@@ -342,4 +342,16 @@ router.get("/trips/:id/waivers", async (req, res) => {
   }
 });
 
+// --- GET Feedback Submissions for a Trip ---
+router.get("/trips/:id/feedbacks", async (req, res) => {
+  try {
+    const FeedbackSubmission = require("../models/FeedbackSubmission");
+    await connectDB();
+    const feedbacks = await FeedbackSubmission.find({ tripId: req.params.id }).sort({ createdAt: -1 }).lean();
+    res.json(feedbacks);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

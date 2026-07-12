@@ -892,4 +892,54 @@ router.post("/trip-confirmation/:code", async (req, res) => {
   }
 });
 
+// --- Public Trip Feedback ---
+router.get("/trip-feedback/:code", async (req, res) => {
+  try {
+    await connectDB();
+    const trip = await Trip.findOne({ feedbackCode: req.params.code }).lean();
+    if (!trip) {
+      return res.status(404).json({ error: "Trip feedback link not found or expired." });
+    }
+    
+    if (trip.feedbackLinkEnabled === false) {
+      return res.status(400).json({ error: "This feedback link has been disabled by the administrator." });
+    }
+
+    res.json({
+      _id: trip._id,
+      destination: trip.destination,
+      title: trip.title,
+      date: trip.date
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.post("/trip-feedback/:code", async (req, res) => {
+  try {
+    const FeedbackSubmission = require("../models/FeedbackSubmission");
+    await connectDB();
+    const trip = await Trip.findOne({ feedbackCode: req.params.code });
+    if (!trip) {
+      return res.status(404).json({ error: "Trip not found." });
+    }
+
+    if (trip.feedbackLinkEnabled === false) {
+      return res.status(400).json({ error: "This feedback link has been disabled." });
+    }
+
+    const submissionId = `SOL-FDB-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    await FeedbackSubmission.create({
+      tripId: trip._id,
+      ...req.body,
+      submissionId
+    });
+
+    res.status(201).json({ success: true, submissionId });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

@@ -20,6 +20,8 @@ const tripSchema = new mongoose.Schema(
     confirmationCode: { type: String, default: "" },
     confirmationLinkEnabled: { type: Boolean, default: true },
     pickupLocation: { type: String, default: "Default Meeting Point" },
+    feedbackCode: { type: String, default: "" },
+    feedbackLinkEnabled: { type: Boolean, default: true },
     participants: {
       type: [{
         name: { type: String, required: true },

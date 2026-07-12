@@ -41,6 +41,8 @@ interface TripData {
   confirmationCode?: string;
   confirmationLinkEnabled?: boolean;
   pickupLocation?: string;
+  feedbackCode?: string;
+  feedbackLinkEnabled?: boolean;
 }
 
 const indianStates = [
@@ -104,7 +106,9 @@ const emptyForm: TripData = {
   recap: "",
   confirmationCode: "",
   confirmationLinkEnabled: true,
-  pickupLocation: "Default City Meeting Point"
+  pickupLocation: "Default City Meeting Point",
+  feedbackCode: "",
+  feedbackLinkEnabled: true
 };
 
 export default function AdminTripsPage() {
@@ -1214,6 +1218,83 @@ export default function AdminTripsPage() {
                   className="text-xs"
                 >
                   <Plus size={12} className="mr-1.5" /> Generate Waiver & Confirmation Link
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Trip Feedback Link Section */}
+          <div className="space-y-4 pt-4 border-t border-white/5 bg-white/5 p-4 rounded-xl border border-white/10">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold uppercase tracking-wider text-soloz-amber">Trip Feedback Link</h4>
+                <p className="text-xs text-soloz-ash/60 mt-1">
+                  Generate and share this link with participants after the trip to collect feedback, captain ratings, and testimonials.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-white/80">Feedback Link:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, feedbackLinkEnabled: !prev.feedbackLinkEnabled }));
+                  }}
+                  className={`px-3 py-1 rounded text-xs font-semibold uppercase tracking-wider transition-all ${
+                    formData.feedbackLinkEnabled 
+                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" 
+                      : "bg-red-500/20 text-red-400 border border-red-500/30"
+                  }`}
+                >
+                  {formData.feedbackLinkEnabled ? "Active" : "Disabled"}
+                </button>
+              </div>
+            </div>
+
+            {formData.feedbackCode ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/trip-feedback/${formData.feedbackCode}`}
+                    className="h-10 flex-grow rounded-lg border border-white/10 bg-black/40 px-3 text-xs text-soloz-ash/80 select-all focus:outline-none"
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      const link = `${window.location.origin}/trip-feedback/${formData.feedbackCode}`;
+                      navigator.clipboard.writeText(link);
+                      alert("Feedback Link Copied!");
+                    }}
+                    className="h-10 px-4 text-xs"
+                  >
+                    <Copy size={12} className="mr-1.5" /> Copy Link
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      const newCode = Math.random().toString(36).substring(2, 9).toUpperCase();
+                      setFormData(prev => ({ ...prev, feedbackCode: newCode }));
+                    }}
+                    className="h-10 px-4 text-xs text-red-400 hover:text-red-300 border border-red-500/10"
+                  >
+                    <RefreshCw size={12} className="mr-1.5 animate-spin-hover" /> Regenerate
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-start">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    const newCode = Math.random().toString(36).substring(2, 9).toUpperCase();
+                    setFormData(prev => ({ ...prev, feedbackCode: newCode, feedbackLinkEnabled: true }));
+                  }}
+                  className="text-xs"
+                >
+                  <Plus size={12} className="mr-1.5" /> Generate Feedback Link
                 </Button>
               </div>
             )}

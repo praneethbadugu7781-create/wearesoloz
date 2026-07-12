@@ -20,7 +20,8 @@ import {
   HeartHandshake,
   Video,
   Camera,
-  ClipboardCheck
+  ClipboardCheck,
+  Star
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -28,6 +29,7 @@ const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/trips", label: "Trips", icon: Compass },
   { href: "/admin/waivers", label: "Waivers", icon: ClipboardCheck },
+  { href: "/admin/feedbacks", label: "Feedbacks", icon: Star },
   { href: "/admin/trip-memories", label: "Trip Memories", icon: Camera },
   { href: "/admin/destinations", label: "Destinations", icon: MapPin },
   { href: "/admin/blogs", label: "Stories", icon: BookOpen },
