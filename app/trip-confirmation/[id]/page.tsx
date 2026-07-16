@@ -451,7 +451,64 @@ export default function TripConfirmationPage() {
     doc.setFont("helvetica", "italic");
     doc.setFontSize(8);
     doc.setTextColor(160, 160, 160);
-    doc.text("WeAreSoloZ - Travel Solo, You're Not Alone.", pageWidth / 2, pageHeight - 10, { align: "center" });
+    doc.text("Page 1 of 2 | WeAreSoloZ - Travel Solo, You're Not Alone.", pageWidth / 2, pageHeight - 10, { align: "center" });
+
+    // --- PAGE 2: TERMS AND LIABILITY DECLARATIONS ---
+    doc.addPage();
+
+    // Header strip for Page 2
+    doc.setFillColor(20, 17, 13);
+    doc.rect(0, 0, pageWidth, 28, "F");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(255, 255, 255);
+    doc.text("WeAreSoloZ - LIABILITY DECLARATIONS & TERMS", 15, 12);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(180, 180, 180);
+    doc.text("ANNEXURE A: MANDATORY TRIP PARTICIPANT DECLARATION AGREEMENT", 15, 18);
+
+    let nextY = 38;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(50, 50, 50);
+
+    declarationTexts.forEach((term, index) => {
+      const numberText = `${index + 1}. `;
+      const splitText = doc.splitTextToSize(term, pageWidth - 32);
+      
+      doc.setFont("helvetica", "bold");
+      doc.text(numberText, 15, nextY);
+      doc.setFont("helvetica", "normal");
+      doc.text(splitText, 20, nextY);
+      nextY += (splitText.length * 4) + 2.2;
+    });
+
+    nextY += 4;
+    doc.setDrawColor(230, 230, 230);
+    doc.line(15, nextY, pageWidth - 15, nextY);
+    nextY += 8;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Digital Signature:", 15, nextY);
+    doc.setFont("helvetica", "bolditalic");
+    doc.setTextColor(20, 17, 13);
+    doc.text(form.signedName, 45, nextY);
+
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Date Signed:", 110, nextY);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(new Date().toLocaleDateString(), 140, nextY);
+
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(160, 160, 160);
+    doc.text("Page 2 of 2 | WeAreSoloZ - Travel Solo, You're Not Alone.", pageWidth / 2, pageHeight - 10, { align: "center" });
 
     doc.save(`Confirmation_${subId}.pdf`);
   };
