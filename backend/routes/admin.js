@@ -354,4 +354,34 @@ router.get("/trips/:id/feedbacks", async (req, res) => {
   }
 });
 
+// --- DELETE Waiver Submission ---
+router.delete("/waivers/:submissionId", async (req, res) => {
+  try {
+    const WaiverSubmission = require("../models/WaiverSubmission");
+    await connectDB();
+    const result = await WaiverSubmission.findByIdAndDelete(req.params.submissionId);
+    if (!result) {
+      return res.status(404).json({ error: "Waiver submission not found" });
+    }
+    res.json({ success: true, message: "Waiver submission deleted successfully" });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- DELETE Feedback Submission ---
+router.delete("/feedbacks/:submissionId", async (req, res) => {
+  try {
+    const FeedbackSubmission = require("../models/FeedbackSubmission");
+    await connectDB();
+    const result = await FeedbackSubmission.findByIdAndDelete(req.params.submissionId);
+    if (!result) {
+      return res.status(404).json({ error: "Feedback submission not found" });
+    }
+    res.json({ success: true, message: "Feedback submission deleted successfully" });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

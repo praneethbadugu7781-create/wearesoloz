@@ -99,6 +99,21 @@ export default function AdminWaiversPage() {
     }
   };
 
+  const handleDeleteWaiver = async (submissionId: string) => {
+    if (!confirm("Are you sure you want to delete this waiver submission? This action cannot be undone.")) return;
+    try {
+      const res = await fetch(`${API_URL}/admin/waivers/${submissionId}`, {
+        method: "DELETE",
+        headers: getAuthHeaders()
+      });
+      if (!res.ok) throw new Error("Failed to delete waiver submission");
+      alert("Waiver submission deleted successfully.");
+      setWaiverSubmissions(prev => prev.filter(w => w._id !== submissionId));
+    } catch (err: any) {
+      alert(err.message || "Failed to delete waiver submission.");
+    }
+  };
+
   const handleSelectTrip = (trip: TripData) => {
     setSelectedTrip(trip);
     setWaiverSubmissions([]);
@@ -626,12 +641,20 @@ export default function AdminWaiversPage() {
                             {new Date(w.createdAt || w.signedDate).toLocaleString()}
                           </td>
                           <td className="py-3 px-4 text-right">
-                            <button
-                              onClick={() => setSelectedWaiverDetail(w)}
-                              className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-white hover:bg-white/10 text-[10px] font-semibold"
-                            >
-                              View Details
-                            </button>
+                            <div className="flex justify-end items-center gap-2">
+                              <button
+                                onClick={() => setSelectedWaiverDetail(w)}
+                                className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-white hover:bg-white/10 text-[10px] font-semibold transition-all"
+                              >
+                                View Details
+                              </button>
+                              <button
+                                onClick={() => handleDeleteWaiver(w._id)}
+                                className="px-2.5 py-1 rounded bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-[10px] font-semibold transition-all"
+                              >
+                                Delete
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}

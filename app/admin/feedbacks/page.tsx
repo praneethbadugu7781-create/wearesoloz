@@ -96,6 +96,21 @@ export default function AdminFeedbacksPage() {
     }
   };
 
+  const handleDeleteFeedback = async (submissionId: string) => {
+    if (!confirm("Are you sure you want to delete this feedback submission? This action cannot be undone.")) return;
+    try {
+      const res = await fetch(`${API_URL}/admin/feedbacks/${submissionId}`, {
+        method: "DELETE",
+        headers: getAuthHeaders()
+      });
+      if (!res.ok) throw new Error("Failed to delete feedback submission");
+      alert("Feedback submission deleted successfully.");
+      setFeedbackSubmissions(prev => prev.filter(f => f._id !== submissionId));
+    } catch (err: any) {
+      alert(err.message || "Failed to delete feedback submission.");
+    }
+  };
+
   const handleSelectTrip = (trip: TripData) => {
     setSelectedTrip(trip);
     setFeedbackSubmissions([]);
@@ -608,12 +623,20 @@ export default function AdminFeedbacksPage() {
                             )}
                           </td>
                           <td className="py-3 px-4 text-right">
-                            <button
-                              onClick={() => setSelectedFeedbackDetail(f)}
-                              className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-white hover:bg-white/10 text-[10px] font-semibold"
-                            >
-                              Read Comments
-                            </button>
+                            <div className="flex justify-end items-center gap-2">
+                              <button
+                                onClick={() => setSelectedFeedbackDetail(f)}
+                                className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-white hover:bg-white/10 text-[10px] font-semibold transition-all"
+                              >
+                                Read Comments
+                              </button>
+                              <button
+                                onClick={() => handleDeleteFeedback(f._id)}
+                                className="px-2.5 py-1 rounded bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-[10px] font-semibold transition-all"
+                              >
+                                Delete
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
