@@ -317,7 +317,15 @@ const generateBrochurePdf = async (trip: any, locale: string) => {
   const filename = `${trip.destination.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-brochure.pdf`;
   doc.save(filename);
 };
-
+const formatDate = (dateStr: string | Date | undefined) => {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "—";
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
+};
 
 export default function TripDetailClient({ trip }: TripDetailClientProps) {
   const { t, locale } = useLanguage();
@@ -538,10 +546,16 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
           <div className="md:col-span-2">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
               {[
-                trip.destination?.toLowerCase().includes("sabarimala") ? { icon: Calendar, label: locale === "te" ? "ప్రారంభ తేదీ" : locale === "hi" ? "प्रारंभ तिथि" : "Start Date", value: locale === "te" ? "ప్రతి నెల" : locale === "hi" ? "हर महीने" : "Every Month" } : null,
+                { 
+                  icon: Calendar, 
+                  label: locale === "te" ? "ప్రారంభ తేదీ" : locale === "hi" ? "प्रारंभ तिथि" : "Start Date", 
+                  value: trip.destination?.toLowerCase().includes("sabarimala") 
+                    ? (locale === "te" ? "ప్రతి నెల" : locale === "hi" ? "हर महीने" : "Every Month") 
+                    : formatDate(trip.date) 
+                },
                 { icon: Clock, label: locale === "te" ? "వ్యవధి" : locale === "hi" ? "अवधि" : "Duration", value: trip.duration || "—" },
                 { icon: MapPin, label: locale === "te" ? "ప్రాంతం" : locale === "hi" ? "क्षेत्र" : "Region", value: trip.destination },
-              ].filter(Boolean).map((s: any) => (
+              ].map((s: any) => (
                 <div key={s.label} className="glass rounded-xl p-4 border border-stone-200">
                   <s.icon className="w-4 h-4 text-soloz-primary mb-2" />
                   <div className="text-[10px] uppercase tracking-widest text-soloz-textMuted">{s.label}</div>
