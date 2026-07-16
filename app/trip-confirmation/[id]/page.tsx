@@ -59,7 +59,7 @@ export default function TripConfirmationPage() {
     "I will follow all instructions provided by the WeAreSoloZ team.",
     "I understand that travel and adventure activities involve certain risks.",
     "I am responsible for my own belongings. WeAreSoloZ is not responsible for any lost, stolen, or damaged items.",
-    "I understand that WeAreSoloZ is not liable for personal injury, illness, accidents, delays, weather conditions, natural disasters, or any unforeseen circumstances beyond its reasonable control.",
+    "I understand that WeAreSoloZ is not liable and holds no responsibility for personal injury, death, illness, accidents, delays, weather conditions, natural disasters, or any unforeseen circumstances beyond its reasonable control.",
     "I agree that any medical expenses incurred during the trip will be my responsibility.",
     "I agree to maintain respectful behavior with fellow travelers and organizers.",
     "I understand that misconduct, violence, illegal substances, or actions that endanger others may result in removal from the trip without any refund.",
@@ -806,6 +806,7 @@ export default function TripConfirmationPage() {
                     <option value="Passport">Passport</option>
                     <option value="Other">Other ID</option>
                   </select>
+                  <p className="text-[10px] text-stone-400 font-medium mt-1">Note: Any government-approved ID is accepted.</p>
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">ID Document Number *</label>
