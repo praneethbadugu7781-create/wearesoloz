@@ -249,6 +249,60 @@ JSON Schema:
   }
 });
 
+// --- GET Waiver Submissions for a Trip ---
+router.get("/trips/:id/waivers", async (req, res) => {
+  try {
+    const WaiverSubmission = require("../models/WaiverSubmission");
+    await connectDB();
+    const waivers = await WaiverSubmission.find({ tripId: req.params.id }).sort({ createdAt: -1 }).lean();
+    res.json(waivers);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- GET Feedback Submissions for a Trip ---
+router.get("/trips/:id/feedbacks", async (req, res) => {
+  try {
+    const FeedbackSubmission = require("../models/FeedbackSubmission");
+    await connectDB();
+    const feedbacks = await FeedbackSubmission.find({ tripId: req.params.id }).sort({ createdAt: -1 }).lean();
+    res.json(feedbacks);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- DELETE Waiver Submission ---
+router.delete("/waivers/:submissionId", async (req, res) => {
+  try {
+    const WaiverSubmission = require("../models/WaiverSubmission");
+    await connectDB();
+    const result = await WaiverSubmission.findByIdAndDelete(req.params.submissionId);
+    if (!result) {
+      return res.status(404).json({ error: "Waiver submission not found" });
+    }
+    res.json({ success: true, message: "Waiver submission deleted successfully" });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- DELETE Feedback Submission ---
+router.delete("/feedbacks/:submissionId", async (req, res) => {
+  try {
+    const FeedbackSubmission = require("../models/FeedbackSubmission");
+    await connectDB();
+    const result = await FeedbackSubmission.findByIdAndDelete(req.params.submissionId);
+    if (!result) {
+      return res.status(404).json({ error: "Feedback submission not found" });
+    }
+    res.json({ success: true, message: "Feedback submission deleted successfully" });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // --- Generic CRUD ---
 
 // GET /api/admin/:resource
@@ -325,60 +379,6 @@ router.delete("/:resource/:id", async (req, res) => {
     await connectDB();
     await Model.findByIdAndDelete(req.params.id);
     res.json({ ok: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// --- GET Waiver Submissions for a Trip ---
-router.get("/trips/:id/waivers", async (req, res) => {
-  try {
-    const WaiverSubmission = require("../models/WaiverSubmission");
-    await connectDB();
-    const waivers = await WaiverSubmission.find({ tripId: req.params.id }).sort({ createdAt: -1 }).lean();
-    res.json(waivers);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// --- GET Feedback Submissions for a Trip ---
-router.get("/trips/:id/feedbacks", async (req, res) => {
-  try {
-    const FeedbackSubmission = require("../models/FeedbackSubmission");
-    await connectDB();
-    const feedbacks = await FeedbackSubmission.find({ tripId: req.params.id }).sort({ createdAt: -1 }).lean();
-    res.json(feedbacks);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// --- DELETE Waiver Submission ---
-router.delete("/waivers/:submissionId", async (req, res) => {
-  try {
-    const WaiverSubmission = require("../models/WaiverSubmission");
-    await connectDB();
-    const result = await WaiverSubmission.findByIdAndDelete(req.params.submissionId);
-    if (!result) {
-      return res.status(404).json({ error: "Waiver submission not found" });
-    }
-    res.json({ success: true, message: "Waiver submission deleted successfully" });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// --- DELETE Feedback Submission ---
-router.delete("/feedbacks/:submissionId", async (req, res) => {
-  try {
-    const FeedbackSubmission = require("../models/FeedbackSubmission");
-    await connectDB();
-    const result = await FeedbackSubmission.findByIdAndDelete(req.params.submissionId);
-    if (!result) {
-      return res.status(404).json({ error: "Feedback submission not found" });
-    }
-    res.json({ success: true, message: "Feedback submission deleted successfully" });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
