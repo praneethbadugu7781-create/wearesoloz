@@ -58,6 +58,25 @@ router.post("/upload/signature", (req, res) => {
   }
 });
 
+// --- Authenticated ImageKit Upload ---
+router.post("/upload/file", async (req, res) => {
+  try {
+    const { file, fileName, folder } = req.body;
+    if (!file || !fileName) {
+      return res.status(400).json({ error: "Missing file or fileName in request body" });
+    }
+    const response = await imagekit.upload({
+      file,
+      fileName,
+      folder: folder || "/wearesoloz"
+    });
+    res.json({ url: response.url });
+  } catch (error) {
+    console.error("Admin file upload error:", error);
+    res.status(500).json({ error: error.message || "Failed to upload file to ImageKit" });
+  }
+});
+
 // GET /api/admin/trips/:tripId/memories
 router.get("/trips/:tripId/memories", async (req, res) => {
   try {

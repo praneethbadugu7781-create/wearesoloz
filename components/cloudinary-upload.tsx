@@ -36,35 +36,31 @@ export function CloudinaryUpload({ value, onChange, label = "Upload Image", acce
     setProgress(0);
 
     try {
-      // 1. Get signed configuration from our backend API
+      // 1. Read file as base64 string
+      const base64File = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+      });
+
+      // 2. Prepare request URL and headers
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
       const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
       const isPublic = !token || window.location.pathname.includes("/trip-memories");
-      const sigUrl = isPublic ? `${API_URL}/upload/signature-public` : `${API_URL}/admin/upload/signature`;
-      const headersObj: any = isPublic ? {} : (token ? { Authorization: `Bearer ${token}` } : {});
+      const uploadUrl = isPublic ? `${API_URL}/upload/file-public` : `${API_URL}/admin/upload/file`;
       
-      const sigRes = await fetch(sigUrl, {
-        method: "POST",
-        headers: headersObj,
-      });
-      if (!sigRes.ok) {
-        throw new Error("Failed to get upload signature. Make sure you are logged in.");
-      }
-      const { signature, token: uploadToken, expire, publicKey } = await sigRes.json();
+      const headersObj: any = {
+        "Content-Type": "application/json",
+        ...(isPublic ? {} : (token ? { Authorization: `Bearer ${token}` } : {}))
+      };
 
-      // 2. Build FormData for ImageKit
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("fileName", file.name);
-      formData.append("publicKey", publicKey);
-      formData.append("signature", signature);
-      formData.append("expire", expire.toString());
-      formData.append("token", uploadToken);
-      formData.append("folder", "/wearesoloz");
-
-      // 3. Upload to ImageKit with progress
+      // 3. Upload via Express API proxy using XHR to track progress
       const xhr = new XMLHttpRequest();
-      xhr.open("POST", "https://upload.imagekit.io/api/v1/files/upload");
+      xhr.open("POST", uploadUrl);
+      Object.keys(headersObj).forEach(key => {
+        xhr.setRequestHeader(key, headersObj[key]);
+      });
 
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
@@ -75,17 +71,30 @@ export function CloudinaryUpload({ value, onChange, label = "Upload Image", acce
 
       const uploadPromise = new Promise<string>((resolve, reject) => {
         xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            const response = JSON.parse(xhr.responseText);
-            resolve(response.url);
-          } else {
-            reject(new Error("ImageKit upload failed"));
+          try {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              const response = JSON.parse(xhr.responseText);
+              if (response.url) {
+                resolve(response.url);
+              } else {
+                reject(new Error(response.error || "Upload failed"));
+              }
+            } else {
+              const response = JSON.parse(xhr.responseText || "{}");
+              reject(new Error(response.error || "Upload failed"));
+            }
+          } catch (e) {
+            reject(new Error("Upload failed"));
           }
         };
-        xhr.onerror = () => reject(new Error("XHR Network error"));
+        xhr.onerror = () => reject(new Error("Network error during upload"));
       });
 
-      xhr.send(formData);
+      xhr.send(JSON.stringify({
+        file: base64File,
+        fileName: file.name,
+        folder: "/wearesoloz"
+      }));
 
       const uploadedUrl = await uploadPromise;
       onChange(uploadedUrl);

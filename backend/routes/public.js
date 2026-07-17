@@ -387,6 +387,25 @@ router.post("/upload/signature-public", (req, res) => {
   }
 });
 
+// --- Public ImageKit Upload ---
+router.post("/upload/file-public", async (req, res) => {
+  try {
+    const { file, fileName } = req.body;
+    if (!file || !fileName) {
+      return res.status(400).json({ error: "Missing file or fileName in request body" });
+    }
+    const response = await imagekit.upload({
+      file,
+      fileName,
+      folder: "/wearesoloz"
+    });
+    res.json({ url: response.url });
+  } catch (error) {
+    console.error("Public file upload error:", error);
+    res.status(500).json({ error: error.message || "Failed to upload file to ImageKit" });
+  }
+});
+
 // --- Trip Memories scrapbook APIs ---
 
 const otps = new Map();
