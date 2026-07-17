@@ -2,6 +2,9 @@
 
 import React, { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import Image from "next/image";
+
+const MotionImage = motion(Image);
 
 interface HomeHeroProps {
   title: string;
@@ -30,12 +33,15 @@ export function HomeHero({ title, subheading, heroImage }: HomeHeroProps) {
     <section ref={containerRef} className="relative min-h-screen md:h-screen w-full flex flex-col items-center justify-center pt-24 md:pt-32 pb-12 md:pb-20 overflow-hidden bg-black">
       {/* Background Image - Cinematic Parallax Zoom */}
       <motion.div style={{ y: yBg }} className="absolute inset-0 z-0 overflow-hidden">
-        <motion.img
+        <MotionImage
           initial={{ scale: 1.2, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
-          src={heroImage || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2400&q=85"}
+          src={heroImage || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=75"}
           alt="Adventure Background"
+          fill
+          priority
+          sizes="100vw"
           className="w-full h-full object-cover"
         />
         {/* Soft dark overlay to ensure readability of white text */}

@@ -15,6 +15,12 @@ export function formatDate(date: string | Date) {
 
 export function getOptimizedImageUrl(url: string, width = 600) {
   if (!url) return "";
-  if (!url.includes("cloudinary.com")) return url;
-  return url.replace("/upload/", `/upload/c_scale,w_${width},f_auto,q_auto/`);
+  if (url.includes("ik.imagekit.io")) {
+    if (url.includes("/tr:")) return url;
+    return url.replace("https://ik.imagekit.io/wearesoloz/", `https://ik.imagekit.io/wearesoloz/tr:w-${width},f-auto/`);
+  }
+  if (url.includes("cloudinary.com")) {
+    return url.replace("/upload/", `/upload/c_scale,w_${width},f_auto,q_auto/`);
+  }
+  return url;
 }

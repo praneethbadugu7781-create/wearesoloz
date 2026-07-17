@@ -11,6 +11,7 @@ import { LanguageProvider } from "@/lib/LanguageContext";
 import Script from "next/script";
 import SolozAiChat from "@/components/SolozAiChat";
 import MetaPixel from "@/components/MetaPixel";
+import AdSense from "@/components/AdSense";
 import { Suspense } from "react";
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", weight: ["300", "400", "500", "600", "700"] });
@@ -59,23 +60,17 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
   return (
     <html lang="en" className={`${outfit.variable} ${playfair.variable} ${dmSans.variable}`}>
-      <head>
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2231310894436146"
-          crossOrigin="anonymous"
-        />
-      </head>
       <body className="font-sans antialiased bg-white text-[#1c1917]">
+        <AdSense />
         {gaId && (
           <>
             <Script
-              strategy="afterInteractive"
+              strategy="lazyOnload"
               src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
             />
             <Script
               id="google-analytics"
-              strategy="afterInteractive"
+              strategy="lazyOnload"
               dangerouslySetInnerHTML={{
                 __html: `
                   window.dataLayer = window.dataLayer || [];
