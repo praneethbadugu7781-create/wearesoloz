@@ -54,17 +54,19 @@ const uploadSingleFile = async (
   if (!sigRes.ok) {
     throw new Error("Failed to get upload signature. Make sure you are logged in.");
   }
-  const { signature, timestamp, apiKey, cloudName, folder } = await sigRes.json();
+  const { signature, token: uploadToken, expire, publicKey } = await sigRes.json();
 
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("fileName", file.name);
+  formData.append("publicKey", publicKey);
   formData.append("signature", signature);
-  formData.append("timestamp", timestamp.toString());
-  formData.append("api_key", apiKey);
-  formData.append("folder", folder);
+  formData.append("expire", expire.toString());
+  formData.append("token", uploadToken);
+  formData.append("folder", "/wearesoloz");
 
   const xhr = new XMLHttpRequest();
-  xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`);
+  xhr.open("POST", "https://upload.imagekit.io/api/v1/files/upload");
 
   xhr.upload.onprogress = (event) => {
     if (event.lengthComputable) {
@@ -77,9 +79,9 @@ const uploadSingleFile = async (
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         const response = JSON.parse(xhr.responseText);
-        resolve(response.secure_url);
+        resolve(response.url);
       } else {
-        reject(new Error("Cloudinary upload failed"));
+        reject(new Error("ImageKit upload failed"));
       }
     };
     xhr.onerror = () => reject(new Error("Network error during upload"));

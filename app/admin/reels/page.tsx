@@ -94,20 +94,21 @@ export default function AdminReelsPage() {
       if (!sigRes.ok) {
         throw new Error("Failed to get upload signature. Make sure you are logged in.");
       }
-      const { signature, timestamp, apiKey, cloudName, folder } = await sigRes.json();
+      const { signature, token: uploadToken, expire, publicKey } = await sigRes.json();
 
       // 2. Build FormData
       const formDataPayload = new FormData();
       formDataPayload.append("file", file);
+      formDataPayload.append("fileName", file.name);
+      formDataPayload.append("publicKey", publicKey);
       formDataPayload.append("signature", signature);
-      formDataPayload.append("timestamp", timestamp.toString());
-      formDataPayload.append("api_key", apiKey);
-      formDataPayload.append("folder", folder);
+      formDataPayload.append("expire", expire.toString());
+      formDataPayload.append("token", uploadToken);
+      formDataPayload.append("folder", "/wearesoloz");
 
-      // 3. Upload to Cloudinary with progress
+      // 3. Upload to ImageKit with progress
       const xhr = new XMLHttpRequest();
-      // Note the endpoint is for videos: /video/upload
-      xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`);
+      xhr.open("POST", "https://upload.imagekit.io/api/v1/files/upload");
 
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
@@ -120,9 +121,9 @@ export default function AdminReelsPage() {
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             const response = JSON.parse(xhr.responseText);
-            resolve(response.secure_url);
+            resolve(response.url);
           } else {
-            reject(new Error("Cloudinary video upload failed"));
+            reject(new Error("ImageKit video upload failed"));
           }
         };
         xhr.onerror = () => reject(new Error("XHR Network error during video upload"));
@@ -320,7 +321,7 @@ export default function AdminReelsPage() {
                   <div className="flex flex-col items-center gap-2 text-center text-soloz-ash">
                     <UploadCloud className="text-soloz-ember" size={36} />
                     <p className="text-sm font-medium">Click to select MP4 or WebM video file</p>
-                    <p className="text-xs text-white/40">Direct upload to Cloudinary</p>
+                    <p className="text-xs text-white/40">Direct upload to ImageKit</p>
                   </div>
                 )}
               </div>

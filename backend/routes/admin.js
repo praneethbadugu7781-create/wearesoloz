@@ -1,5 +1,10 @@
 const express = require("express");
-const cloudinary = require("cloudinary").v2;
+const ImageKit = require("imagekit");
+const imagekit = new ImageKit({
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT
+});
 const { connectDB } = require("../lib/db");
 const { requireAuth } = require("../middleware/auth");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
@@ -38,27 +43,14 @@ const router = express.Router();
 // All admin routes require authentication
 router.use(requireAuth);
 
-// --- Cloudinary upload signature ---
+// --- ImageKit upload signature ---
 router.post("/upload/signature", (req, res) => {
   try {
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
-    });
-
-    const timestamp = Math.round(Date.now() / 1000);
-    const signature = cloudinary.utils.api_sign_request(
-      { timestamp, folder: "wearesoloz" },
-      process.env.CLOUDINARY_API_SECRET
-    );
-
+    const authParams = imagekit.getAuthenticationParameters();
     res.json({
-      timestamp,
-      signature,
-      apiKey: process.env.CLOUDINARY_API_KEY,
-      cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-      folder: "wearesoloz",
+      ...authParams,
+      publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+      urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT
     });
   } catch (error) {
     console.error("Upload signature error:", error);
