@@ -18,6 +18,7 @@ interface CareerData {
   mobile: string;
   email: string;
   instagram?: string;
+  resume?: string;
   experience: string;
   whyJoin: string;
   status: "Pending" | "Reviewed" | "Rejected" | "Archived";
@@ -44,6 +45,7 @@ export default function AdminCareersPage() {
       mobile: "Mobile",
       email: "Email",
       instagram: "Instagram",
+      resume: "Resume Link",
       experience: "Travel Experience",
       whyJoin: "Why Travel/Co-Host?",
       status: "Status",
@@ -63,7 +65,7 @@ export default function AdminCareersPage() {
     const headers = ["Full Name", "Contact Details", "Experience", "Motivation", "Status", "Date"];
     const rows = filtered.map(app => [
       app.fullName,
-      `${app.mobile}\n${app.email}${app.instagram ? `\n@${app.instagram.replace('@', '')}` : ''}`,
+      `${app.mobile}\n${app.email}${app.instagram ? `\n@${app.instagram.replace('@', '')}` : ''}${app.resume ? `\nResume: ${app.resume}` : ''}`,
       app.experience,
       app.whyJoin,
       app.status,
@@ -289,6 +291,19 @@ export default function AdminCareersPage() {
                                 className="text-white hover:text-pink-400 font-semibold inline-flex items-center gap-1"
                               >
                                 @{instagramHandle} <ExternalLink size={10} />
+                              </a>
+                            </div>
+                          )}
+                          {app.resume && (
+                            <div>
+                              <p className="text-[10px] text-white/40 uppercase">Resume</p>
+                              <a
+                                href={app.resume}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-soloz-ember hover:text-soloz-ember/80 font-semibold inline-flex items-center gap-1 hover:underline"
+                              >
+                                View Resume <ExternalLink size={10} />
                               </a>
                             </div>
                           )}

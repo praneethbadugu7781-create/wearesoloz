@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { UploadCloud, X, Loader2 } from "lucide-react";
+import { UploadCloud, X, Loader2, File } from "lucide-react";
 import Image from "next/image";
 
 interface CloudinaryUploadProps {
@@ -15,6 +15,19 @@ export function CloudinaryUpload({ value, onChange, label = "Upload Image", acce
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isDocument = (url: string) => {
+    if (!url) return false;
+    const cleanUrl = url.split("?")[0].toLowerCase();
+    return (
+      cleanUrl.endsWith(".pdf") ||
+      cleanUrl.endsWith(".doc") ||
+      cleanUrl.endsWith(".docx") ||
+      cleanUrl.endsWith(".xls") ||
+      cleanUrl.endsWith(".xlsx") ||
+      cleanUrl.endsWith(".txt")
+    );
+  };
 
   const isVideo = (url: string) => {
     if (!url) return false;
@@ -119,7 +132,22 @@ export function CloudinaryUpload({ value, onChange, label = "Upload Image", acce
 
       {value ? (
         <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-white/10 bg-black/45 flex items-center justify-center">
-          {isVideo(value) ? (
+          {isDocument(value) ? (
+            <div className="flex flex-col items-center gap-2 p-4 text-center">
+              <div className="w-12 h-12 rounded-full bg-soloz-ember/15 flex items-center justify-center">
+                <File className="w-6 h-6 text-soloz-ember" />
+              </div>
+              <a 
+                href={value} 
+                target="_blank" 
+                rel="noreferrer" 
+                className="text-xs font-semibold text-soloz-ember hover:underline max-w-[240px] truncate"
+              >
+                View Uploaded Document
+              </a>
+              <span className="text-[10px] text-white/50 block mt-1">Click X to remove and upload another</span>
+            </div>
+          ) : isVideo(value) ? (
             <video
               src={value}
               controls
@@ -164,14 +192,18 @@ export function CloudinaryUpload({ value, onChange, label = "Upload Image", acce
                   ? "Click to select image or video" 
                   : accept.includes("video") 
                     ? "Click to select video" 
-                    : "Click to select image"}
+                    : accept.includes("pdf") || accept.includes("doc")
+                      ? "Click to select document (PDF/Word)"
+                      : "Click to select image"}
               </p>
               <p className="text-xs text-white/40">
                 {accept === "*"
                   ? "PNG, JPG, WEBP, MP4, or MOV"
                   : accept.includes("video")
                     ? "MP4, WebM, MOV, or OGG"
-                    : "PNG, JPG, WEBP, or GIF"}
+                    : accept.includes("pdf") || accept.includes("doc")
+                      ? "PDF, DOC, DOCX, TXT, or Image"
+                      : "PNG, JPG, WEBP, or GIF"}
               </p>
             </div>
           )}

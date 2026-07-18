@@ -180,7 +180,7 @@ router.post("/contacts", async (req, res) => {
 // --- Careers (public submit) ---
 router.post("/careers", async (req, res) => {
   try {
-    const { fullName, gender, age, bloodGroup, email, mobile, instagram, experience, whyJoin } = req.body;
+    const { fullName, gender, age, bloodGroup, email, mobile, instagram, resume, experience, whyJoin } = req.body;
     if (!fullName || fullName.length < 2) return res.status(400).json({ error: "Full name must be at least 2 characters" });
     if (!gender || !["Male", "Female", "Other"].includes(gender)) return res.status(400).json({ error: "Please select a valid gender" });
     if (!age || isNaN(Number(age)) || Number(age) < 18 || Number(age) > 100) return res.status(400).json({ error: "Please enter a valid age (18 or older)" });
@@ -199,6 +199,7 @@ router.post("/careers", async (req, res) => {
       email,
       mobile,
       instagram: instagram || "",
+      resume: resume || "",
       experience,
       whyJoin,
     });
@@ -212,6 +213,7 @@ router.post("/careers", async (req, res) => {
       email,
       mobile,
       instagram: instagram || "",
+      resume: resume || "",
       experience,
       whyJoin,
     }).catch(console.error);

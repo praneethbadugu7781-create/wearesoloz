@@ -9,6 +9,7 @@ const careerSchema = new mongoose.Schema(
     email: { type: String, required: true },
     mobile: { type: String, required: true },
     instagram: { type: String, default: "" },
+    resume: { type: String, default: "" },
     experience: { type: String, required: true },
     whyJoin: { type: String, required: true },
     status: { type: String, default: "Pending", enum: ["Pending", "Reviewed", "Rejected", "Archived"] },

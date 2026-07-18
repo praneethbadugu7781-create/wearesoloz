@@ -11,6 +11,7 @@ import { getApiUrl } from "@/lib/api";
 import TermsModal from "./TermsModal";
 import SuccessModal from "./SuccessModal";
 import { useLanguage } from "@/lib/LanguageContext";
+import { CloudinaryUpload } from "@/components/cloudinary-upload";
 
 interface CareersClientProps {
   settings: any;
@@ -33,6 +34,7 @@ export default function CareersClient({ settings = {} }: CareersClientProps) {
     instagram: "",
     experience: "",
     whyJoin: "",
+    resume: "",
   });
   const [busy, setBusy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -113,6 +115,7 @@ export default function CareersClient({ settings = {} }: CareersClientProps) {
         instagram: "",
         experience: "",
         whyJoin: "",
+        resume: "",
       });
       setShowSuccess(true);
     } catch {
@@ -305,6 +308,16 @@ export default function CareersClient({ settings = {} }: CareersClientProps) {
                   onChange={(e) => setForm({ ...form, instagram: e.target.value })}
                   placeholder="e.g. @yourprofile"
                   className="glass border-stone-200 bg-white/90 h-12 text-stone-900 placeholder:text-stone-400 focus-visible:ring-soloz-primary focus:border-[#ea580c]"
+                />
+              </div>
+
+              {/* Resume Upload */}
+              <div className="space-y-1">
+                <CloudinaryUpload
+                  value={form.resume}
+                  onChange={(url) => setForm({ ...form, resume: url })}
+                  label={locale === "te" ? "రిజ్యూమ్ అప్‌లోడ్ (ఐచ్ఛికం)" : locale === "hi" ? "रिज्यूमे अपलोड (वैकल्पिक)" : "Resume Upload (Optional)"}
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                 />
               </div>
 

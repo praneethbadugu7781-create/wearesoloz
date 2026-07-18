@@ -90,7 +90,8 @@ async function sendCareerEmail(careerData) {
     <strong>Gender / Age:</strong> ${careerData.gender} / ${careerData.age} yrs old (Blood Group: ${careerData.bloodGroup})<br>
     <strong>Mobile (WhatsApp):</strong> ${careerData.mobile}<br>
     <strong>Email:</strong> ${careerData.email}<br>
-    <strong>Instagram:</strong> ${careerData.instagram || "Not provided"}<br><br>
+    <strong>Instagram:</strong> ${careerData.instagram || "Not provided"}<br>
+    <strong>Resume:</strong> ${careerData.resume ? `<a href="${careerData.resume}" target="_blank" style="color: #ea580c; text-decoration: underline;">View Uploaded Resume</a>` : "Not provided"}<br><br>
     <strong>Travel Experience:</strong>
     <blockquote style="background: #f9f9f9; border-left: 5px solid #ea580c; padding: 12px; margin: 15px 0; color: #443e38;">
       ${careerData.experience.replace(/\n/g, "<br>")}
