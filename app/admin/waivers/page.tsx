@@ -20,7 +20,8 @@ import {
   ClipboardCheck, 
   CheckCircle,
   HelpCircle,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Mail
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -145,6 +146,29 @@ export default function AdminWaiversPage() {
       setTrips(prev => prev.map(t => t._id === trip._id ? { ...t, confirmationLinkEnabled: newStatus } : t));
     } catch (err: any) {
       alert(err.message || "Failed to toggle waiver link status.");
+    }
+  };
+
+  const handleResendInvoice = async (w: any) => {
+    if (!w.email) {
+      alert(`Passenger ${w.fullName} has no email registered on file.\n\nMobile: ${w.mobile}`);
+      return;
+    }
+
+    if (!confirm(`Resend tax invoice & receipt to ${w.fullName} (${w.email})?`)) return;
+
+    try {
+      const res = await fetch(`${API_URL}/admin/waivers/${w._id}/resend-invoice`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() }
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to resend invoice.");
+
+      alert(data.message || `Invoice resent successfully to ${w.email}!`);
+    } catch (err: any) {
+      alert(err.message || "Failed to resend invoice.");
     }
   };
 
@@ -643,6 +667,13 @@ export default function AdminWaiversPage() {
                           <td className="py-3 px-4 text-right">
                             <div className="flex justify-end items-center gap-2">
                               <button
+                                onClick={() => handleResendInvoice(w)}
+                                className="px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 text-[10px] font-semibold transition-all inline-flex items-center gap-1"
+                                title="Resend Tax Invoice Email"
+                              >
+                                <Mail size={11} /> Resend Invoice
+                              </button>
+                              <button
                                 onClick={() => setSelectedWaiverDetail(w)}
                                 className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-white hover:bg-white/10 text-[10px] font-semibold transition-all"
                               >
@@ -757,8 +788,14 @@ export default function AdminWaiversPage() {
               </div>
             </div>
 
-            <div className="flex justify-end pt-2">
-              <Button onClick={() => setSelectedWaiverDetail(null)} className="text-xs">
+            <div className="flex justify-between items-center pt-2">
+              <Button
+                onClick={() => handleResendInvoice(selectedWaiverDetail)}
+                className="text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5"
+              >
+                <Mail size={14} /> Resend Tax Invoice
+              </Button>
+              <Button onClick={() => setSelectedWaiverDetail(null)} className="text-xs" variant="secondary">
                 Close Details
               </Button>
             </div>

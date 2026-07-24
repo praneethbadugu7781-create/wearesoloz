@@ -299,6 +299,36 @@ router.delete("/waivers/:submissionId", async (req, res) => {
   }
 });
 
+// --- RESEND Waiver Invoice Email ---
+router.post("/waivers/:submissionId/resend-invoice", async (req, res) => {
+  try {
+    const WaiverSubmission = require("../models/WaiverSubmission");
+    const Trip = require("../models/Trip");
+    const { sendWaiverInvoiceEmail } = require("../lib/mailer");
+
+    await connectDB();
+    const waiver = await WaiverSubmission.findById(req.params.submissionId).lean();
+    if (!waiver) {
+      return res.status(404).json({ error: "Waiver submission not found" });
+    }
+
+    if (!waiver.email) {
+      return res.status(400).json({ error: "Passenger has no email registered on file." });
+    }
+
+    const trip = await Trip.findById(waiver.tripId).lean();
+    const sent = await sendWaiverInvoiceEmail(waiver, trip);
+
+    if (!sent) {
+      return res.status(500).json({ error: "Failed to send invoice email." });
+    }
+
+    res.json({ success: true, message: `Invoice email resent successfully to ${waiver.email}` });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // --- DELETE Feedback Submission ---
 router.delete("/feedbacks/:submissionId", async (req, res) => {
   try {

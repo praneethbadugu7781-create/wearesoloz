@@ -632,6 +632,74 @@ async function sendContactApprovalEmail(contactData) {
   return customerSent && adminSent;
 }
 
+async function sendWaiverInvoiceEmail(waiver, trip) {
+  if (!waiver.email) return false;
+  
+  const tripName = trip ? (trip.title || trip.destination || "Solo Expedition") : "Solo Expedition";
+  const rawPrice = trip ? (trip.price || "INR 4,999/-") : "INR 4,999/-";
+  const formattedPrice = String(rawPrice).replace(/₹/g, "INR ").replace(/Rs\.?/gi, "INR ").trim();
+
+  const subject = `Official Tax Invoice & Booking Receipt - WeAreSoloZ (${waiver.submissionId})`;
+  const title = "Official Booking Invoice & Confirmation";
+  
+  const content = `
+    Hi ${waiver.fullName},<br><br>
+    Here is your official tax invoice and booking receipt for <strong>${tripName}</strong>.<br><br>
+    <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-family: sans-serif; font-size: 14px;">
+      <tr style="background: #fdf7f2;">
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; color: #666; width: 140px;">Invoice / Sub ID:</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; font-weight: bold; color: #ea580c;">INV-${waiver.submissionId}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; color: #666;">Traveler Name:</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; font-weight: bold;">${waiver.fullName} (${waiver.mobile})</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; color: #666;">Package / Trip:</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; font-weight: bold;">${tripName}</td>
+      </tr>
+      ${trip && trip.date ? `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; color: #666;">Departure Date:</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5;">${new Date(trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</td>
+      </tr>
+      ` : ''}
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; color: #666;">Amount Paid:</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; font-weight: bold; color: #16a34a; font-size: 16px;">${formattedPrice}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; color: #666;">Payment Status:</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; font-weight: bold; color: #16a34a;">PAID & CONFIRMED</td>
+      </tr>
+    </table>
+    
+    <div style="background: #fcfcfc; border: 1px solid #eee; padding: 12px; border-radius: 8px; font-size: 12px; color: #555;">
+      <strong>Enterprise Registration Details:</strong><br>
+      WEARESOLOZ (Proprietor: Pasupuleti Akhil)<br>
+      Udyam Reg: UDYAM-TS-09-0255691 | Shop Reg: NEST2026627990<br>
+      NIC Code: 79110 / 79120 (Travel Agency & Tour Operator Services)<br>
+      Address: Plot 395, Ayan Nilayam, TNGO Colony Phase-2, Gachibowli, Hyderabad, Telangana - 500032
+    </div><br>
+    
+    If you have any questions or need trip details, feel free to contact Akhil Pasupuleti directly.
+  `;
+
+  const html = wrapPremiumEmail(title, content, "Contact Akhil on WhatsApp", "https://wa.me/919966085310");
+  const text = `Hi ${waiver.fullName}, official tax invoice for ${tripName}. Amount Paid: ${formattedPrice}. Status: PAID & CONFIRMED.`;
+
+  // Send to customer
+  const customerSent = await sendResendEmail({ to: waiver.email, subject, text, html });
+
+  // Send copy to admin
+  const adminEmail = await getAdminEmail();
+  const recipients = Array.from(new Set([adminEmail, "wearesolozindia@gmail.com", "wearesoloz@gmail.com"].filter(Boolean)));
+  const adminSubject = `[Admin Receipt Copy] Invoice Resent: ${waiver.fullName} - ${tripName} (${waiver.submissionId})`;
+  sendResendEmail({ to: recipients, subject: adminSubject, text, html }).catch(console.error);
+
+  return customerSent;
+}
+
 module.exports = {
   sendContactEmail,
   sendCareerEmail,
@@ -649,5 +717,6 @@ module.exports = {
   sendContactApprovalEmail,
   sendFarmerRejectionEmail,
   sendCareerRejectionEmail,
-  sendTripMemoryOtpEmail
+  sendTripMemoryOtpEmail,
+  sendWaiverInvoiceEmail
 };
