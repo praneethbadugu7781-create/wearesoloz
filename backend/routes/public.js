@@ -865,6 +865,7 @@ router.get("/trip-confirmation/:code", async (req, res) => {
       destination: trip.destination,
       title: trip.title,
       date: trip.date,
+      price: trip.price,
       pickupLocation: trip.pickupLocation || "Default Meeting Point"
     });
   } catch (e) {

@@ -13,6 +13,7 @@ interface TripDetails {
   title?: string;
   date: string;
   pickupLocation: string;
+  price?: string;
 }
 
 export default function TripConfirmationPage() {
@@ -197,6 +198,11 @@ export default function TripConfirmationPage() {
         await generateConfirmationPDF(resData.submissionId);
       } catch (pdfErr) {
         console.error("Auto PDF generation failed:", pdfErr);
+      }
+      try {
+        await generateInvoicePDF(resData.submissionId);
+      } catch (pdfErr) {
+        console.error("Auto Invoice PDF generation failed:", pdfErr);
       }
     } catch (err: any) {
       toast.error(err.message || "An error occurred during submission.");
@@ -513,6 +519,234 @@ export default function TripConfirmationPage() {
     doc.save(`Confirmation_${subId}.pdf`);
   };
 
+  const generateInvoicePDF = async (subId = submissionId) => {
+    if (!trip) return;
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4"
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // Dark Header card background
+    doc.setFillColor(20, 17, 13);
+    doc.rect(0, 0, pageWidth, 42, "F");
+
+    // Add Logo
+    try {
+      const logoImg = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = (e) => reject(e);
+        img.src = "/logo.png";
+      });
+      doc.addImage(logoImg, "PNG", 15, 8, 12, 12);
+    } catch (e) {
+      console.error("Failed to load logo for PDF:", e);
+    }
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255);
+    doc.text("WeAreSoloZ", 32, 14);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(180, 180, 180);
+    doc.text("TRAVEL SOLO. YOU'RE NOT ALONE.", 32, 18);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(255, 255, 255);
+    doc.text("TAX INVOICE", pageWidth - 15, 16, { align: "right" });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(200, 200, 200);
+    doc.text(`Invoice No: INV-${subId || "PENDING"}`, pageWidth - 15, 22, { align: "right" });
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - 15, 26, { align: "right" });
+
+    let y = 52;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(20, 17, 13);
+    
+    // Draw columns headers
+    doc.text("PROVIDER DETAILS (BILL FROM)", 15, y);
+    doc.text("CLIENT DETAILS (BILL TO)", 110, y);
+    
+    y += 2;
+    doc.setDrawColor(220, 220, 220);
+    doc.line(15, y, pageWidth - 15, y);
+    y += 5;
+    
+    // Left column (Company Info)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(20, 17, 13);
+    doc.text("WEARESOLOZ", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    doc.text("Proprietor: Pasupuleti Akhil", 15, y + 4);
+    doc.text("Udyam Reg: UDYAM-TS-09-0255691", 15, y + 8);
+    doc.text("Shop Reg: NEST2026627990", 15, y + 12);
+    doc.text("Activity: Travel Agency / Tour Operator", 15, y + 16);
+    
+    // Multi-line address for company
+    const compAddress = "Plot no. 395, Ayan Nilayam, TNGO colony phase-2, Gachibowli, Ranga Reddy, Telangana - 500032";
+    const splitCompAddr = doc.splitTextToSize(compAddress, 80);
+    doc.text(splitCompAddr, 15, y + 20);
+    
+    doc.text("Mobile: +91 9966085310", 15, y + 28);
+    doc.text("Email: wearesolozindia@gmail.com", 15, y + 32);
+
+    // Right column (Client Info)
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(20, 17, 13);
+    doc.text(form.fullName, 110, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Age / Gender: ${form.age} / ${form.gender}`, 110, y + 4);
+    doc.text(`Blood Group: ${form.bloodGroup || "N/A"}`, 110, y + 8);
+    doc.text(`Mobile: ${form.mobile}`, 110, y + 12);
+    doc.text(`Email: ${form.email}`, 110, y + 16);
+    
+    // Client Address
+    const clientAddress = form.address || "N/A";
+    const splitClientAddr = doc.splitTextToSize(clientAddress, 80);
+    doc.text(splitClientAddr, 110, y + 20);
+
+    y += 38;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(20, 17, 13);
+    doc.text("TRIP SUMMARY", 15, y);
+    y += 2;
+    doc.line(15, y, pageWidth - 15, y);
+    y += 5;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Trip Name:", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(trip.title || `${trip.destination} Expedition`, 40, y);
+
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Departure Date:", 110, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(new Date(trip.date).toLocaleDateString(), 140, y);
+
+    y += 5;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Pickup Point:", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(trip.pickupLocation || "As communicated by Captain", 40, y);
+
+    y += 10;
+
+    // Table Header
+    doc.setFillColor(245, 245, 245);
+    doc.rect(15, y, pageWidth - 30, 8, "F");
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text("ITEM DESCRIPTION", 18, y + 5.5);
+    doc.text("QTY", 120, y + 5.5, { align: "center" });
+    doc.text("UNIT PRICE", 150, y + 5.5, { align: "right" });
+    doc.text("AMOUNT", pageWidth - 18, y + 5.5, { align: "right" });
+
+    y += 8;
+
+    // Table Row
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(20, 17, 13);
+    doc.text(`Booking Registration Fee: ${trip.title}`, 18, y + 6);
+    doc.text("1", 120, y + 6, { align: "center" });
+    
+    const rawPrice = trip.price || "₹4,999/-";
+    doc.text(rawPrice, 150, y + 6, { align: "right" });
+    doc.text(rawPrice, pageWidth - 18, y + 6, { align: "right" });
+
+    y += 10;
+    doc.line(15, y, pageWidth - 15, y);
+    y += 4;
+
+    // Totals Section
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Subtotal:", 130, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
+    doc.text(rawPrice, pageWidth - 18, y, { align: "right" });
+
+    y += 5;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("GST / Taxes:", 130, y);
+    doc.setFont("helvetica", "normal");
+    doc.text("Included (0%)", pageWidth - 18, y, { align: "right" });
+
+    y += 6;
+    doc.setFillColor(255, 245, 235);
+    doc.rect(125, y - 4, pageWidth - 140, 8, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(234, 88, 12);
+    doc.text("Grand Total Paid:", 130, y + 1.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(20, 17, 13);
+    doc.text(rawPrice, pageWidth - 18, y + 1.5, { align: "right" });
+
+    y += 12;
+
+    doc.setFillColor(220, 252, 231); // light green bg
+    doc.rect(15, y, 40, 8, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(22, 101, 52); // green text
+    doc.text("PAYMENT STATUS: PAID", 17, y + 5.5);
+
+    y += 15;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.text("TERMS & CONDITIONS:", 15, y);
+    y += 3.5;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(140, 140, 140);
+    const terms = [
+      "1. All bookings are subject to the terms, conditions, and liability waiver signed by the traveler.",
+      "2. This booking is confirmed and paid in full. Registration credentials are non-transferable.",
+      "3. In case of cancellation or reschedule, refund policies will apply according to the package guidelines.",
+      "4. Travel services are executed as proprietary operations of WEARESOLOZ.",
+    ];
+    terms.forEach((tStr, index) => {
+      doc.text(tStr, 15, y + (index * 3.5));
+    });
+
+    // Signature/Verification Note
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(160, 160, 160);
+    doc.text("This is an electronically generated document. No physical signature is required.", pageWidth / 2, pageHeight - 15, { align: "center" });
+    doc.text("Page 1 of 1 | WeAreSoloZ - Travel Solo, You're Not Alone.", pageWidth / 2, pageHeight - 10, { align: "center" });
+
+    doc.save(`Invoice_${subId}.pdf`);
+  };
+
   if (loadingTrip) {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center flex-col gap-4">
@@ -561,12 +795,20 @@ export default function TripConfirmationPage() {
           </div>
 
           <div className="pt-2 flex flex-col items-center gap-3">
-            <button
-              onClick={() => generateConfirmationPDF(submissionId)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#ea580c] hover:bg-[#ea580c]/90 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md"
-            >
-              <Download size={14} /> Download Confirmation PDF
-            </button>
+            <div className="flex flex-wrap justify-center gap-3">
+              <button
+                onClick={() => generateConfirmationPDF(submissionId)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#ea580c] hover:bg-[#ea580c]/90 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md"
+              >
+                <Download size={14} /> Download Confirmation PDF
+              </button>
+              <button
+                onClick={() => generateInvoicePDF(submissionId)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md"
+              >
+                <FileText size={14} /> Download Invoice PDF
+              </button>
+            </div>
             <button
               onClick={() => window.close()}
               className="text-stone-400 hover:text-stone-600 text-xs font-semibold hover:underline"
