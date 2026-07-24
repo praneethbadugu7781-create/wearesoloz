@@ -541,7 +541,8 @@ export default function TripConfirmationPage() {
       return s;
     };
 
-    const tripName = trip.title || (trip.destination ? `${trip.destination} Tour Package` : "Solo Travel Package");
+    const rawTripName = trip.title || trip.destination || "Solo Travel Expedition";
+    const cleanTripName = rawTripName.replace(/tour package/gi, "").trim();
     const formattedPrice = cleanPriceStr(trip.price);
 
     // 1. BRAND HEADER (Vibrant WeAreSoloZ Orange Theme)
@@ -669,7 +670,8 @@ export default function TripConfirmationPage() {
     doc.text("Package Name:", 15, y);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(20, 17, 13);
-    doc.text(tripName, 42, y);
+    const splitTitle = doc.splitTextToSize(cleanTripName, 70);
+    doc.text(splitTitle[0] || cleanTripName, 42, y);
 
     doc.setFont("helvetica", "bold");
     doc.setTextColor(100, 100, 100);
@@ -704,8 +706,8 @@ export default function TripConfirmationPage() {
     doc.setTextColor(255, 255, 255);
     doc.text("SR.", 18, y + 5.5);
     doc.text("ITEM DESCRIPTION & SERVICES INCLUDED", 30, y + 5.5);
-    doc.text("QTY", 120, y + 5.5, { align: "center" });
-    doc.text("UNIT PRICE", 152, y + 5.5, { align: "right" });
+    doc.text("QTY", 112, y + 5.5, { align: "center" });
+    doc.text("UNIT PRICE", 148, y + 5.5, { align: "right" });
     doc.text("AMOUNT", pageWidth - 18, y + 5.5, { align: "right" });
 
     y += 8;
@@ -717,18 +719,20 @@ export default function TripConfirmationPage() {
     doc.setFontSize(8.5);
     doc.setTextColor(20, 17, 13);
     doc.text("1.", 18, y + 5.5);
-    doc.text(`Solo Travel Expedition Package - ${tripName}`, 30, y + 5.5);
+
+    const descLines = doc.splitTextToSize(`Solo Expedition - ${cleanTripName}`, 78);
+    doc.text(descLines[0] || cleanTripName, 30, y + 5.5);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
+    doc.setFontSize(7);
     doc.setTextColor(100, 100, 100);
     doc.text("Includes: Transportation, Stay & Accommodation, Trip Captain & Guidance", 30, y + 10);
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(20, 17, 13);
-    doc.text("1 Person", 120, y + 5.5, { align: "center" });
-    doc.text(formattedPrice, 152, y + 5.5, { align: "right" });
+    doc.text("1", 112, y + 5.5, { align: "center" });
+    doc.text(formattedPrice, 148, y + 5.5, { align: "right" });
     doc.text(formattedPrice, pageWidth - 18, y + 5.5, { align: "right" });
 
     y += 14;
@@ -768,39 +772,43 @@ export default function TripConfirmationPage() {
     doc.setTextColor(20, 17, 13);
     doc.text(formattedPrice, pageWidth - 18, y + 2, { align: "right" });
 
-    // 6. OFFICIAL ROUND COMPANY STAMP GRAPHIC (Right side below totals)
-    const stampX = pageWidth - 50;
-    const stampY = y + 25;
+    // 6. OFFICIAL ROUND COMPANY STAMP GRAPHIC
+    const stampX = pageWidth - 42;
+    const stampY = y + 24;
 
-    doc.setDrawColor(220, 38, 38); // Official Seal Red / Deep Orange
+    doc.setDrawColor(220, 38, 38); // Stamp Red Color
     doc.setLineWidth(0.8);
-    doc.circle(stampX, stampY, 15, "S");
+    doc.circle(stampX, stampY, 16, "S");
     doc.setLineWidth(0.3);
-    doc.circle(stampX, stampY, 13.5, "S");
+    doc.circle(stampX, stampY, 14.5, "S");
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(6.5);
     doc.setTextColor(220, 38, 38);
-    doc.text("★ WEARESOLOZ ★", stampX, stampY - 8, { align: "center" });
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.text("OFFICIAL", stampX, stampY - 2, { align: "center" });
-    doc.text("VERIFIED", stampX, stampY + 2, { align: "center" });
-    doc.text("PAID & SEALED", stampX, stampY + 6, { align: "center" });
+    doc.text("WEARESOLOZ", stampX, stampY - 8, { align: "center" });
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(5.5);
-    doc.text("UDYAM-TS-09-0255691", stampX, stampY + 10, { align: "center" });
+    doc.text("GOVT. REGISTERED", stampX, stampY - 4, { align: "center" });
 
-    // 7. PAYMENT BADGE & POLICIES (Left side)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text("OFFICIAL SEAL", stampX, stampY + 0.5, { align: "center" });
+    doc.setFontSize(7);
+    doc.text("PAID & VERIFIED", stampX, stampY + 4.5, { align: "center" });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(5);
+    doc.text("UDYAM-TS-09-0255691", stampX, stampY + 9.5, { align: "center" });
+
+    // 7. PAYMENT STATUS BADGE (Left side)
     y += 14;
     doc.setFillColor(220, 252, 231); // Soft green badge
-    doc.roundedRect(15, y, 58, 8, 1, 1, "F");
+    doc.roundedRect(15, y, 62, 8, 1, 1, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(22, 101, 52);
-    doc.text("✓ PAYMENT STATUS: FULLY PAID", 18, y + 5.5);
+    doc.text("PAYMENT STATUS: PAID & CONFIRMED", 18, y + 5.5);
 
     y += 14;
     doc.setFont("helvetica", "bold");
