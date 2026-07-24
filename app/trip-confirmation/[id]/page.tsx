@@ -531,8 +531,21 @@ export default function TripConfirmationPage() {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Dark Header card background
-    doc.setFillColor(20, 17, 13);
+    // Helper for clean currency formatting without broken Unicode characters
+    const cleanPriceStr = (val?: string) => {
+      if (!val) return "INR 4,999/-";
+      let s = String(val).replace(/₹/g, "INR ").replace(/Rs\.?/gi, "INR ").trim();
+      if (!s.toUpperCase().includes("INR")) {
+        s = `INR ${s}`;
+      }
+      return s;
+    };
+
+    const tripName = trip.title || (trip.destination ? `${trip.destination} Tour Package` : "Solo Travel Package");
+    const formattedPrice = cleanPriceStr(trip.price);
+
+    // 1. BRAND HEADER (Vibrant WeAreSoloZ Orange Theme)
+    doc.setFillColor(234, 88, 12); // #ea580c
     doc.rect(0, 0, pageWidth, 42, "F");
 
     // Add Logo
@@ -543,106 +556,127 @@ export default function TripConfirmationPage() {
         img.onerror = (e) => reject(e);
         img.src = "/logo.png";
       });
-      doc.addImage(logoImg, "PNG", 15, 8, 12, 12);
+      doc.addImage(logoImg, "PNG", 15, 8, 14, 14);
     } catch (e) {
       console.error("Failed to load logo for PDF:", e);
     }
 
     doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(255, 255, 255);
+    doc.text("WEARESOLOZ", 34, 15);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(254, 215, 170); // Light orange tint
+    doc.text("TRAVEL SOLO. YOU'RE NOT ALONE.", 34, 20);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(255, 255, 255);
+    doc.text("Govt. Registered Travel Services Enterprise", 34, 24);
+
+    // Header Right - Invoice Title & Details
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.setTextColor(255, 255, 255);
-    doc.text("WeAreSoloZ", 32, 14);
+    doc.text("TAX INVOICE", pageWidth - 15, 15, { align: "right" });
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(180, 180, 180);
-    doc.text("TRAVEL SOLO. YOU'RE NOT ALONE.", 32, 18);
+    doc.setFontSize(8.5);
+    doc.setTextColor(254, 215, 170);
+    doc.text(`Invoice No: INV-${subId || "SOLOZ-CONFIRMED"}`, pageWidth - 15, 21, { align: "right" });
+    doc.text(`Date: ${new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}`, pageWidth - 15, 26, { align: "right" });
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(255, 255, 255);
-    doc.text("TAX INVOICE", pageWidth - 15, 16, { align: "right" });
-
-    doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.setTextColor(200, 200, 200);
-    doc.text(`Invoice No: INV-${subId || "PENDING"}`, pageWidth - 15, 22, { align: "right" });
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - 15, 26, { align: "right" });
+    doc.setTextColor(255, 255, 255);
+    doc.text("STATUS: PAID & CONFIRMED", pageWidth - 15, 31, { align: "right" });
 
-    let y = 52;
+    let y = 50;
+
+    // 2. COMPANY & CLIENT DETAILS CONTAINERS
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(20, 17, 13);
-    
-    // Draw columns headers
-    doc.text("PROVIDER DETAILS (BILL FROM)", 15, y);
-    doc.text("CLIENT DETAILS (BILL TO)", 110, y);
-    
+    doc.setFontSize(9.5);
+    doc.setTextColor(234, 88, 12);
+    doc.text("SERVICE PROVIDER (ISSUER)", 15, y);
+    doc.text("BILLED TO (TRAVELER)", 112, y);
+
     y += 2;
-    doc.setDrawColor(220, 220, 220);
-    doc.line(15, y, pageWidth - 15, y);
+    doc.setDrawColor(234, 88, 12);
+    doc.setLineWidth(0.5);
+    doc.line(15, y, 98, y);
+    doc.line(112, y, pageWidth - 15, y);
+
     y += 5;
-    
-    // Left column (Company Info)
+
+    // Left Column: Provider Details Box
+    doc.setFillColor(255, 247, 237); // Light orange background fill
+    doc.roundedRect(15, y, 85, 42, 2, 2, "F");
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(20, 17, 13);
-    doc.text("WEARESOLOZ", 15, y);
+    doc.text("WEARESOLOZ", 18, y + 5);
+    
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(80, 80, 80);
-    doc.text("Proprietor: Pasupuleti Akhil", 15, y + 4);
-    doc.text("Udyam Reg: UDYAM-TS-09-0255691", 15, y + 8);
-    doc.text("Shop Reg: NEST2026627990", 15, y + 12);
-    doc.text("Activity: Travel Agency / Tour Operator", 15, y + 16);
-    
-    // Multi-line address for company
-    const compAddress = "Plot no. 395, Ayan Nilayam, TNGO colony phase-2, Gachibowli, Ranga Reddy, Telangana - 500032";
-    const splitCompAddr = doc.splitTextToSize(compAddress, 80);
-    doc.text(splitCompAddr, 15, y + 20);
-    
-    doc.text("Mobile: +91 9966085310", 15, y + 28);
-    doc.text("Email: wearesolozindia@gmail.com", 15, y + 32);
+    doc.setFontSize(7.5);
+    doc.setTextColor(70, 70, 70);
+    doc.text("Proprietor: PASUPULETI AKHIL", 18, y + 9.5);
+    doc.text("Udyam Reg: UDYAM-TS-09-0255691", 18, y + 13.5);
+    doc.text("Shop Reg: NEST2026627990 (Labour Dept)", 18, y + 17.5);
+    doc.text("NIC Code: 79110 / 79120 (Travel Services)", 18, y + 21.5);
+    doc.text("Plot 395, Ayan Nilayam, TNGO Colony Phase-2,", 18, y + 25.5);
+    doc.text("Gachibowli, Hyderabad, Telangana - 500032", 18, y + 29.5);
+    doc.text("Ph: +91 9966085310 | Email: wearesolozindia@gmail.com", 18, y + 33.5);
 
-    // Right column (Client Info)
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(20, 17, 13);
-    doc.text(form.fullName, 110, y);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(80, 80, 80);
-    doc.text(`Age / Gender: ${form.age} / ${form.gender}`, 110, y + 4);
-    doc.text(`Blood Group: ${form.bloodGroup || "N/A"}`, 110, y + 8);
-    doc.text(`Mobile: ${form.mobile}`, 110, y + 12);
-    doc.text(`Email: ${form.email}`, 110, y + 16);
-    
-    // Client Address
-    const clientAddress = form.address || "N/A";
-    const splitClientAddr = doc.splitTextToSize(clientAddress, 80);
-    doc.text(splitClientAddr, 110, y + 20);
-
-    y += 38;
+    // Right Column: Client Details Box
+    doc.setFillColor(250, 250, 250); // Clean grey fill
+    doc.roundedRect(112, y, pageWidth - 127, 42, 2, 2, "F");
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setTextColor(20, 17, 13);
-    doc.text("TRIP SUMMARY", 15, y);
+    doc.text(form.fullName || "Valued Traveler", 115, y + 5);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(70, 70, 70);
+    doc.text(`Mobile: ${form.mobile || "N/A"}`, 115, y + 9.5);
+    doc.text(`Email: ${form.email || "N/A"}`, 115, y + 13.5);
+    doc.text(`Age / Gender: ${form.age || "N/A"} Yrs / ${form.gender}`, 115, y + 17.5);
+    doc.text(`Blood Group: ${form.bloodGroup || "N/A"}`, 115, y + 21.5);
+
+    const clientAddr = form.address || "As per ID Proof verification";
+    const splitAddr = doc.splitTextToSize(`Address: ${clientAddr}`, pageWidth - 132);
+    doc.text(splitAddr, 115, y + 25.5);
+
+    y += 48;
+
+    // 3. TRIP SUMMARY SECTION
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.setTextColor(234, 88, 12);
+    doc.text("RESERVATION & ITINERARY SUMMARY", 15, y);
+
     y += 2;
     doc.line(15, y, pageWidth - 15, y);
     y += 5;
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setTextColor(100, 100, 100);
-    doc.text("Trip Name:", 15, y);
-    doc.setFont("helvetica", "normal");
+    doc.text("Package Name:", 15, y);
+    doc.setFont("helvetica", "bold");
     doc.setTextColor(20, 17, 13);
-    doc.text(trip.title || `${trip.destination} Expedition`, 40, y);
+    doc.text(tripName, 42, y);
 
     doc.setFont("helvetica", "bold");
     doc.setTextColor(100, 100, 100);
-    doc.text("Departure Date:", 110, y);
+    doc.text("Departure Date:", 120, y);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(20, 17, 13);
-    doc.text(new Date(trip.date).toLocaleDateString(), 140, y);
+    doc.text(new Date(trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }), 147, y);
 
     y += 5;
     doc.setFont("helvetica", "bold");
@@ -650,99 +684,150 @@ export default function TripConfirmationPage() {
     doc.text("Pickup Point:", 15, y);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(20, 17, 13);
-    doc.text(trip.pickupLocation || "As communicated by Captain", 40, y);
+    doc.text(trip.pickupLocation || "As communicated by Captain", 42, y);
+
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Confirmation ID:", 120, y);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(234, 88, 12);
+    doc.text(subId || "CONFIRMED", 147, y);
 
     y += 10;
 
-    // Table Header
-    doc.setFillColor(245, 245, 245);
+    // 4. ITEMIZED BILLING TABLE
+    doc.setFillColor(234, 88, 12);
     doc.rect(15, y, pageWidth - 30, 8, "F");
-    
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
-    doc.setTextColor(100, 100, 100);
-    doc.text("ITEM DESCRIPTION", 18, y + 5.5);
+    doc.setTextColor(255, 255, 255);
+    doc.text("SR.", 18, y + 5.5);
+    doc.text("ITEM DESCRIPTION & SERVICES INCLUDED", 30, y + 5.5);
     doc.text("QTY", 120, y + 5.5, { align: "center" });
-    doc.text("UNIT PRICE", 150, y + 5.5, { align: "right" });
+    doc.text("UNIT PRICE", 152, y + 5.5, { align: "right" });
     doc.text("AMOUNT", pageWidth - 18, y + 5.5, { align: "right" });
 
     y += 8;
 
-    // Table Row
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(20, 17, 13);
-    doc.text(`Booking Registration Fee: ${trip.title}`, 18, y + 6);
-    doc.text("1", 120, y + 6, { align: "center" });
-    
-    const rawPrice = trip.price || "₹4,999/-";
-    doc.text(rawPrice, 150, y + 6, { align: "right" });
-    doc.text(rawPrice, pageWidth - 18, y + 6, { align: "right" });
+    doc.setFillColor(255, 255, 255);
+    doc.rect(15, y, pageWidth - 30, 14, "F");
 
-    y += 10;
-    doc.line(15, y, pageWidth - 15, y);
-    y += 4;
-
-    // Totals Section
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
+    doc.setTextColor(20, 17, 13);
+    doc.text("1.", 18, y + 5.5);
+    doc.text(`Solo Travel Expedition Package - ${tripName}`, 30, y + 5.5);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Includes: Transportation, Stay & Accommodation, Trip Captain & Guidance", 30, y + 10);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(20, 17, 13);
+    doc.text("1 Person", 120, y + 5.5, { align: "center" });
+    doc.text(formattedPrice, 152, y + 5.5, { align: "right" });
+    doc.text(formattedPrice, pageWidth - 18, y + 5.5, { align: "right" });
+
+    y += 14;
+    doc.setDrawColor(220, 220, 220);
+    doc.line(15, y, pageWidth - 15, y);
+    y += 5;
+
+    // 5. TOTALS & SUMMARY SECTION
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
     doc.setTextColor(100, 100, 100);
     doc.text("Subtotal:", 130, y);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(20, 17, 13);
-    doc.text(rawPrice, pageWidth - 18, y, { align: "right" });
+    doc.text(formattedPrice, pageWidth - 18, y, { align: "right" });
 
     y += 5;
     doc.setFont("helvetica", "bold");
     doc.setTextColor(100, 100, 100);
-    doc.text("GST / Taxes:", 130, y);
+    doc.text("GST / Applicable Taxes:", 130, y);
     doc.setFont("helvetica", "normal");
+    doc.setTextColor(20, 17, 13);
     doc.text("Included (0%)", pageWidth - 18, y, { align: "right" });
 
     y += 6;
-    doc.setFillColor(255, 245, 235);
-    doc.rect(125, y - 4, pageWidth - 140, 8, "F");
+    doc.setFillColor(254, 243, 235); // Light orange highlight
+    doc.roundedRect(125, y - 4, pageWidth - 140, 9, 1, 1, "F");
+    doc.setDrawColor(234, 88, 12);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(125, y - 4, pageWidth - 140, 9, 1, 1, "S");
+
     doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
     doc.setTextColor(234, 88, 12);
-    doc.text("Grand Total Paid:", 130, y + 1.5);
+    doc.text("Grand Total Paid:", 128, y + 2);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(20, 17, 13);
-    doc.text(rawPrice, pageWidth - 18, y + 1.5, { align: "right" });
+    doc.text(formattedPrice, pageWidth - 18, y + 2, { align: "right" });
 
-    y += 12;
+    // 6. OFFICIAL ROUND COMPANY STAMP GRAPHIC (Right side below totals)
+    const stampX = pageWidth - 50;
+    const stampY = y + 25;
 
-    doc.setFillColor(220, 252, 231); // light green bg
-    doc.rect(15, y, 40, 8, "F");
+    doc.setDrawColor(220, 38, 38); // Official Seal Red / Deep Orange
+    doc.setLineWidth(0.8);
+    doc.circle(stampX, stampY, 15, "S");
+    doc.setLineWidth(0.3);
+    doc.circle(stampX, stampY, 13.5, "S");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.5);
+    doc.setTextColor(220, 38, 38);
+    doc.text("★ WEARESOLOZ ★", stampX, stampY - 8, { align: "center" });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.text("OFFICIAL", stampX, stampY - 2, { align: "center" });
+    doc.text("VERIFIED", stampX, stampY + 2, { align: "center" });
+    doc.text("PAID & SEALED", stampX, stampY + 6, { align: "center" });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(5.5);
+    doc.text("UDYAM-TS-09-0255691", stampX, stampY + 10, { align: "center" });
+
+    // 7. PAYMENT BADGE & POLICIES (Left side)
+    y += 14;
+    doc.setFillColor(220, 252, 231); // Soft green badge
+    doc.roundedRect(15, y, 58, 8, 1, 1, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
-    doc.setTextColor(22, 101, 52); // green text
-    doc.text("PAYMENT STATUS: PAID", 17, y + 5.5);
+    doc.setTextColor(22, 101, 52);
+    doc.text("✓ PAYMENT STATUS: FULLY PAID", 18, y + 5.5);
 
-    y += 15;
+    y += 14;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(120, 120, 120);
     doc.text("TERMS & CONDITIONS:", 15, y);
-    y += 3.5;
+
+    y += 4;
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
-    doc.setTextColor(140, 140, 140);
-    const terms = [
-      "1. All bookings are subject to the terms, conditions, and liability waiver signed by the traveler.",
-      "2. This booking is confirmed and paid in full. Registration credentials are non-transferable.",
-      "3. In case of cancellation or reschedule, refund policies will apply according to the package guidelines.",
-      "4. Travel services are executed as proprietary operations of WEARESOLOZ.",
+    doc.setFontSize(7);
+    doc.setTextColor(130, 130, 130);
+    const termsList = [
+      "1. This invoice confirms full payment for the travel booking subject to signed liability waiver terms.",
+      "2. Registration is non-transferable and verified against government ID proof.",
+      "3. All travel operations are governed under WEARESOLOZ (Udyam: UDYAM-TS-09-0255691).",
+      "4. Cancellation & reschedule terms apply per the official tour policy."
     ];
-    terms.forEach((tStr, index) => {
-      doc.text(tStr, 15, y + (index * 3.5));
+    termsList.forEach((tText, idx) => {
+      doc.text(tText, 15, y + (idx * 3.5));
     });
 
-    // Signature/Verification Note
+    // FOOTER
     doc.setFont("helvetica", "italic");
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(160, 160, 160);
-    doc.text("This is an electronically generated document. No physical signature is required.", pageWidth / 2, pageHeight - 15, { align: "center" });
-    doc.text("Page 1 of 1 | WeAreSoloZ - Travel Solo, You're Not Alone.", pageWidth / 2, pageHeight - 10, { align: "center" });
+    doc.text("This is an official computer-generated Tax Invoice issued by WEARESOLOZ. No physical signature required.", pageWidth / 2, pageHeight - 12, { align: "center" });
+    doc.text("Page 1 of 1 | www.wearesoloz.com | Contact: +91 9966085310", pageWidth / 2, pageHeight - 7, { align: "center" });
 
     doc.save(`Invoice_${subId}.pdf`);
   };
