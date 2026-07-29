@@ -8,11 +8,7 @@ import {
   Loader2, 
   Sparkles,
   ArrowLeft,
-  ShieldCheck,
-  Compass,
-  Users,
-  Camera,
-  Mountain
+  ShieldCheck
 } from "lucide-react";
 
 interface CertificateData {
@@ -84,87 +80,36 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
 
-      // Load Clean Blank Background Image Artwork
+      // Fixed Canva-Style Template Background
       const templateImg = await new Promise<HTMLImageElement>((resolve, reject) => {
         const img = new window.Image();
         img.onload = () => resolve(img);
         img.onerror = (e) => reject(e);
-        img.src = "/images/blank_worldmap_cert_bg.png";
+        img.src = "/images/certificate_template_clean.png";
       });
 
       doc.addImage(templateImg, "PNG", 0, 0, pageWidth, pageHeight);
 
-      // Header WeAreSoloZ Title
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(22);
-      doc.setTextColor(24, 24, 27);
-      doc.text("WeAre", pageWidth / 2 - 18, 25, { align: "right" });
-      doc.setTextColor(234, 88, 12);
-      doc.text("SoloZ", pageWidth / 2 - 16, 25, { align: "left" });
-
-      // Tagline Pill Background
-      doc.setFillColor(24, 24, 27);
-      doc.roundedRect(pageWidth / 2 - 32, 29, 64, 6, 3, 3, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.5);
-      doc.setTextColor(255, 255, 255);
-      doc.text("TRAVEL SOLO. ", pageWidth / 2 - 4, 33, { align: "right" });
-      doc.setTextColor(234, 88, 12);
-      doc.text("YOU'RE NOT ALONE.", pageWidth / 2 - 2, 33, { align: "left" });
-
-      // Main Certificate Header
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(26);
-      doc.setTextColor(24, 24, 27);
-      doc.text("CERTIFICATE", pageWidth / 2, 48, { align: "center" });
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(13);
-      doc.setTextColor(234, 88, 12);
-      doc.text("— OF MEMORIES —", pageWidth / 2, 56, { align: "center" });
-
-      // Presentation
-      doc.setFont("helvetica", "italic");
-      doc.setFontSize(9.5);
-      doc.setTextColor(120, 113, 108);
-      doc.text("Proudly presented to", pageWidth / 2, 65, { align: "center" });
-
-      // Traveler Name
+      // Dynamic Layer 1: Traveler Name (Fixed Coordinates)
       doc.setFont("times", "bolditalic");
-      doc.setFontSize(30);
+      doc.setFontSize(28);
       doc.setTextColor(24, 24, 27);
-      doc.text(cert.fullName, pageWidth / 2, 81, { align: "center" });
+      doc.text(cert.fullName, pageWidth / 2, 101, { align: "center" });
 
-      // Orange Brush Line Underneath
-      doc.setDrawColor(234, 88, 12);
-      doc.setLineWidth(1);
-      doc.line(pageWidth / 2 - 45, 85, pageWidth / 2 + 45, 85);
-
-      // Citation Paragraph
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9.5);
-      doc.setTextColor(70, 70, 70);
-      doc.text(`for being an amazing part of our ${cert.trip.title} journey.`, pageWidth / 2, 95, { align: "center" });
-      doc.text("The world is wide, but the memories we create together make every place feel like home.", pageWidth / 2, 101, { align: "center" });
-
-      // 4 Highlight Columns Grid
-      doc.setDrawColor(220, 215, 205);
-      doc.setLineWidth(0.3);
-      doc.line(20, 112, pageWidth - 20, 112);
-      doc.line(20, 132, pageWidth - 20, 132);
-
+      // Dynamic Layer 2: Certificate ID (Fixed Coordinates)
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      doc.setTextColor(234, 88, 12);
-      doc.text("NEW PLACES EXPLORED", 50, 123, { align: "center" });
-      doc.text("CONNECTIONS MADE", 110, 123, { align: "center" });
-      doc.text("MEMORIES CREATED", 175, 123, { align: "center" });
-      doc.text("ADVENTURES LIVED", 240, 123, { align: "center" });
+      doc.setFontSize(8.5);
+      doc.setTextColor(24, 24, 27);
+      doc.text(cert.certificateId, 84, 178, { align: "center" });
 
-      // Footer Information
-      const footY = 156;
+      // Dynamic Layer 3: Issued On Date (Fixed Coordinates)
+      const formattedDate = new Date(cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(24, 24, 27);
+      doc.text(formattedDate, 189, 178, { align: "center" });
 
-      // QR Code Render
+      // Dynamic Layer 4: Scannable QR Code (Fixed Coordinates)
       try {
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.href)}`;
         const qrImg = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -174,60 +119,8 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
           img.onerror = (e) => reject(e);
           img.src = qrUrl;
         });
-        doc.addImage(qrImg, "PNG", 18, 148, 18, 18);
+        doc.addImage(qrImg, "PNG", 22, 160, 20, 20);
       } catch (e) {}
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(6);
-      doc.setTextColor(120, 113, 108);
-      doc.text("Scan to verify this certificate", 27, 170, { align: "center" });
-
-      // Certificate ID
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7);
-      doc.setTextColor(234, 88, 12);
-      doc.text("CERTIFICATE ID", 65, footY);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.setTextColor(24, 24, 27);
-      doc.text(cert.certificateId, 65, footY + 5);
-
-      // Issued On
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7);
-      doc.setTextColor(234, 88, 12);
-      doc.text("ISSUED ON", 170, footY);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.setTextColor(24, 24, 27);
-      const formattedDate = new Date(cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-      doc.text(formattedDate, 170, footY + 5);
-
-      // Founder Signature
-      doc.setFont("times", "bolditalic");
-      doc.setFontSize(16);
-      doc.setTextColor(24, 24, 27);
-      doc.text("Akhil", 215, footY - 1);
-      doc.setDrawColor(120, 113, 108);
-      doc.line(200, footY + 1, 235, footY + 1);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      doc.setTextColor(24, 24, 27);
-      doc.text("FOUNDER", 217.5, footY + 5, { align: "center" });
-      doc.setFontSize(6.5);
-      doc.setTextColor(234, 88, 12);
-      doc.text("Pasupuleti Akhil", 217.5, footY + 8.5, { align: "center" });
-
-      // Official Seal Badge
-      const sealX = pageWidth - 26;
-      const sealY = footY + 2;
-      doc.setFillColor(234, 88, 12);
-      doc.circle(sealX, sealY, 11, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(6);
-      doc.setTextColor(255, 255, 255);
-      doc.text("OFFICIAL", sealX, sealY - 1, { align: "center" });
-      doc.text("TRAVELER", sealX, sealY + 3, { align: "center" });
 
       doc.save(`Certificate_${cert.fullName.replace(/\s+/g, "_")}_${cert.certificateId}.pdf`);
     } catch (err: any) {
@@ -309,141 +202,56 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
           </p>
         </div>
 
-        {/* 100% PERFECT HIGH-RES WORLD MAP ARTWORK CONTAINER WITH DYNAMIC TEXT */}
-        <div className="relative w-full max-w-4xl mx-auto aspect-[1000/667] rounded-2xl shadow-2xl overflow-hidden border-[3px] border-[#ea580c] bg-[#f9f3ed] p-6 sm:p-12 flex flex-col justify-between text-center select-none">
+        {/* FIXED CANVA-STYLE TEMPLATE CONTAINER */}
+        <div className="relative w-full max-w-4xl mx-auto aspect-[1536/1024] rounded-2xl shadow-2xl overflow-hidden border-2 border-stone-300 bg-[#faf4ec] select-none">
           
-          {/* Base Clean World Map Artwork Image */}
+          {/* FIXED BACKGROUND IMAGE TEMPLATE (NEVER CHANGES) */}
           <img 
-            src="/images/blank_worldmap_cert_bg.png" 
-            alt="Certificate Artwork" 
+            src="/images/certificate_template_clean.png" 
+            alt="WeAreSoloZ Certificate Template" 
             className="absolute inset-0 w-full h-full object-fill pointer-events-none"
           />
 
-          {/* Top Header Logo & Tagline */}
-          <div className="relative z-10 flex flex-col items-center space-y-1.5 pt-1">
-            <div className="flex items-center gap-2">
-              <img src="/logo.png" alt="WeAreSoloZ Logo" className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover shadow-md border-2 border-[#ea580c]" />
-              <div className="text-2xl sm:text-4xl font-extrabold tracking-tight text-stone-900">
-                We<span className="text-[#ea580c]">Are</span>SoloZ
-              </div>
-            </div>
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-stone-900 text-white text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider">
-              Travel Solo.&nbsp;<span className="text-[#ea580c]">You're Not Alone.</span>
-            </div>
+          {/* DYNAMIC LAYER 1: Traveler Name (Absolute Position) */}
+          <div 
+            className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none w-full px-4"
+            style={{ top: "47.5%" }}
+          >
+            <span className="font-serif italic font-extrabold text-[#18181b] text-3xl sm:text-5xl md:text-6xl tracking-wide drop-shadow-sm">
+              {cert.fullName}
+            </span>
           </div>
 
-          {/* Certificate Main Titles */}
-          <div className="relative z-10 space-y-1 my-auto">
-            <h2 className="text-3xl sm:text-5xl font-black tracking-widest text-stone-900 uppercase">
-              CERTIFICATE
-            </h2>
-            <div className="flex items-center justify-center gap-3">
-              <div className="w-12 sm:w-20 h-0.5 bg-[#ea580c]" />
-              <h3 className="text-base sm:text-xl font-extrabold tracking-widest text-[#ea580c] uppercase">
-                — OF MEMORIES —
-              </h3>
-              <div className="w-12 sm:w-20 h-0.5 bg-[#ea580c]" />
-            </div>
-
-            <p className="text-xs sm:text-sm text-stone-500 italic font-serif pt-2">
-              Proudly presented to
-            </p>
-
-            {/* Traveler Name with Brush Stroke Underline */}
-            <div className="py-2 relative inline-block max-w-full">
-              <div className="font-serif italic font-extrabold text-[#ea580c] text-3xl sm:text-5xl md:text-6xl tracking-wide drop-shadow-sm px-4">
-                {cert.fullName}
-              </div>
-              <div className="w-full h-1 sm:h-1.5 bg-gradient-to-r from-transparent via-[#ea580c] to-transparent rounded-full mx-auto mt-1" />
-            </div>
-
-            {/* Citation Quote */}
-            <div className="max-w-xl mx-auto space-y-1 text-stone-700 text-xs sm:text-sm font-medium leading-relaxed pt-1">
-              <p>for being an amazing part of our <strong className="text-stone-900 font-extrabold">{cert.trip.title}</strong> journey.</p>
-              <p className="text-stone-500 italic text-[11px] sm:text-xs">
-                The world is wide, but the memories we create together make every place feel like home.
-              </p>
-            </div>
+          {/* DYNAMIC LAYER 2: Certificate ID (Absolute Position) */}
+          <div 
+            className="absolute -translate-x-1/2 text-center pointer-events-none"
+            style={{ top: "85.2%", left: "28.5%" }}
+          >
+            <span className="font-mono font-extrabold text-[10px] sm:text-xs md:text-sm text-stone-900">
+              {cert.certificateId}
+            </span>
           </div>
 
-          {/* 4 Feature Highlights Grid */}
-          <div className="relative z-10 py-3 my-2 border-y border-stone-300/80 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center bg-stone-100/50 rounded-xl">
-            <div className="flex flex-col items-center justify-center p-1 space-y-1">
-              <div className="w-7 h-7 rounded-full bg-orange-100 text-[#ea580c] flex items-center justify-center shadow-xs">
-                <Compass size={16} />
-              </div>
-              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase text-stone-800 tracking-wider">NEW PLACES EXPLORED</span>
-            </div>
-
-            <div className="flex flex-col items-center justify-center p-1 space-y-1 sm:border-l sm:border-stone-300">
-              <div className="w-7 h-7 rounded-full bg-orange-100 text-[#ea580c] flex items-center justify-center shadow-xs">
-                <Users size={16} />
-              </div>
-              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase text-stone-800 tracking-wider">CONNECTIONS MADE</span>
-            </div>
-
-            <div className="flex flex-col items-center justify-center p-1 space-y-1 sm:border-l sm:border-stone-300">
-              <div className="w-7 h-7 rounded-full bg-orange-100 text-[#ea580c] flex items-center justify-center shadow-xs">
-                <Camera size={16} />
-              </div>
-              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase text-stone-800 tracking-wider">MEMORIES CREATED</span>
-            </div>
-
-            <div className="flex flex-col items-center justify-center p-1 space-y-1 sm:border-l sm:border-stone-300">
-              <div className="w-7 h-7 rounded-full bg-orange-100 text-[#ea580c] flex items-center justify-center shadow-xs">
-                <Mountain size={16} />
-              </div>
-              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase text-stone-800 tracking-wider">ADVENTURES LIVED</span>
-            </div>
+          {/* DYNAMIC LAYER 3: Issued On Date (Absolute Position) */}
+          <div 
+            className="absolute -translate-x-1/2 text-center pointer-events-none"
+            style={{ top: "85.2%", left: "63.8%" }}
+          >
+            <span className="font-bold text-[10px] sm:text-xs md:text-sm text-stone-900">
+              {formattedDate}
+            </span>
           </div>
 
-          {/* Footer Information Row */}
-          <div className="relative z-10 pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
-            {/* QR Code Verification */}
-            <div className="flex items-center gap-2.5">
-              <img src={qrCodeUrl} alt="QR Code" className="w-14 h-14 rounded border border-stone-300 p-1 bg-white shadow-sm" />
-              <div>
-                <span className="block text-[8px] uppercase font-bold text-stone-500">Scan to verify</span>
-                <span className="text-[9px] font-extrabold text-[#ea580c] uppercase tracking-wider">Official Certificate</span>
-              </div>
-            </div>
-
-            {/* Certificate ID */}
-            <div>
-              <span className="block text-[9px] uppercase font-extrabold text-[#ea580c]">CERTIFICATE ID</span>
-              <span className="text-xs font-mono font-extrabold text-stone-900">{cert.certificateId}</span>
-            </div>
-
-            {/* Center Compass Rose Graphic */}
-            <div className="hidden sm:flex flex-col items-center justify-center text-stone-700">
-              <div className="text-[8px] font-extrabold tracking-widest text-[#ea580c]">N</div>
-              <div className="flex items-center gap-1.5 text-[9px] font-extrabold">
-                <span>W</span>
-                <div className="w-5 h-5 rounded-full border border-stone-400 flex items-center justify-center text-[#ea580c] font-bold">❖</div>
-                <span>E</span>
-              </div>
-              <div className="text-[8px] font-extrabold tracking-widest text-[#ea580c]">S</div>
-            </div>
-
-            {/* Issued On */}
-            <div>
-              <span className="block text-[9px] uppercase font-extrabold text-[#ea580c]">ISSUED ON</span>
-              <span className="text-xs font-bold text-stone-900">{formattedDate}</span>
-            </div>
-
-            {/* Founder Signature */}
-            <div className="text-center sm:text-left">
-              <div className="font-serif italic text-xl font-extrabold text-stone-900">Akhil</div>
-              <div className="w-24 h-0.5 bg-stone-400 mx-auto sm:mx-0 my-0.5" />
-              <div className="text-[9px] font-extrabold uppercase text-stone-900">FOUNDER</div>
-              <div className="text-[9px] text-[#ea580c] font-bold">Pasupuleti Akhil</div>
-            </div>
-
-            {/* Official Badge Seal */}
-            <div className="w-16 h-16 rounded-full border-2 border-[#ea580c] bg-stone-900 text-white p-1 flex flex-col items-center justify-center text-center shadow-lg rotate-[-6deg]">
-              <span className="text-[6.5px] font-extrabold tracking-widest text-[#ea580c] uppercase">OFFICIAL</span>
-              <span className="text-[7.5px] font-extrabold uppercase text-white">TRAVELER</span>
-            </div>
+          {/* DYNAMIC LAYER 4: Scannable QR Code (Absolute Position) */}
+          <div 
+            className="absolute pointer-events-none"
+            style={{ top: "87.8%", left: "11.5%", width: "7.8%", transform: "translate(-50%, -50%)" }}
+          >
+            <img 
+              src={qrCodeUrl} 
+              alt="QR Code Verification" 
+              className="w-full h-full aspect-square object-contain bg-white p-0.5 rounded shadow-sm border border-stone-300"
+            />
           </div>
 
         </div>
