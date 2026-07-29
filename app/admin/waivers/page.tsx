@@ -21,7 +21,8 @@ import {
   CheckCircle,
   HelpCircle,
   FileSpreadsheet,
-  Mail
+  Mail,
+  Award
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -169,6 +170,41 @@ export default function AdminWaiversPage() {
       alert(data.message || `Invoice resent successfully to ${w.email}!`);
     } catch (err: any) {
       alert(err.message || "Failed to resend invoice.");
+    }
+  };
+
+  const handleIssueCertificate = async (w: any) => {
+    try {
+      const res = await fetch(`${API_URL}/admin/waivers/${w._id}/issue-certificate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to issue certificate.");
+
+      alert(data.message || `E-Certificate issued successfully for ${w.fullName}!`);
+      if (selectedTrip) fetchWaivers(selectedTrip._id!);
+    } catch (err: any) {
+      alert(err.message || "Failed to issue certificate.");
+    }
+  };
+
+  const handleIssueAllCertificates = async () => {
+    if (!selectedTrip) return;
+    if (!confirm(`Issue E-Certificates for ALL travelers on ${selectedTrip.destination}?`)) return;
+
+    try {
+      const res = await fetch(`${API_URL}/admin/trips/${selectedTrip._id}/issue-all-certificates`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to issue certificates.");
+
+      alert(data.message || "E-Certificates issued successfully for all travelers!");
+      fetchWaivers(selectedTrip._id!);
+    } catch (err: any) {
+      alert(err.message || "Failed to issue certificates.");
     }
   };
 
@@ -450,6 +486,12 @@ export default function AdminWaiversPage() {
 
               <div className="flex flex-wrap gap-2">
                 <Button 
+                  onClick={handleIssueAllCertificates}
+                  className="h-9 text-xs bg-[#ea580c] hover:bg-[#ea580c]/90 text-white font-bold shadow-md"
+                >
+                  <Award size={14} className="mr-1.5 text-amber-300" /> Issue All E-Certificates
+                </Button>
+                <Button 
                   onClick={handlePrint}
                   variant="secondary" 
                   className="h-9 text-xs border-white/10 text-white hover:bg-white/5"
@@ -667,6 +709,25 @@ export default function AdminWaiversPage() {
                           </td>
                           <td className="py-3 px-4 text-right">
                             <div className="flex justify-end items-center gap-2">
+                              {w.certificateId ? (
+                                <a
+                                  href={`/certificate/${w.certificateId}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 text-[10px] font-semibold transition-all inline-flex items-center gap-1"
+                                  title="View Issued E-Certificate"
+                                >
+                                  <Award size={11} /> View Cert
+                                </a>
+                              ) : (
+                                <button
+                                  onClick={() => handleIssueCertificate(w)}
+                                  className="px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-amber-300 hover:bg-amber-500/20 text-[10px] font-semibold transition-all inline-flex items-center gap-1"
+                                  title="Issue Travel E-Certificate"
+                                >
+                                  <Award size={11} /> Issue Cert
+                                </button>
+                              )}
                               <button
                                 onClick={() => handleResendInvoice(w)}
                                 className="px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 text-[10px] font-semibold transition-all inline-flex items-center gap-1"

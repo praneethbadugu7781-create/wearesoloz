@@ -325,6 +325,89 @@ router.post("/waivers/:submissionId/resend-invoice", async (req, res) => {
 
     res.json({ success: true, message: `Invoice email resent successfully to ${waiver.email}` });
   } catch (e) {
+
+// --- ISSUE SINGLE E-CERTIFICATE ---
+router.post("/waivers/:submissionId/issue-certificate", async (req, res) => {
+  try {
+    const WaiverSubmission = require("../models/WaiverSubmission");
+    const Trip = require("../models/Trip");
+    const { sendCertificateIssuedEmail } = require("../lib/mailer");
+
+    await connectDB();
+    const waiver = await WaiverSubmission.findById(req.params.submissionId);
+    if (!waiver) {
+      return res.status(404).json({ error: "Waiver submission not found" });
+    }
+
+    if (!waiver.certificateId) {
+      waiver.certificateId = `SLZ-CERT-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    }
+    waiver.isCertificateIssued = true;
+    waiver.certificateIssuedAt = new Date();
+    await waiver.save();
+
+    const trip = await Trip.findById(waiver.tripId).lean();
+    const origin = req.headers.origin || "https://wearesoloz.com";
+    const certUrl = `${origin}/certificate/${waiver.certificateId}`;
+
+    let emailSent = false;
+    if (waiver.email) {
+      emailSent = await sendCertificateIssuedEmail(waiver, trip, certUrl);
+    }
+
+    res.json({
+      success: true,
+      message: `E-Certificate issued successfully for ${waiver.fullName}!`,
+      certificateId: waiver.certificateId,
+      certUrl,
+      emailSent
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- ISSUE ALL E-CERTIFICATES FOR A TRIP ---
+router.post("/trips/:tripId/issue-all-certificates", async (req, res) => {
+  try {
+    const WaiverSubmission = require("../models/WaiverSubmission");
+    const Trip = require("../models/Trip");
+    const { sendCertificateIssuedEmail } = require("../lib/mailer");
+
+    await connectDB();
+    const trip = await Trip.findById(req.params.tripId).lean();
+    if (!trip) {
+      return res.status(404).json({ error: "Trip not found" });
+    }
+
+    const waivers = await WaiverSubmission.find({ tripId: req.params.tripId });
+    if (waivers.length === 0) {
+      return res.status(400).json({ error: "No waiver submissions found for this trip." });
+    }
+
+    const origin = req.headers.origin || "https://wearesoloz.com";
+    let count = 0;
+
+    for (const waiver of waivers) {
+      if (!waiver.certificateId) {
+        waiver.certificateId = `SLZ-CERT-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+      }
+      waiver.isCertificateIssued = true;
+      waiver.certificateIssuedAt = new Date();
+      await waiver.save();
+
+      const certUrl = `${origin}/certificate/${waiver.certificateId}`;
+      if (waiver.email) {
+        sendCertificateIssuedEmail(waiver, trip, certUrl).catch(console.error);
+      }
+      count++;
+    }
+
+    res.json({
+      success: true,
+      message: `Successfully issued ${count} E-Certificates for ${trip.title || trip.destination}!`
+    });
+  } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
