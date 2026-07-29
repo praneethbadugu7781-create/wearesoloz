@@ -294,7 +294,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
             <ArrowLeft size={16} /> Back to WeAreSoloZ
           </Link>
           <div className="flex items-center gap-2.5">
-            <Image src="/logo.png" alt="SoloZ" width={28} height={28} className="rounded-full shadow-sm" />
+            <img src="/logo.png" alt="WeAreSoloZ Logo" className="w-8 h-8 rounded-full object-cover shadow-sm border border-[#ea580c]" />
             <span className="font-extrabold text-sm tracking-tight text-stone-900">WeAreSoloZ</span>
           </div>
           <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 px-3 py-1 rounded-full text-emerald-700 text-[10px] font-bold uppercase tracking-wider">
@@ -331,7 +331,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
 
           {/* Header Branding with Official Logo */}
           <div className="flex flex-col items-center justify-center space-y-2 pt-2">
-            <Image src="/logo.png" alt="WeAreSoloZ Official Logo" width={64} height={64} className="rounded-full shadow-md border-2 border-[#ea580c]" />
+            <img src="/logo.png" alt="WeAreSoloZ Logo" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-md border-2 border-[#ea580c]" />
             <div className="text-xs uppercase font-extrabold tracking-widest text-[#ea580c] mt-1">WEARESOLOZ</div>
             <div className="text-[10px] text-stone-500 font-bold uppercase tracking-wider">TRAVEL SOLO. YOU'RE NOT ALONE.</div>
           </div>
