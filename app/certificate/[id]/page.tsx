@@ -143,30 +143,35 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     ctx.textAlign = "center";
     ctx.fillText(formattedDate, issueDateX, valueY);
 
-    // 5. Verification QR Code: Erase baked-in dummy QR placeholder first, then draw dynamic scannable QR
+    // 5. Verification QR Code: Render dynamic scannable QR over clean template space
     try {
-      // Clear inner area of the orange QR box with template background color (#fffbf9)
-      const clearX = W * 0.033;
-      const clearY = H * 0.781;
-      const clearW = W * 0.090;
-      const clearH = H * 0.125;
-      ctx.fillStyle = "#fffbf9";
-      ctx.fillRect(clearX, clearY, clearW, clearH);
+      const targetUrl = window.location.href;
+      const primaryQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(targetUrl)}`;
+      const fallbackQrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(targetUrl)}&size=250`;
 
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`;
-      const qrImg = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const qrImg = await new Promise<HTMLImageElement>((resolve) => {
         const img = new window.Image();
         img.crossOrigin = "anonymous";
         img.onload = () => resolve(img);
-        img.onerror = (e) => reject(e);
-        img.src = qrUrl;
+        img.onerror = () => {
+          // Fallback to quickchart if primary QR service fails or times out
+          const fallbackImg = new window.Image();
+          fallbackImg.crossOrigin = "anonymous";
+          fallbackImg.onload = () => resolve(fallbackImg);
+          fallbackImg.onerror = () => resolve(img); // return original if both fail
+          fallbackImg.src = fallbackQrUrl;
+        };
+        img.src = primaryQrUrl;
       });
-      const qrX = W * 0.036; // ~56px
+
+      const qrX = W * 0.035; // ~54px
       const qrY = H * 0.785; // ~804px
-      const qrW = W * 0.084; // ~128px
-      const qrH = H * 0.111; // ~114px
+      const qrW = W * 0.086; // ~132px
+      const qrH = H * 0.113; // ~116px
       ctx.drawImage(qrImg, qrX, qrY, qrW, qrH);
-    } catch (e) {}
+    } catch (e) {
+      console.error("QR rendering error:", e);
+    }
 
     // 6. Flatten Canvas into a Single PNG Data URL
     const finalDataUrl = canvas.toDataURL("image/png");
