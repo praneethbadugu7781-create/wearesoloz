@@ -80,12 +80,12 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
 
-      // Load Clean Artwork Background Template
+      // Load Clean 4K Google Drive Artwork Template Background
       const templateImg = await new Promise<HTMLImageElement>((resolve, reject) => {
         const img = new window.Image();
         img.onload = () => resolve(img);
         img.onerror = (e) => reject(e);
-        img.src = "/images/certificate_blank_template.png";
+        img.src = "/images/cert_clean_base.png";
       });
 
       doc.addImage(templateImg, "PNG", 0, 0, pageWidth, pageHeight);
@@ -202,16 +202,16 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
           </p>
         </div>
 
-        {/* 100% PERFECT ARTWORK CONTAINER */}
-        <div className="relative w-full aspect-[1000/667] max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden border-2 border-stone-300 bg-[#fdfaf3]">
-          {/* Base Clean Template Image Artwork */}
+        {/* 100% PERFECT HIGH-RES GOOGLE DRIVE ARTWORK CONTAINER */}
+        <div className="relative w-full aspect-[1536/1024] max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden border-2 border-stone-300 bg-[#fdfaf3]">
+          {/* Base High-Res Clean Artwork Template */}
           <img 
-            src="/images/certificate_blank_template.png" 
+            src="/images/cert_clean_base.png" 
             alt="WeAreSoloZ Certificate of Memories" 
             className="w-full h-full object-fill select-none pointer-events-none"
           />
 
-          {/* DYNAMIC OVERLAY 1: Traveler Name (Directly on Parchment Background) */}
+          {/* DYNAMIC OVERLAY 1: Traveler Name (Seamlessly Placed) */}
           <div 
             className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none w-full px-4"
             style={{ top: "45.5%" }}
