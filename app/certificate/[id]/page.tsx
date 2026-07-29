@@ -83,48 +83,49 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // 2. Load Master Certificate Template Background Image
+    // 2. Load Master Certificate Template Background Image (v7 — clean, QR cleared)
     const templateImg = await new Promise<HTMLImageElement>((resolve, reject) => {
       const img = new window.Image();
       img.onload = () => resolve(img);
       img.onerror = (e) => reject(e);
-      img.src = "/images/master_certificate_template_v6.png?v=" + Date.now();
+      img.src = "/images/master_certificate_template_v7.png?v=" + Date.now();
     });
 
     // Draw Master Template Image
     ctx.drawImage(templateImg, 0, 0, 1536, 1024);
 
-    // 3. Responsive Traveler Name Font Sizing (Stay inside name area, never overflow)
+    // 3. Responsive Traveler Name Font Sizing
     const nameLength = cert.fullName.length;
-    let nameFontSize = 72; // Default short name font size
+    let nameFontSize = 56; // Default short name font size
     if (nameLength > 35) {
-      nameFontSize = 42; // Extremely long name
+      nameFontSize = 38; // Extremely long name
     } else if (nameLength > 25) {
-      nameFontSize = 50; // Very long name
+      nameFontSize = 46; // Very long name
     }
 
+    // Traveler Name: centered horizontally, Y=470 (between "PROUDLY PRESENTED TO" and orange brush)
     ctx.font = `bold italic ${nameFontSize}px "Times New Roman", Times, serif`;
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(cert.fullName, 1536 / 2, 550);
+    ctx.fillText(cert.fullName, 768, 470);
 
-    // 4. Draw Certificate ID (Centered under CERTIFICATE ID header)
-    ctx.font = "bold 18px monospace, sans-serif";
+    // 4. Certificate ID value (centered under CERTIFICATE ID header at X=490, Y=912)
+    ctx.font = "bold 15px 'Courier New', monospace";
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(cert.certificateId, 395, 852);
+    ctx.fillText(cert.certificateId, 490, 912);
 
-    // 5. Draw Issue Date (Centered under DATE OF ISSUE header)
-    const formattedDate = new Date(cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-    ctx.font = "bold 18px sans-serif";
+    // 5. Issue Date value (centered under ISSUE DATE header at X=850, Y=912)
+    const formattedDate = new Date(cert.certificateIssuedAt || cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    ctx.font = "bold 15px Arial, sans-serif";
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(formattedDate, 575, 852);
+    ctx.fillText(formattedDate, 850, 912);
 
-    // 6. Draw Verification QR Code Image Directly on Canvas
+    // 6. QR Code (replaces placeholder QR in bottom-left: X=48, Y=812, 150x120)
     try {
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`;
       const qrImg = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -134,7 +135,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
         img.onerror = (e) => reject(e);
         img.src = qrUrl;
       });
-      ctx.drawImage(qrImg, 110, 815, 130, 130);
+      ctx.drawImage(qrImg, 48, 812, 150, 120);
     } catch (e) {}
 
     // 7. Flatten Canvas into a Single PNG Data URL
