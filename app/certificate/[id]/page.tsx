@@ -310,7 +310,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
         </div>
 
         {/* 100% PERFECT HIGH-RES WORLD MAP ARTWORK CONTAINER WITH DYNAMIC TEXT */}
-        <div className="relative w-full max-w-4xl mx-auto aspect-[1000/667] rounded-2xl shadow-2xl overflow-hidden border-[3px] border-[#ea580c] bg-[#fcfaf4] p-6 sm:p-12 flex flex-col justify-between text-center select-none">
+        <div className="relative w-full max-w-4xl mx-auto aspect-[1000/667] rounded-2xl shadow-2xl overflow-hidden border-[3px] border-[#ea580c] bg-[#f9f3ed] p-6 sm:p-12 flex flex-col justify-between text-center select-none">
           
           {/* Base Clean World Map Artwork Image */}
           <img 
