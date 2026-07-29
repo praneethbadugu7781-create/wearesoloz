@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, use } from "react";
+import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { 
   Download, 
@@ -28,21 +28,19 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
   const resolvedParams = use(params);
   const certId = resolvedParams.id;
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
   const [cert, setCert] = useState<CertificateData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [generatingPdf, setGeneratingPdf] = useState(false);
-  const [canvasReady, setCanvasReady] = useState(false);
+  const [certificateImageUrl, setCertificateImageUrl] = useState<string>("");
 
   useEffect(() => {
     fetchCertificate();
   }, [certId]);
 
   useEffect(() => {
-    if (cert && canvasRef.current) {
-      renderCertificateCanvas();
+    if (cert) {
+      generateFlattenedCertificate();
     }
   }, [cert]);
 
@@ -75,17 +73,17 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     }
   };
 
-  const renderCertificateCanvas = async () => {
-    if (!cert || !canvasRef.current) return;
-    const canvas = canvasRef.current;
+  const generateFlattenedCertificate = async () => {
+    if (!cert) return;
+
+    // Create Off-Screen HTML5 Canvas (1536 x 1024)
+    const canvas = document.createElement("canvas");
+    canvas.width = 1536;
+    canvas.height = 1024;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Master Canvas Dimensions (1536 x 1024)
-    canvas.width = 1536;
-    canvas.height = 1024;
-
-    // 1. Draw Master Template Background Image
+    // Step 1: Draw Master Template Background Image
     const templateImg = await new Promise<HTMLImageElement>((resolve, reject) => {
       const img = new window.Image();
       img.onload = () => resolve(img);
@@ -95,7 +93,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
 
     ctx.drawImage(templateImg, 0, 0, 1536, 1024);
 
-    // 2. Draw Traveler Name (Centered on Canvas at Y: 490px)
+    // Step 2: Draw Traveler Name Directly onto Canvas (Centered at Y: 490px)
     let fontSize = 56;
     if (cert.fullName.length > 35) fontSize = 36;
     else if (cert.fullName.length > 25) fontSize = 44;
@@ -106,14 +104,14 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     ctx.textBaseline = "middle";
     ctx.fillText(cert.fullName, 1536 / 2, 490);
 
-    // 3. Draw Certificate ID (Centered at X: 438px, Y: 872px)
+    // Step 3: Draw Certificate ID Directly onto Canvas (Centered at X: 438px, Y: 872px)
     ctx.font = "bold 20px monospace, sans-serif";
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(cert.certificateId, 438, 872);
 
-    // 4. Draw Issue Date (Centered at X: 980px, Y: 872px)
+    // Step 4: Draw Issue Date Directly onto Canvas (Centered at X: 980px, Y: 872px)
     const formattedDate = new Date(cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
     ctx.font = "bold 20px sans-serif";
     ctx.fillStyle = "#18181b";
@@ -121,7 +119,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     ctx.textBaseline = "middle";
     ctx.fillText(formattedDate, 980, 872);
 
-    // 5. Draw Dynamic QR Code (at X: 110px, Y: 815px, W: 130px, H: 130px)
+    // Step 5: Draw Verification QR Code Image Directly onto Canvas
     try {
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`;
       const qrImg = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -134,11 +132,13 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
       ctx.drawImage(qrImg, 110, 815, 130, 130);
     } catch (e) {}
 
-    setCanvasReady(true);
+    // Step 6: Export Flattened Image URL
+    const dataUrl = canvas.toDataURL("image/png");
+    setCertificateImageUrl(dataUrl);
   };
 
   const generatePDF = async () => {
-    if (!cert || !canvasRef.current) return;
+    if (!cert || !certificateImageUrl) return;
     setGeneratingPdf(true);
     try {
       const { jsPDF } = await import("jspdf");
@@ -151,10 +151,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
 
-      // Export Flattened Canvas Image
-      const canvasDataUrl = canvasRef.current.toDataURL("image/png");
-
-      doc.addImage(canvasDataUrl, "PNG", 0, 0, pageWidth, pageHeight);
+      doc.addImage(certificateImageUrl, "PNG", 0, 0, pageWidth, pageHeight);
       doc.save(`Certificate_${cert.fullName.replace(/\s+/g, "_")}_${cert.certificateId}.pdf`);
     } catch (err: any) {
       console.error("PDF export error:", err);
@@ -165,10 +162,10 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
   };
 
   const handleDownloadImage = () => {
-    if (!canvasRef.current || !cert) return;
+    if (!certificateImageUrl || !cert) return;
     const link = document.createElement("a");
     link.download = `Certificate_${cert.fullName.replace(/\s+/g, "_")}_${cert.certificateId}.png`;
-    link.href = canvasRef.current.toDataURL("image/png");
+    link.href = certificateImageUrl;
     link.click();
   };
 
@@ -240,19 +237,27 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
           </p>
         </div>
 
-        {/* FLATTENED HTML5 CANVAS CERTIFICATE (ZERO FLOATING OVERLAYS) */}
-        <div className="relative w-full max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden border-2 border-stone-300 bg-[#faf4ec] flex items-center justify-center p-2 sm:p-4">
-          <canvas 
-            ref={canvasRef} 
-            className="w-full h-auto max-w-full rounded-xl shadow-md block"
-          />
+        {/* SINGLE FLATTENED RENDERED CERTIFICATE IMAGE (ZERO HTML OVERLAYS) */}
+        <div className="relative w-full max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden border-2 border-stone-300 bg-[#faf4ec] flex items-center justify-center p-1 sm:p-2">
+          {certificateImageUrl ? (
+            <img 
+              src={certificateImageUrl} 
+              alt={`WeAreSoloZ Official Certificate for ${cert.fullName}`}
+              className="w-full h-auto rounded-xl shadow-md block select-none"
+            />
+          ) : (
+            <div className="w-full aspect-[1536/1024] flex flex-col items-center justify-center gap-3 text-stone-500">
+              <Loader2 className="animate-spin text-[#ea580c]" size={36} />
+              <span className="text-xs uppercase tracking-wider font-bold">Rendering Flattened Master Certificate...</span>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
           <button
             onClick={generatePDF}
-            disabled={generatingPdf || !canvasReady}
+            disabled={generatingPdf || !certificateImageUrl}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-[#ea580c] hover:bg-[#ea580c]/90 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-lg shadow-[#ea580c]/20 disabled:opacity-50"
           >
             {generatingPdf ? (
@@ -268,8 +273,8 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
 
           <button
             onClick={handleDownloadImage}
-            disabled={!canvasReady}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-lg"
+            disabled={!certificateImageUrl}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-lg disabled:opacity-50"
           >
             <Download size={16} /> Download PNG Image
           </button>
