@@ -143,8 +143,16 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     ctx.textAlign = "center";
     ctx.fillText(formattedDate, issueDateX, valueY);
 
-    // 5. Verification QR Code: Box at X: 3.1%, Y: 79.1%, Width: 9.4%, Height: 11.2%
+    // 5. Verification QR Code: Erase baked-in dummy QR placeholder first, then draw dynamic scannable QR
     try {
+      // Clear inner area of the orange QR box with template background color (#fffbf9)
+      const clearX = W * 0.033;
+      const clearY = H * 0.781;
+      const clearW = W * 0.090;
+      const clearH = H * 0.125;
+      ctx.fillStyle = "#fffbf9";
+      ctx.fillRect(clearX, clearY, clearW, clearH);
+
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`;
       const qrImg = await new Promise<HTMLImageElement>((resolve, reject) => {
         const img = new window.Image();
@@ -153,10 +161,10 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
         img.onerror = (e) => reject(e);
         img.src = qrUrl;
       });
-      const qrX = W * 0.031; // 48px
-      const qrY = H * 0.791; // 810px
-      const qrW = W * 0.094; // 145px
-      const qrH = H * 0.112; // 115px
+      const qrX = W * 0.036; // ~56px
+      const qrY = H * 0.785; // ~804px
+      const qrW = W * 0.084; // ~128px
+      const qrH = H * 0.111; // ~114px
       ctx.drawImage(qrImg, qrX, qrY, qrW, qrH);
     } catch (e) {}
 
