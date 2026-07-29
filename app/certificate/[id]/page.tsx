@@ -96,11 +96,11 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
 
     // 3. Responsive Traveler Name Font Sizing
     const nameLength = cert.fullName.length;
-    let nameFontSize = 56; // Default short name font size
+    let nameFontSize = 52;
     if (nameLength > 35) {
-      nameFontSize = 36; // Extremely long name
+      nameFontSize = 36;
     } else if (nameLength > 25) {
-      nameFontSize = 44; // Very long name
+      nameFontSize = 42;
     }
 
     // Traveler Name: centered horizontally at X=768, Y=470
@@ -110,22 +110,30 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     ctx.textBaseline = "middle";
     ctx.fillText(cert.fullName, 768, 470);
 
-    // 4. Certificate ID value (centered under CERTIFICATE ID header at X=490, Y=912)
+    // 4. Trip Name Subtitle: centered horizontally below name at X=768, Y=512
+    const tripTitle = cert.trip.title || cert.trip.destination || "Solo Expedition";
+    ctx.font = 'italic 18px Arial, sans-serif';
+    ctx.fillStyle = "#ea580c";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`${tripTitle} Expedition`, 768, 512);
+
+    // 5. Certificate ID value: centered under CERTIFICATE ID header at X=490, Y=910
     ctx.font = "bold 15px 'Courier New', monospace";
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(cert.certificateId, 490, 912);
+    ctx.fillText(cert.certificateId, 490, 910);
 
-    // 5. Issue Date value (centered under ISSUE DATE header at X=850, Y=912)
+    // 6. Issue Date value: centered under ISSUE DATE header at X=936, Y=910
     const formattedDate = new Date(cert.certificateIssuedAt || cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
     ctx.font = "bold 15px Arial, sans-serif";
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(formattedDate, 850, 912);
+    ctx.fillText(formattedDate, 936, 910);
 
-    // 6. QR Code (placed over bottom-left QR box area: X=48, Y=810, W=150, H=120)
+    // 7. QR Code: placed over bottom-left QR box area at X=48, Y=810, W=150, H=120
     try {
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`;
       const qrImg = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -138,7 +146,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
       ctx.drawImage(qrImg, 48, 810, 150, 120);
     } catch (e) {}
 
-    // 7. Flatten Canvas into a Single PNG Data URL
+    // 8. Flatten Canvas into a Single PNG Data URL
     const finalDataUrl = canvas.toDataURL("image/png");
     setCertificateImageUrl(finalDataUrl);
   };
