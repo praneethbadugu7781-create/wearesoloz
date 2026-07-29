@@ -217,45 +217,43 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
 
           {/* DYNAMIC OVERLAY 1: Traveler Name */}
           <div 
-            className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none w-full"
-            style={{ top: "48%" }}
+            className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none w-full px-4"
+            style={{ top: "45.5%" }}
           >
-            <div className="px-4 py-1 bg-[#fdfcf7]/90 backdrop-blur-[1px] inline-block rounded-lg shadow-sm border border-orange-200/50">
-              <span className="font-serif italic font-extrabold text-[#18181b] text-2xl sm:text-4xl md:text-5xl tracking-wide drop-shadow-sm">
-                {cert.fullName}
-              </span>
-            </div>
+            <span className="font-serif italic font-extrabold text-[#18181b] text-2xl sm:text-4xl md:text-5xl tracking-wide drop-shadow-sm">
+              {cert.fullName}
+            </span>
           </div>
 
           {/* DYNAMIC OVERLAY 2: Certificate ID */}
           <div 
             className="absolute -translate-x-1/2 text-center pointer-events-none"
-            style={{ bottom: "11.5%", left: "28%" }}
+            style={{ bottom: "14.5%", left: "28.5%" }}
           >
-            <div className="px-2.5 py-0.5 bg-[#fcfaf5] rounded font-mono font-extrabold text-[10px] sm:text-xs text-stone-900 shadow-sm border border-stone-300">
+            <span className="font-mono font-extrabold text-[10px] sm:text-xs text-stone-900 bg-[#fdfaf5] px-1 rounded">
               {cert.certificateId}
-            </div>
+            </span>
           </div>
 
           {/* DYNAMIC OVERLAY 3: Issued On Date */}
           <div 
             className="absolute -translate-x-1/2 text-center pointer-events-none"
-            style={{ bottom: "11.5%", left: "63.5%" }}
+            style={{ bottom: "14.5%", left: "63.5%" }}
           >
-            <div className="px-2.5 py-0.5 bg-[#fcfaf5] rounded font-bold text-[10px] sm:text-xs text-stone-900 shadow-sm border border-stone-300">
+            <span className="font-bold text-[10px] sm:text-xs text-stone-900 bg-[#fdfaf5] px-1 rounded">
               {formattedDate}
-            </div>
+            </span>
           </div>
 
           {/* DYNAMIC OVERLAY 4: Scannable QR Code */}
           <div 
             className="absolute pointer-events-none"
-            style={{ bottom: "8.8%", left: "7.8%", width: "7.5%" }}
+            style={{ bottom: "9.2%", left: "7.7%", width: "7.2%" }}
           >
             <img 
               src={qrCodeUrl} 
               alt="QR Code Verification" 
-              className="w-full h-full aspect-square object-contain bg-white p-0.5 rounded shadow-md border border-stone-300"
+              className="w-full h-full aspect-square object-contain bg-white p-0.5 rounded shadow-sm border border-stone-300"
             />
           </div>
 
