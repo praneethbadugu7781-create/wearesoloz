@@ -45,12 +45,22 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     setError("");
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-      const res = await fetch(`${API_URL}/public/certificates/${certId}`);
+      let res = await fetch(`${API_URL}/certificates/${certId}`);
       if (!res.ok) {
-        const data = await res.json();
+        res = await fetch(`${API_URL}/public/certificates/${certId}`);
+      }
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Certificate not found or invalid Certificate ID.");
+      }
+
+      if (!res.ok) {
         throw new Error(data.error || "Certificate not found.");
       }
-      const data = await res.json();
+
       setCert(data);
     } catch (err: any) {
       setError(err.message || "Failed to load certificate.");

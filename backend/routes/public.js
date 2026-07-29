@@ -957,7 +957,7 @@ router.post("/trip-feedback/:code", async (req, res) => {
 });
 
 // --- GET Public Certificate Details for Verification & Rendering ---
-router.get("/certificates/:certId", async (req, res) => {
+router.get(["/certificates/:certId", "/public/certificates/:certId"], async (req, res) => {
   try {
     const WaiverSubmission = require("../models/WaiverSubmission");
     await connectDB();
