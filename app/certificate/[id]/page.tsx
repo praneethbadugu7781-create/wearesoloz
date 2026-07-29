@@ -88,7 +88,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
       const img = new window.Image();
       img.onload = () => resolve(img);
       img.onerror = (e) => reject(e);
-      img.src = "/images/master_certificate_template_v4.png?v=" + Date.now();
+      img.src = "/images/master_certificate_template_v5.png?v=" + Date.now();
     });
 
     // Draw Master Template Image
@@ -107,22 +107,22 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(cert.fullName, 1536 / 2, 555);
+    ctx.fillText(cert.fullName, 1536 / 2, 550);
 
-    // 4. Draw Certificate ID
-    ctx.font = "bold 20px monospace, sans-serif";
+    // 4. Draw Certificate ID (Centered under CERTIFICATE ID header)
+    ctx.font = "bold 18px monospace, sans-serif";
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(cert.certificateId, 438, 872);
+    ctx.fillText(cert.certificateId, 395, 852);
 
-    // 5. Draw Issue Date
+    // 5. Draw Issue Date (Centered under DATE OF ISSUE header)
     const formattedDate = new Date(cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-    ctx.font = "bold 20px sans-serif";
+    ctx.font = "bold 18px sans-serif";
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(formattedDate, 980, 872);
+    ctx.fillText(formattedDate, 575, 852);
 
     // 6. Draw Verification QR Code Image Directly on Canvas
     try {
