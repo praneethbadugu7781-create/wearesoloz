@@ -76,10 +76,12 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
   const buildCanvasCertificate = async () => {
     if (!cert) return;
 
-    // 1. Create Off-Screen HTML5 Canvas (1536 x 1024)
+    // 1. Create Off-Screen HTML5 Canvas (1536 x 1024 base resolution)
     const canvas = document.createElement("canvas");
-    canvas.width = 1536;
-    canvas.height = 1024;
+    const W = 1536;
+    const H = 1024;
+    canvas.width = W;
+    canvas.height = H;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -91,50 +93,58 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
       img.src = "/images/master_certificate_template.png?v=" + Date.now();
     });
 
-    // Draw Master Template Image
-    ctx.drawImage(templateImg, 0, 0, 1536, 1024);
+    // Draw Master Template Background
+    ctx.drawImage(templateImg, 0, 0, W, H);
 
-    // 3. Responsive Traveler Name Font Sizing
+    // 3. Dynamic Font Sizing for Traveler Name (Scales down for long names)
     const nameLength = cert.fullName.length;
-    let nameFontSize = 44;
+    let nameFontSize = Math.round(H * 0.043); // ~44px
     if (nameLength > 35) {
-      nameFontSize = 32;
+      nameFontSize = Math.round(H * 0.031); // ~32px
     } else if (nameLength > 25) {
-      nameFontSize = 38;
+      nameFontSize = Math.round(H * 0.037); // ~38px
     }
 
-    // Traveler Name: centered horizontally at X=768, Y=465
+    // 1. Traveler Name: Centered at 50% Width, 45.4% Height (under "PROUDLY PRESENTED TO")
+    const nameX = W * 0.50;
+    const nameY = H * 0.454;
     ctx.font = `bold italic ${nameFontSize}px "Times New Roman", Times, serif`;
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(cert.fullName, 768, 465);
+    ctx.fillText(cert.fullName, nameX, nameY);
 
-    // 4. Trip Name Subtitle: clean formatting (avoid double "Expedition Expedition") at X=768, Y=498
+    // 2. Trip Subtitle: Centered at 50% Width, 48.6% Height (below Traveler Name)
     let rawTripTitle = cert.trip.title || cert.trip.destination || "Solo Expedition";
     let cleanTripTitle = rawTripTitle.replace(/\s+Expedition$/i, "").trim() + " Expedition";
-    ctx.font = "italic 16px Arial, sans-serif";
+    const tripSubtitleY = H * 0.486;
+    const tripFontSize = Math.round(H * 0.016); // ~16px
+    ctx.font = `italic ${tripFontSize}px Arial, sans-serif`;
     ctx.fillStyle = "#ea580c";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(cleanTripTitle, 768, 498);
+    ctx.fillText(cleanTripTitle, nameX, tripSubtitleY);
 
-    // 5. Certificate ID value: centered under CERTIFICATE ID header line at X=490, Y=914
-    ctx.font = "bold 13px 'Courier New', monospace";
+    // 3. Certificate ID: Centered at 31.9% Width, 87.5% Height (beneath CERTIFICATE ID label)
+    const certIdX = W * 0.319; // ~490px
+    const valueY = H * 0.875;   // ~896px
+    const metaFontSize = Math.round(H * 0.013); // ~13px
+    ctx.font = `bold ${metaFontSize}px 'Courier New', monospace`;
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(cert.certificateId, 490, 914);
+    ctx.fillText(cert.certificateId, certIdX, valueY);
 
-    // 6. Issue Date value: centered under ISSUE DATE header line at X=925, Y=914
+    // 4. Issue Date: Centered at 60.9% Width, 87.5% Height (beneath ISSUE DATE label)
+    const issueDateX = W * 0.609; // ~936px
     const formattedDate = new Date(cert.certificateIssuedAt || cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-    ctx.font = "bold 13px Arial, sans-serif";
+    ctx.font = `bold ${metaFontSize}px Arial, sans-serif`;
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(formattedDate, 925, 914);
+    ctx.fillText(formattedDate, issueDateX, valueY);
 
-    // 7. QR Code: placed over bottom-left QR box area at X=48, Y=810, W=145, H=115
+    // 5. Verification QR Code: Box at X: 3.1%, Y: 79.1%, Width: 9.4%, Height: 11.2%
     try {
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`;
       const qrImg = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -144,10 +154,14 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
         img.onerror = (e) => reject(e);
         img.src = qrUrl;
       });
-      ctx.drawImage(qrImg, 48, 810, 145, 115);
+      const qrX = W * 0.031;
+      const qrY = H * 0.791;
+      const qrW = W * 0.094;
+      const qrH = H * 0.112;
+      ctx.drawImage(qrImg, qrX, qrY, qrW, qrH);
     } catch (e) {}
 
-    // 8. Flatten Canvas into a Single PNG Data URL
+    // 6. Flatten Canvas into a Single PNG Data URL
     const finalDataUrl = canvas.toDataURL("image/png");
     setCertificateImageUrl(finalDataUrl);
   };
