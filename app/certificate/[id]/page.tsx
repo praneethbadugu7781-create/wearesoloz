@@ -80,36 +80,40 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
 
-      // Fixed Canva-Style Template Background
+      // Permanent Master PNG Template Background
       const templateImg = await new Promise<HTMLImageElement>((resolve, reject) => {
         const img = new window.Image();
         img.onload = () => resolve(img);
         img.onerror = (e) => reject(e);
-        img.src = "/images/certificate_template_clean.png";
+        img.src = "/images/master_certificate_template_clean.png";
       });
 
       doc.addImage(templateImg, "PNG", 0, 0, pageWidth, pageHeight);
 
-      // Dynamic Layer 1: Traveler Name (Fixed Coordinates)
+      // Dynamic Layer 1: Traveler Name (With Auto-Scaling Font Size)
+      let nameFontSize = 28;
+      if (cert.fullName.length > 35) nameFontSize = 18;
+      else if (cert.fullName.length > 25) nameFontSize = 22;
+
       doc.setFont("times", "bolditalic");
-      doc.setFontSize(28);
+      doc.setFontSize(nameFontSize);
       doc.setTextColor(24, 24, 27);
       doc.text(cert.fullName, pageWidth / 2, 101, { align: "center" });
 
-      // Dynamic Layer 2: Certificate ID (Fixed Coordinates)
+      // Dynamic Layer 2: Certificate ID
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8.5);
       doc.setTextColor(24, 24, 27);
       doc.text(cert.certificateId, 84, 178, { align: "center" });
 
-      // Dynamic Layer 3: Issued On Date (Fixed Coordinates)
+      // Dynamic Layer 3: Issue Date
       const formattedDate = new Date(cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8.5);
       doc.setTextColor(24, 24, 27);
       doc.text(formattedDate, 189, 178, { align: "center" });
 
-      // Dynamic Layer 4: Scannable QR Code (Fixed Coordinates)
+      // Dynamic Layer 4: Verification QR Code
       try {
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.href)}`;
         const qrImg = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -137,6 +141,12 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
       `🎓 I just completed the ${cert.trip.title} expedition with WeAreSoloZ! Check out my Official Certificate of Memories here: ${window.location.href} 🎒✨ #TravelSoloYoureNotAlone #WeAreSoloZ`
     );
     window.open(`https://wa.me/?text=${text}`, "_blank");
+  };
+
+  const getNameFontSizeClass = (name: string) => {
+    if (name.length > 35) return "text-xl sm:text-2xl md:text-3xl";
+    if (name.length > 25) return "text-2xl sm:text-3xl md:text-4xl";
+    return "text-3xl sm:text-5xl md:text-6xl";
   };
 
   if (loading) {
@@ -168,6 +178,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
 
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`;
   const formattedDate = new Date(cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  const nameFontSizeClass = getNameFontSizeClass(cert.fullName);
 
   return (
     <div className="min-h-screen bg-[#f4f1eb] text-stone-900 flex flex-col font-sans">
@@ -202,27 +213,27 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
           </p>
         </div>
 
-        {/* FIXED CANVA-STYLE TEMPLATE CONTAINER */}
+        {/* PERMANENT MASTER CANVA-STYLE CERTIFICATE CONTAINER */}
         <div className="relative w-full max-w-4xl mx-auto aspect-[1536/1024] rounded-2xl shadow-2xl overflow-hidden border-2 border-stone-300 bg-[#faf4ec] select-none">
           
-          {/* FIXED BACKGROUND IMAGE TEMPLATE (NEVER CHANGES) */}
+          {/* PERMANENT MASTER PNG BACKGROUND TEMPLATE */}
           <img 
-            src="/images/certificate_template_clean.png" 
-            alt="WeAreSoloZ Certificate Template" 
+            src="/images/master_certificate_template_clean.png" 
+            alt="Master Certificate Template" 
             className="absolute inset-0 w-full h-full object-fill pointer-events-none"
           />
 
-          {/* DYNAMIC LAYER 1: Traveler Name (Absolute Position) */}
+          {/* DYNAMIC FIELD 1: Traveler Name (Auto-scaled & centered) */}
           <div 
-            className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none w-full px-4"
+            className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none w-full px-6 flex items-center justify-center"
             style={{ top: "47.5%" }}
           >
-            <span className="font-serif italic font-extrabold text-[#18181b] text-3xl sm:text-5xl md:text-6xl tracking-wide drop-shadow-sm">
+            <span className={`font-serif italic font-extrabold text-[#18181b] tracking-wide drop-shadow-sm ${nameFontSizeClass}`}>
               {cert.fullName}
             </span>
           </div>
 
-          {/* DYNAMIC LAYER 2: Certificate ID (Absolute Position) */}
+          {/* DYNAMIC FIELD 2: Certificate ID */}
           <div 
             className="absolute -translate-x-1/2 text-center pointer-events-none"
             style={{ top: "85.2%", left: "28.5%" }}
@@ -232,7 +243,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
             </span>
           </div>
 
-          {/* DYNAMIC LAYER 3: Issued On Date (Absolute Position) */}
+          {/* DYNAMIC FIELD 3: Issue Date */}
           <div 
             className="absolute -translate-x-1/2 text-center pointer-events-none"
             style={{ top: "85.2%", left: "63.8%" }}
@@ -242,7 +253,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
             </span>
           </div>
 
-          {/* DYNAMIC LAYER 4: Scannable QR Code (Absolute Position) */}
+          {/* DYNAMIC FIELD 4: Verification QR Code */}
           <div 
             className="absolute pointer-events-none"
             style={{ top: "87.8%", left: "11.5%", width: "7.8%", transform: "translate(-50%, -50%)" }}
