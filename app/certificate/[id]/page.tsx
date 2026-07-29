@@ -107,7 +107,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(cert.fullName, 1536 / 2, 490);
+    ctx.fillText(cert.fullName, 1536 / 2, 555);
 
     // 4. Draw Certificate ID
     ctx.font = "bold 20px monospace, sans-serif";
