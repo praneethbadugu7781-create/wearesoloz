@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, useRef, use } from "react";
 import Link from "next/link";
 import { 
   Download, 
@@ -28,14 +28,23 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
   const resolvedParams = use(params);
   const certId = resolvedParams.id;
 
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
   const [cert, setCert] = useState<CertificateData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [canvasReady, setCanvasReady] = useState(false);
 
   useEffect(() => {
     fetchCertificate();
   }, [certId]);
+
+  useEffect(() => {
+    if (cert && canvasRef.current) {
+      renderCertificateCanvas();
+    }
+  }, [cert]);
 
   const fetchCertificate = async () => {
     setLoading(true);
@@ -66,8 +75,70 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     }
   };
 
+  const renderCertificateCanvas = async () => {
+    if (!cert || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Master Canvas Dimensions (1536 x 1024)
+    canvas.width = 1536;
+    canvas.height = 1024;
+
+    // 1. Draw Master Template Background Image
+    const templateImg = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => resolve(img);
+      img.onerror = (e) => reject(e);
+      img.src = "/images/master_certificate_template_clean.png";
+    });
+
+    ctx.drawImage(templateImg, 0, 0, 1536, 1024);
+
+    // 2. Draw Traveler Name (Centered on Canvas at Y: 490px)
+    let fontSize = 56;
+    if (cert.fullName.length > 35) fontSize = 36;
+    else if (cert.fullName.length > 25) fontSize = 44;
+
+    ctx.font = `bold italic ${fontSize}px "Times New Roman", Times, serif`;
+    ctx.fillStyle = "#18181b";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(cert.fullName, 1536 / 2, 490);
+
+    // 3. Draw Certificate ID (Centered at X: 438px, Y: 872px)
+    ctx.font = "bold 20px monospace, sans-serif";
+    ctx.fillStyle = "#18181b";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(cert.certificateId, 438, 872);
+
+    // 4. Draw Issue Date (Centered at X: 980px, Y: 872px)
+    const formattedDate = new Date(cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    ctx.font = "bold 20px sans-serif";
+    ctx.fillStyle = "#18181b";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(formattedDate, 980, 872);
+
+    // 5. Draw Dynamic QR Code (at X: 110px, Y: 815px, W: 130px, H: 130px)
+    try {
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`;
+      const qrImg = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new window.Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = (e) => reject(e);
+        img.src = qrUrl;
+      });
+      ctx.drawImage(qrImg, 110, 815, 130, 130);
+    } catch (e) {}
+
+    setCanvasReady(true);
+  };
+
   const generatePDF = async () => {
-    if (!cert) return;
+    if (!cert || !canvasRef.current) return;
     setGeneratingPdf(true);
     try {
       const { jsPDF } = await import("jspdf");
@@ -80,52 +151,10 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
 
-      // Permanent Master PNG Template Background
-      const templateImg = await new Promise<HTMLImageElement>((resolve, reject) => {
-        const img = new window.Image();
-        img.onload = () => resolve(img);
-        img.onerror = (e) => reject(e);
-        img.src = "/images/master_certificate_template_clean.png";
-      });
+      // Export Flattened Canvas Image
+      const canvasDataUrl = canvasRef.current.toDataURL("image/png");
 
-      doc.addImage(templateImg, "PNG", 0, 0, pageWidth, pageHeight);
-
-      // Dynamic Layer 1: Traveler Name (With Auto-Scaling Font Size)
-      let nameFontSize = 28;
-      if (cert.fullName.length > 35) nameFontSize = 18;
-      else if (cert.fullName.length > 25) nameFontSize = 22;
-
-      doc.setFont("times", "bolditalic");
-      doc.setFontSize(nameFontSize);
-      doc.setTextColor(24, 24, 27);
-      doc.text(cert.fullName, pageWidth / 2, 101, { align: "center" });
-
-      // Dynamic Layer 2: Certificate ID
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8.5);
-      doc.setTextColor(24, 24, 27);
-      doc.text(cert.certificateId, 84, 178, { align: "center" });
-
-      // Dynamic Layer 3: Issue Date
-      const formattedDate = new Date(cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8.5);
-      doc.setTextColor(24, 24, 27);
-      doc.text(formattedDate, 189, 178, { align: "center" });
-
-      // Dynamic Layer 4: Verification QR Code
-      try {
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.href)}`;
-        const qrImg = await new Promise<HTMLImageElement>((resolve, reject) => {
-          const img = new window.Image();
-          img.crossOrigin = "anonymous";
-          img.onload = () => resolve(img);
-          img.onerror = (e) => reject(e);
-          img.src = qrUrl;
-        });
-        doc.addImage(qrImg, "PNG", 22, 160, 20, 20);
-      } catch (e) {}
-
+      doc.addImage(canvasDataUrl, "PNG", 0, 0, pageWidth, pageHeight);
       doc.save(`Certificate_${cert.fullName.replace(/\s+/g, "_")}_${cert.certificateId}.pdf`);
     } catch (err: any) {
       console.error("PDF export error:", err);
@@ -135,18 +164,20 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     }
   };
 
+  const handleDownloadImage = () => {
+    if (!canvasRef.current || !cert) return;
+    const link = document.createElement("a");
+    link.download = `Certificate_${cert.fullName.replace(/\s+/g, "_")}_${cert.certificateId}.png`;
+    link.href = canvasRef.current.toDataURL("image/png");
+    link.click();
+  };
+
   const handleShareWhatsApp = () => {
     if (!cert) return;
     const text = encodeURIComponent(
       `🎓 I just completed the ${cert.trip.title} expedition with WeAreSoloZ! Check out my Official Certificate of Memories here: ${window.location.href} 🎒✨ #TravelSoloYoureNotAlone #WeAreSoloZ`
     );
     window.open(`https://wa.me/?text=${text}`, "_blank");
-  };
-
-  const getNameFontSizeClass = (name: string) => {
-    if (name.length > 35) return "text-xl sm:text-2xl md:text-3xl";
-    if (name.length > 25) return "text-2xl sm:text-3xl md:text-4xl";
-    return "text-3xl sm:text-5xl md:text-6xl";
   };
 
   if (loading) {
@@ -175,10 +206,6 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
       </div>
     );
   }
-
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`;
-  const formattedDate = new Date(cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-  const nameFontSizeClass = getNameFontSizeClass(cert.fullName);
 
   return (
     <div className="min-h-screen bg-[#f4f1eb] text-stone-900 flex flex-col font-sans">
@@ -213,76 +240,38 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
           </p>
         </div>
 
-        {/* PERMANENT MASTER CANVA-STYLE CERTIFICATE CONTAINER */}
-        <div className="relative w-full max-w-4xl mx-auto aspect-[1536/1024] rounded-2xl shadow-2xl overflow-hidden border-2 border-stone-300 bg-[#faf4ec] select-none">
-          
-          {/* PERMANENT MASTER PNG BACKGROUND TEMPLATE */}
-          <img 
-            src="/images/master_certificate_template_clean.png" 
-            alt="Master Certificate Template" 
-            className="absolute inset-0 w-full h-full object-fill pointer-events-none"
+        {/* FLATTENED HTML5 CANVAS CERTIFICATE (ZERO FLOATING OVERLAYS) */}
+        <div className="relative w-full max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden border-2 border-stone-300 bg-[#faf4ec] flex items-center justify-center p-2 sm:p-4">
+          <canvas 
+            ref={canvasRef} 
+            className="w-full h-auto max-w-full rounded-xl shadow-md block"
           />
-
-          {/* DYNAMIC FIELD 1: Traveler Name (Auto-scaled & centered) */}
-          <div 
-            className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none w-full px-6 flex items-center justify-center"
-            style={{ top: "47.5%" }}
-          >
-            <span className={`font-serif italic font-extrabold text-[#18181b] tracking-wide drop-shadow-sm ${nameFontSizeClass}`}>
-              {cert.fullName}
-            </span>
-          </div>
-
-          {/* DYNAMIC FIELD 2: Certificate ID */}
-          <div 
-            className="absolute -translate-x-1/2 text-center pointer-events-none"
-            style={{ top: "85.2%", left: "28.5%" }}
-          >
-            <span className="font-mono font-extrabold text-[10px] sm:text-xs md:text-sm text-stone-900">
-              {cert.certificateId}
-            </span>
-          </div>
-
-          {/* DYNAMIC FIELD 3: Issue Date */}
-          <div 
-            className="absolute -translate-x-1/2 text-center pointer-events-none"
-            style={{ top: "85.2%", left: "63.8%" }}
-          >
-            <span className="font-bold text-[10px] sm:text-xs md:text-sm text-stone-900">
-              {formattedDate}
-            </span>
-          </div>
-
-          {/* DYNAMIC FIELD 4: Verification QR Code */}
-          <div 
-            className="absolute pointer-events-none"
-            style={{ top: "87.8%", left: "11.5%", width: "7.8%", transform: "translate(-50%, -50%)" }}
-          >
-            <img 
-              src={qrCodeUrl} 
-              alt="QR Code Verification" 
-              className="w-full h-full aspect-square object-contain bg-white p-0.5 rounded shadow-sm border border-stone-300"
-            />
-          </div>
-
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
           <button
             onClick={generatePDF}
-            disabled={generatingPdf}
+            disabled={generatingPdf || !canvasReady}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-[#ea580c] hover:bg-[#ea580c]/90 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-lg shadow-[#ea580c]/20 disabled:opacity-50"
           >
             {generatingPdf ? (
               <>
-                <Loader2 size={16} className="animate-spin" /> Generating High-Res PDF...
+                <Loader2 size={16} className="animate-spin" /> Exporting High-Res PDF...
               </>
             ) : (
               <>
                 <Download size={16} /> Download Certificate PDF
               </>
             )}
+          </button>
+
+          <button
+            onClick={handleDownloadImage}
+            disabled={!canvasReady}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-lg"
+          >
+            <Download size={16} /> Download PNG Image
           </button>
 
           <button
