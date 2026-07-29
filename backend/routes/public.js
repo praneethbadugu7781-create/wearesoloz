@@ -953,6 +953,8 @@ router.post("/trip-feedback/:code", async (req, res) => {
     res.status(201).json({ success: true, submissionId });
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
 
 // --- GET Public Certificate Details for Verification & Rendering ---
 router.get(["/certificates/:certId", "/public/certificates/:certId"], async (req, res) => {

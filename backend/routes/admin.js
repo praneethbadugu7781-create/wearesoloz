@@ -325,6 +325,9 @@ router.post("/waivers/:submissionId/resend-invoice", async (req, res) => {
 
     res.json({ success: true, message: `Invoice email resent successfully to ${waiver.email}` });
   } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // --- ISSUE SINGLE E-CERTIFICATE ---
 router.post("/waivers/:submissionId/issue-certificate", async (req, res) => {
