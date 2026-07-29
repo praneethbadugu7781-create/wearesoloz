@@ -105,7 +105,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
       // Top Logo & Brand Title
       try {
         const logoImg = await new Promise<HTMLImageElement>((resolve, reject) => {
-          const img = new Image();
+          const img = new window.Image();
           img.onload = () => resolve(img);
           img.onerror = (e) => reject(e);
           img.src = "/logo.png";
