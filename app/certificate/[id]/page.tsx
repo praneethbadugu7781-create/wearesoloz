@@ -96,44 +96,45 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
 
     // 3. Responsive Traveler Name Font Sizing
     const nameLength = cert.fullName.length;
-    let nameFontSize = 52;
+    let nameFontSize = 44;
     if (nameLength > 35) {
-      nameFontSize = 36;
+      nameFontSize = 32;
     } else if (nameLength > 25) {
-      nameFontSize = 42;
+      nameFontSize = 38;
     }
 
-    // Traveler Name: centered horizontally at X=768, Y=470
+    // Traveler Name: centered horizontally at X=768, Y=465
     ctx.font = `bold italic ${nameFontSize}px "Times New Roman", Times, serif`;
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(cert.fullName, 768, 470);
+    ctx.fillText(cert.fullName, 768, 465);
 
-    // 4. Trip Name Subtitle: centered horizontally below name at X=768, Y=512
-    const tripTitle = cert.trip.title || cert.trip.destination || "Solo Expedition";
-    ctx.font = 'italic 18px Arial, sans-serif';
+    // 4. Trip Name Subtitle: clean formatting (avoid double "Expedition Expedition") at X=768, Y=498
+    let rawTripTitle = cert.trip.title || cert.trip.destination || "Solo Expedition";
+    let cleanTripTitle = rawTripTitle.replace(/\s+Expedition$/i, "").trim() + " Expedition";
+    ctx.font = "italic 16px Arial, sans-serif";
     ctx.fillStyle = "#ea580c";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(`${tripTitle} Expedition`, 768, 512);
+    ctx.fillText(cleanTripTitle, 768, 498);
 
-    // 5. Certificate ID value: centered under CERTIFICATE ID header at X=490, Y=910
-    ctx.font = "bold 15px 'Courier New', monospace";
+    // 5. Certificate ID value: centered under CERTIFICATE ID header line at X=490, Y=914
+    ctx.font = "bold 13px 'Courier New', monospace";
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(cert.certificateId, 490, 910);
+    ctx.fillText(cert.certificateId, 490, 914);
 
-    // 6. Issue Date value: centered under ISSUE DATE header at X=936, Y=910
+    // 6. Issue Date value: centered under ISSUE DATE header line at X=925, Y=914
     const formattedDate = new Date(cert.certificateIssuedAt || cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-    ctx.font = "bold 15px Arial, sans-serif";
+    ctx.font = "bold 13px Arial, sans-serif";
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(formattedDate, 936, 910);
+    ctx.fillText(formattedDate, 925, 914);
 
-    // 7. QR Code: placed over bottom-left QR box area at X=48, Y=810, W=150, H=120
+    // 7. QR Code: placed over bottom-left QR box area at X=48, Y=810, W=145, H=115
     try {
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`;
       const qrImg = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -143,7 +144,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
         img.onerror = (e) => reject(e);
         img.src = qrUrl;
       });
-      ctx.drawImage(qrImg, 48, 810, 150, 120);
+      ctx.drawImage(qrImg, 48, 810, 145, 115);
     } catch (e) {}
 
     // 8. Flatten Canvas into a Single PNG Data URL
