@@ -40,7 +40,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     if (cert) {
-      generateFlattenedCertificate();
+      buildCanvasCertificate();
     }
   }, [cert]);
 
@@ -73,45 +73,50 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     }
   };
 
-  const generateFlattenedCertificate = async () => {
+  const buildCanvasCertificate = async () => {
     if (!cert) return;
 
-    // Create Off-Screen HTML5 Canvas (1536 x 1024)
+    // 1. Create Off-Screen HTML5 Canvas (1536 x 1024)
     const canvas = document.createElement("canvas");
     canvas.width = 1536;
     canvas.height = 1024;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Step 1: Draw Master Template Background Image
+    // 2. Load Master Certificate Template Background Image
     const templateImg = await new Promise<HTMLImageElement>((resolve, reject) => {
       const img = new window.Image();
       img.onload = () => resolve(img);
       img.onerror = (e) => reject(e);
-      img.src = "/images/master_certificate_template_clean.png";
+      img.src = "/images/master_certificate_clean.png";
     });
 
+    // Draw Master Template Image
     ctx.drawImage(templateImg, 0, 0, 1536, 1024);
 
-    // Step 2: Draw Traveler Name Directly onto Canvas (Centered at Y: 490px)
-    let fontSize = 56;
-    if (cert.fullName.length > 35) fontSize = 36;
-    else if (cert.fullName.length > 25) fontSize = 44;
+    // 3. Responsive Traveler Name Font Sizing (Stay inside name area, never overflow)
+    const nameLength = cert.fullName.length;
+    let nameFontSize = 72; // Default short name font size
+    if (nameLength > 35) {
+      nameFontSize = 42; // Extremely long name
+    } else if (nameLength > 25) {
+      nameFontSize = 50; // Very long name
+    }
 
-    ctx.font = `bold italic ${fontSize}px "Times New Roman", Times, serif`;
+    ctx.font = `bold italic ${nameFontSize}px "Times New Roman", Times, serif`;
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(cert.fullName, 1536 / 2, 490);
 
-    // Step 3: Draw Certificate ID Directly onto Canvas (Centered at X: 438px, Y: 872px)
+    // 4. Draw Certificate ID
     ctx.font = "bold 20px monospace, sans-serif";
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(cert.certificateId, 438, 872);
 
-    // Step 4: Draw Issue Date Directly onto Canvas (Centered at X: 980px, Y: 872px)
+    // 5. Draw Issue Date
     const formattedDate = new Date(cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
     ctx.font = "bold 20px sans-serif";
     ctx.fillStyle = "#18181b";
@@ -119,7 +124,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     ctx.textBaseline = "middle";
     ctx.fillText(formattedDate, 980, 872);
 
-    // Step 5: Draw Verification QR Code Image Directly onto Canvas
+    // 6. Draw Verification QR Code Image Directly on Canvas
     try {
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`;
       const qrImg = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -132,9 +137,9 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
       ctx.drawImage(qrImg, 110, 815, 130, 130);
     } catch (e) {}
 
-    // Step 6: Export Flattened Image URL
-    const dataUrl = canvas.toDataURL("image/png");
-    setCertificateImageUrl(dataUrl);
+    // 7. Flatten Canvas into a Single PNG Data URL
+    const finalDataUrl = canvas.toDataURL("image/png");
+    setCertificateImageUrl(finalDataUrl);
   };
 
   const generatePDF = async () => {
@@ -237,18 +242,18 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
           </p>
         </div>
 
-        {/* SINGLE FLATTENED RENDERED CERTIFICATE IMAGE (ZERO HTML OVERLAYS) */}
-        <div className="relative w-full max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden border-2 border-stone-300 bg-[#faf4ec] flex items-center justify-center p-1 sm:p-2">
+        {/* DISPLAY ONLY SINGLE RENDERED FLATTENED IMAGE (ZERO HTML OVERLAYS) */}
+        <div className="w-full max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden border-2 border-stone-300 bg-[#faf4ec] flex items-center justify-center p-1 sm:p-2">
           {certificateImageUrl ? (
             <img 
               src={certificateImageUrl} 
-              alt={`WeAreSoloZ Official Certificate for ${cert.fullName}`}
+              alt={`Official WeAreSoloZ Certificate for ${cert.fullName}`}
               className="w-full h-auto rounded-xl shadow-md block select-none"
             />
           ) : (
             <div className="w-full aspect-[1536/1024] flex flex-col items-center justify-center gap-3 text-stone-500">
               <Loader2 className="animate-spin text-[#ea580c]" size={36} />
-              <span className="text-xs uppercase tracking-wider font-bold">Rendering Flattened Master Certificate...</span>
+              <span className="text-xs uppercase tracking-wider font-bold">Rendering Flattened Master Certificate Image...</span>
             </div>
           )}
         </div>
