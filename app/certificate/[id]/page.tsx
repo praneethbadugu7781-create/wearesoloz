@@ -5,7 +5,6 @@ import Link from "next/link";
 import { 
   Download, 
   Share2, 
-  CheckCircle, 
   Loader2, 
   Sparkles,
   ArrowLeft,
@@ -91,29 +90,36 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
 
       doc.addImage(templateImg, "PNG", 0, 0, pageWidth, pageHeight);
 
-      // Traveler Name Overlay (Centered around Y = 100mm)
+      // Clean Patch 1: Traveler Name Cover Box (Parchment Cream)
+      doc.setFillColor(253, 250, 243);
+      doc.rect(pageWidth / 2 - 60, 93, 120, 15, "F");
+
+      // Traveler Name Text
       doc.setFont("times", "bolditalic");
-      doc.setFontSize(28);
-      doc.setTextColor(24, 24, 27); // Dark Charcoal
-      doc.text(cert.fullName, pageWidth / 2, 102, { align: "center" });
-
-      // Certificate ID Overlay (Bottom Left area, X = 83mm, Y = 178mm)
-      doc.setFillColor(252, 250, 245);
-      doc.rect(68, 173, 30, 7, "F"); // Patch background
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
+      doc.setFontSize(26);
       doc.setTextColor(24, 24, 27);
-      doc.text(cert.certificateId, 83, 178, { align: "center" });
+      doc.text(cert.fullName, pageWidth / 2, 104, { align: "center" });
 
-      // Issued Date Overlay (Bottom Center Right area, X = 188mm, Y = 178mm)
-      doc.rect(173, 173, 30, 7, "F"); // Patch background
+      // Clean Patch 2: Certificate ID Cover Box
+      doc.setFillColor(253, 250, 243);
+      doc.rect(65, 172, 38, 8, "F");
+
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
+      doc.setFontSize(8.5);
       doc.setTextColor(24, 24, 27);
+      doc.text(cert.certificateId, 84, 177, { align: "center" });
+
+      // Clean Patch 3: Issued Date Cover Box
+      doc.setFillColor(253, 250, 243);
+      doc.rect(170, 172, 38, 8, "F");
+
       const formattedDate = new Date(cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-      doc.text(formattedDate, 188, 178, { align: "center" });
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(24, 24, 27);
+      doc.text(formattedDate, 189, 177, { align: "center" });
 
-      // QR Code Overlay
+      // Clean Patch 4: QR Code Cover & Render
       try {
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.href)}`;
         const qrImg = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -123,7 +129,9 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
           img.onerror = (e) => reject(e);
           img.src = qrUrl;
         });
-        doc.addImage(qrImg, "PNG", 22, 160, 20, 20);
+        doc.setFillColor(253, 250, 243);
+        doc.rect(20, 156, 24, 24, "F");
+        doc.addImage(qrImg, "PNG", 22, 158, 20, 20);
       } catch (e) {}
 
       doc.save(`Certificate_${cert.fullName.replace(/\s+/g, "_")}_${cert.certificateId}.pdf`);
@@ -207,7 +215,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
         </div>
 
         {/* 100% EXACT TEMPLATE ARTWORK CONTAINER WITH DYNAMIC OVERLAYS */}
-        <div className="relative w-full aspect-[1000/667] max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden border-2 border-stone-300 bg-white">
+        <div className="relative w-full aspect-[1000/667] max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden border-2 border-stone-300 bg-[#fdfaf3]">
           {/* Base Template Image Artwork */}
           <img 
             src="/images/certificate_template.png" 
@@ -215,45 +223,47 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
             className="w-full h-full object-fill select-none pointer-events-none"
           />
 
-          {/* DYNAMIC OVERLAY 1: Traveler Name */}
+          {/* DYNAMIC OVERLAY 1: Traveler Name (With Cream Cover Patch) */}
           <div 
             className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none w-full px-4"
-            style={{ top: "45.5%" }}
+            style={{ top: "45%" }}
           >
-            <span className="font-serif italic font-extrabold text-[#18181b] text-2xl sm:text-4xl md:text-5xl tracking-wide drop-shadow-sm">
-              {cert.fullName}
-            </span>
+            <div className="px-6 py-1 bg-[#fdfaf3] rounded-lg shadow-sm border border-amber-200/80 inline-block">
+              <span className="font-serif italic font-extrabold text-[#18181b] text-2xl sm:text-4xl md:text-5xl tracking-wide drop-shadow-sm">
+                {cert.fullName}
+              </span>
+            </div>
           </div>
 
-          {/* DYNAMIC OVERLAY 2: Certificate ID */}
+          {/* DYNAMIC OVERLAY 2: Certificate ID (With Cover Patch) */}
           <div 
             className="absolute -translate-x-1/2 text-center pointer-events-none"
             style={{ bottom: "14.5%", left: "28.5%" }}
           >
-            <span className="font-mono font-extrabold text-[10px] sm:text-xs text-stone-900 bg-[#fdfaf5] px-1 rounded">
+            <div className="px-3 py-0.5 bg-[#fdfaf3] rounded font-mono font-extrabold text-[10px] sm:text-xs text-stone-900 border border-amber-200/80 shadow-sm">
               {cert.certificateId}
-            </span>
+            </div>
           </div>
 
-          {/* DYNAMIC OVERLAY 3: Issued On Date */}
+          {/* DYNAMIC OVERLAY 3: Issued On Date (With Cover Patch) */}
           <div 
             className="absolute -translate-x-1/2 text-center pointer-events-none"
             style={{ bottom: "14.5%", left: "63.5%" }}
           >
-            <span className="font-bold text-[10px] sm:text-xs text-stone-900 bg-[#fdfaf5] px-1 rounded">
+            <div className="px-3 py-0.5 bg-[#fdfaf3] rounded font-bold text-[10px] sm:text-xs text-stone-900 border border-amber-200/80 shadow-sm">
               {formattedDate}
-            </span>
+            </div>
           </div>
 
-          {/* DYNAMIC OVERLAY 4: Scannable QR Code */}
+          {/* DYNAMIC OVERLAY 4: Scannable QR Code (With Cover Patch) */}
           <div 
             className="absolute pointer-events-none"
-            style={{ bottom: "9.2%", left: "7.7%", width: "7.2%" }}
+            style={{ bottom: "8.5%", left: "7.4%", width: "7.8%" }}
           >
             <img 
               src={qrCodeUrl} 
               alt="QR Code Verification" 
-              className="w-full h-full aspect-square object-contain bg-white p-0.5 rounded shadow-sm border border-stone-300"
+              className="w-full h-full aspect-square object-contain bg-[#fdfaf3] p-1 rounded shadow-md border border-amber-200/80"
             />
           </div>
 
