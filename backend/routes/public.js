@@ -956,4 +956,32 @@ router.post("/trip-feedback/:code", async (req, res) => {
   }
 });
 
+// --- GET Public Certificate Details for Verification & Rendering ---
+router.get("/certificates/:certId", async (req, res) => {
+  try {
+    const WaiverSubmission = require("../models/WaiverSubmission");
+    await connectDB();
+    const waiver = await WaiverSubmission.findOne({ certificateId: req.params.certId }).lean();
+    if (!waiver) {
+      return res.status(404).json({ error: "Certificate not found or invalid Certificate ID." });
+    }
+
+    const trip = await Trip.findById(waiver.tripId).lean();
+    res.json({
+      certificateId: waiver.certificateId,
+      fullName: waiver.fullName,
+      signedDate: waiver.signedDate,
+      certificateIssuedAt: waiver.certificateIssuedAt || waiver.createdAt,
+      trip: {
+        title: trip ? (trip.title || trip.destination) : "Solo Expedition",
+        destination: trip ? trip.destination : "India",
+        date: trip ? trip.date : waiver.createdAt,
+        duration: trip ? trip.duration : "3 Days"
+      }
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

@@ -22,7 +22,10 @@ const waiverSubmissionSchema = new mongoose.Schema(
     idUpload: { type: String, default: "" },
     signedName: { type: String, required: true },
     signedDate: { type: Date, default: Date.now },
-    submissionId: { type: String, required: true, unique: true }
+    submissionId: { type: String, required: true, unique: true },
+    certificateId: { type: String, default: "" },
+    certificateIssuedAt: { type: Date },
+    isCertificateIssued: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

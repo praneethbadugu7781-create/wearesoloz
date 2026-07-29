@@ -700,6 +700,37 @@ async function sendWaiverInvoiceEmail(waiver, trip) {
   return customerSent;
 }
 
+async function sendCertificateIssuedEmail(waiver, trip, certUrl) {
+  if (!waiver.email) return false;
+
+  const tripName = trip ? (trip.title || trip.destination || "Solo Expedition") : "Solo Expedition";
+  const subject = `🎉 Certificate of Exploration Awarded! - WeAreSoloZ (${tripName})`;
+  const title = "Official Travel E-Certificate Awarded";
+
+  const content = `
+    Dear <strong>${waiver.fullName}</strong>,<br><br>
+    Congratulations on successfully completing the <strong>${tripName}</strong> expedition with WeAreSoloZ!<br><br>
+    In recognition of your spirit of solo exploration and adventure, Pasupuleti Akhil and the WeAreSoloZ team have officially awarded you the <strong>Certificate of Exploration</strong>.<br><br>
+    <div style="text-align: center; margin: 25px 0;">
+      <a href="${certUrl}" style="background-color: #ea580c; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; display: inline-block;">
+        🎓 Claim & View Your E-Certificate
+      </a>
+    </div><br>
+    <strong>Certificate Details:</strong><br>
+    • <strong>Certificate ID:</strong> ${waiver.certificateId}<br>
+    • <strong>Traveler:</strong> ${waiver.fullName}<br>
+    • <strong>Expedition:</strong> ${tripName}<br>
+    • <strong>Verification URL:</strong> <a href="${certUrl}">${certUrl}</a><br><br>
+    You can download your high-resolution A4 PDF certificate or download the Instagram Story version to share with your friends!<br><br>
+    <em>Travel Solo. You're Not Alone.</em>
+  `;
+
+  const html = wrapPremiumEmail(title, content, "View Certificate", certUrl);
+  const text = `Congratulations ${waiver.fullName}! Your WeAreSoloZ Certificate of Exploration for ${tripName} is ready: ${certUrl}`;
+
+  return sendResendEmail({ to: waiver.email, subject, text, html });
+}
+
 module.exports = {
   sendContactEmail,
   sendCareerEmail,
@@ -718,5 +749,6 @@ module.exports = {
   sendFarmerRejectionEmail,
   sendCareerRejectionEmail,
   sendTripMemoryOtpEmail,
-  sendWaiverInvoiceEmail
+  sendWaiverInvoiceEmail,
+  sendCertificateIssuedEmail
 };
