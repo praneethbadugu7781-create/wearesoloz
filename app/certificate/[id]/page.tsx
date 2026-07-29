@@ -96,52 +96,51 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
     // Draw Master Template Background
     ctx.drawImage(templateImg, 0, 0, W, H);
 
+    // Use top baseline for exact cross-browser pixel predictability
+    ctx.textBaseline = "top";
+
     // 3. Dynamic Font Sizing for Traveler Name (Scales down for long names)
     const nameLength = cert.fullName.length;
-    let nameFontSize = Math.round(H * 0.043); // ~44px
+    let nameFontSize = Math.round(H * 0.041); // ~42px
     if (nameLength > 35) {
-      nameFontSize = Math.round(H * 0.031); // ~32px
+      nameFontSize = Math.round(H * 0.030); // ~30px
     } else if (nameLength > 25) {
-      nameFontSize = Math.round(H * 0.037); // ~38px
+      nameFontSize = Math.round(H * 0.035); // ~36px
     }
 
-    // 1. Traveler Name: Centered at 50% Width, 45.4% Height (under "PROUDLY PRESENTED TO")
-    const nameX = W * 0.50;
-    const nameY = H * 0.454;
+    // 1. Traveler Name: Centered horizontally at 50% Width, top aligned at 43.9% Height (below "PROUDLY PRESENTED TO")
+    const nameX = W * 0.50;  // 768px
+    const nameY = H * 0.439; // 450px
     ctx.font = `bold italic ${nameFontSize}px "Times New Roman", Times, serif`;
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
     ctx.fillText(cert.fullName, nameX, nameY);
 
-    // 2. Trip Subtitle: Centered at 50% Width, 48.6% Height (below Traveler Name)
+    // 2. Trip Subtitle: Centered horizontally at 50% Width, top aligned at 48.0% Height (below Traveler Name)
     let rawTripTitle = cert.trip.title || cert.trip.destination || "Solo Expedition";
     let cleanTripTitle = rawTripTitle.replace(/\s+Expedition$/i, "").trim() + " Expedition";
-    const tripSubtitleY = H * 0.486;
-    const tripFontSize = Math.round(H * 0.016); // ~16px
+    const tripSubtitleY = H * 0.480; // 492px
+    const tripFontSize = Math.round(H * 0.015); // 15px
     ctx.font = `italic ${tripFontSize}px Arial, sans-serif`;
     ctx.fillStyle = "#ea580c";
     ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
     ctx.fillText(cleanTripTitle, nameX, tripSubtitleY);
 
-    // 3. Certificate ID: Centered at 31.9% Width, 87.5% Height (beneath CERTIFICATE ID label)
-    const certIdX = W * 0.319; // ~490px
-    const valueY = H * 0.875;   // ~896px
-    const metaFontSize = Math.round(H * 0.013); // ~13px
+    // 3. Certificate ID: Centered at 31.9% Width, top aligned at 87.3% Height (below CERTIFICATE ID line)
+    const certIdX = W * 0.319; // 490px
+    const valueY = H * 0.873;   // 894px
+    const metaFontSize = Math.round(H * 0.013); // 13px
     ctx.font = `bold ${metaFontSize}px 'Courier New', monospace`;
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
     ctx.fillText(cert.certificateId, certIdX, valueY);
 
-    // 4. Issue Date: Centered at 60.9% Width, 87.5% Height (beneath ISSUE DATE label)
-    const issueDateX = W * 0.609; // ~936px
+    // 4. Issue Date: Centered at 60.2% Width, top aligned at 87.3% Height (below ISSUE DATE line)
+    const issueDateX = W * 0.602; // 925px
     const formattedDate = new Date(cert.certificateIssuedAt || cert.trip.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
     ctx.font = `bold ${metaFontSize}px Arial, sans-serif`;
     ctx.fillStyle = "#18181b";
     ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
     ctx.fillText(formattedDate, issueDateX, valueY);
 
     // 5. Verification QR Code: Box at X: 3.1%, Y: 79.1%, Width: 9.4%, Height: 11.2%
@@ -154,10 +153,10 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
         img.onerror = (e) => reject(e);
         img.src = qrUrl;
       });
-      const qrX = W * 0.031;
-      const qrY = H * 0.791;
-      const qrW = W * 0.094;
-      const qrH = H * 0.112;
+      const qrX = W * 0.031; // 48px
+      const qrY = H * 0.791; // 810px
+      const qrW = W * 0.094; // 145px
+      const qrH = H * 0.112; // 115px
       ctx.drawImage(qrImg, qrX, qrY, qrW, qrH);
     } catch (e) {}
 
