@@ -88,7 +88,7 @@ export default function CertificatePage({ params }: { params: Promise<{ id: stri
       const img = new window.Image();
       img.onload = () => resolve(img);
       img.onerror = (e) => reject(e);
-      img.src = "/images/master_certificate_template.png?v=" + Date.now();
+      img.src = "/images/master_certificate_template_v2.png?v=" + Date.now();
     });
 
     // Draw Master Template Image
