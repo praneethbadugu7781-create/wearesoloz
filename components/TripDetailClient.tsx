@@ -557,9 +557,9 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
               {[
                 { 
                   icon: Calendar, 
-                  label: locale === "te" ? "ప్రారంభ తేదీ / బ్యాచ్‌లు" : locale === "hi" ? "प्रारंभ तिथि / बैच" : "Start Date / Batches", 
+                  label: locale === "te" ? "ప్రారంభ తేదీ / బ్యాచ్‌లు" : locale === "hi" ? "ప్రారoభ తిథి / బ్యాచ్" : "Dates / Batches", 
                   value: batches.length > 0
-                    ? `${batches.length} Batches (${formatDate(batches[0].startDate)})`
+                    ? batches.map((b: any) => b.label || formatDate(b.startDate)).join(", ")
                     : (trip.destination?.toLowerCase().includes("sabarimala") 
                       ? (locale === "te" ? "ప్రతి నెల" : locale === "hi" ? "హర మహీనే" : "Every Month") 
                       : formatDate(trip.date))
@@ -570,10 +570,76 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                 <div key={s.label} className="glass rounded-xl p-4 border border-stone-200">
                   <s.icon className="w-4 h-4 text-soloz-primary mb-2" />
                   <div className="text-[10px] uppercase tracking-widest text-soloz-textMuted">{s.label}</div>
-                  <div className="font-display text-lg mt-1 text-stone-900">{s.value}</div>
+                  <div className="font-display text-base md:text-lg mt-1 text-stone-900 truncate" title={s.value}>{s.value}</div>
                 </div>
               ))}
             </div>
+
+            {/* Upcoming Batches & Available Dates Section */}
+            {batches.length > 0 ? (
+              <div className="mb-10 rounded-2xl border border-[#ea580c]/30 bg-orange-50/40 p-5 md:p-6 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-orange-200/60 pb-3 mb-4">
+                  <div>
+                    <h3 className="font-display text-xl font-medium text-stone-900 flex items-center gap-2">
+                      <span>📅</span> {locale === "te" ? "రాబోయే వీకెండ్ బ్యాచ్‌లు & తేదీలు" : locale === "hi" ? "आगामी सप्ताहांत बैच और तिथियां" : "Upcoming Weekend Batches & Departure Dates"}
+                    </h3>
+                    <p className="text-xs text-stone-500 mt-0.5 font-body">
+                      {locale === "te" ? "మీకు నచ్చిన బ్యాచ్ తేదీని ఎంచుకోండి." : locale === "hi" ? "अपनी पसंदीदा प्रस्थान तिथि चुनें।" : "Select your preferred batch departure date below to reserve your slot."}
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-[#ea580c] px-3.5 py-1 text-xs font-bold text-white shadow-sm self-start sm:self-auto">
+                    {batches.length} {batches.length === 1 ? "Batch Available" : "Batches Available"}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {batches.map((b: any, index: number) => {
+                    const isSelected = selectedBatch === b;
+                    const batchLabel = b.label || `Batch ${index + 1}`;
+                    const startDateStr = formatDate(b.startDate);
+                    const endDateStr = formatDate(b.endDate);
+                    const seatsText = b.seats ? `${b.seats} Seats Available` : "Seats Available";
+
+                    return (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => setSelectedBatch(b)}
+                        className={`text-left p-4 rounded-xl border transition-all duration-300 relative ${
+                          isSelected
+                            ? "border-[#ea580c] bg-white shadow-md ring-2 ring-[#ea580c]/30"
+                            : "border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`text-xs font-bold uppercase tracking-wider ${isSelected ? "text-[#ea580c]" : "text-stone-700"}`}>
+                            {batchLabel}
+                          </span>
+                          {isSelected && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-[#ea580c] text-white px-2 py-0.5 rounded-full">
+                              Selected ✓
+                            </span>
+                          )}
+                        </div>
+                        <div className="font-display text-base font-semibold text-stone-900 mt-1.5">
+                          {startDateStr} {b.endDate ? `to ${endDateStr}` : ""}
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-stone-500 mt-2.5 pt-2 border-t border-stone-100 font-body">
+                          <span>⏱️ {trip.duration || "Weekend"}</span>
+                          <span className="font-semibold text-stone-700">{seatsText}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (trip.startDate || trip.date) && (
+              <div className="mb-8 rounded-xl border border-stone-200 bg-stone-50 p-4 flex items-center justify-between text-xs text-stone-700 font-body">
+                <span className="font-semibold">Departure Date:</span>
+                <span>{formatDate(trip.startDate || trip.date)} {trip.endDate ? `to ${formatDate(trip.endDate)}` : ""}</span>
+              </div>
+            )}
+
             <div className="prose prose-stone max-w-none">
               <h3 className="font-display text-2xl mb-4 text-stone-900">{locale === "te" ? "ఈ ప్రయాణం గురించి" : locale === "hi" ? "इस यात्रा के बारे में" : "About this trip"}</h3>
               <p className="text-soloz-textSecondary leading-relaxed whitespace-pre-line font-body">{trip.description}</p>
