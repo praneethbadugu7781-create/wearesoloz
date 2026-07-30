@@ -701,29 +701,36 @@ export default function AdminTripsPage() {
   const handleScheduleTrip = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTemplateId) {
-      alert("Please select a template trip.");
+      alert("Please select a template trip first.");
       return;
     }
     if (!scheduleDate) {
-      alert("Please select a date.");
+      alert("Please select a departure date.");
       return;
     }
 
     const template = trips.find((t) => t._id === selectedTemplateId);
-    if (!template) return;
+    if (!template) {
+      alert("Template trip not found.");
+      return;
+    }
 
     // Clone the template data without ID so it saves as a NEW trip copy!
     const { _id, __v, createdAt, updatedAt, id, ...cloneData } = template as any;
 
-    // Ensure slug is unique by appending the scheduleDate
+    // Ensure slug is unique by appending the scheduleDate and a random suffix if collision exists
     const baseSlug = (cloneData.slug || cloneData.destination || "trip")
       .toLowerCase()
       .trim()
       .replace(/[^\w\s-]/g, "")
       .replace(/[\s_-]+/g, "-")
       .replace(/^-+|-+$/g, "")
-      .replace(/-\d{4}-\d{2}-\d{2}$/, "");
-    const newSlug = `${baseSlug}-${scheduleDate}`;
+      .replace(/-\d{4}-\d{2}-\d{2}.*$/, "");
+    
+    let newSlug = `${baseSlug}-${scheduleDate}`;
+    if (trips.some((t) => t.slug === newSlug)) {
+      newSlug = `${baseSlug}-${scheduleDate}-${Math.random().toString(36).substring(2, 6)}`;
+    }
 
     setScheduling(true);
     try {
@@ -734,11 +741,17 @@ export default function AdminTripsPage() {
           ...cloneData,
           slug: newSlug,
           date: scheduleDate,
-          status: "published"
+          startDate: scheduleDate,
+          endDate: cloneData.endDate || scheduleDate,
+          status: "published",
+          participants: []
         })
       });
 
-      if (!res.ok) throw new Error("Failed to schedule trip");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to schedule trip");
+      }
 
       setSchedulingMonth(null);
       setSelectedTemplateId("");
@@ -768,14 +781,21 @@ export default function AdminTripsPage() {
       .replace(/[^\w\s-]/g, "")
       .replace(/[\s_-]+/g, "-")
       .replace(/^-+|-+$/g, "")
-      .replace(/-\d{4}-\d{2}-\d{2}$/, "");
-    const newSlug = `${baseSlug}-${scheduleDate}`;
+      .replace(/-\d{4}-\d{2}-\d{2}.*$/, "");
+    
+    let newSlug = `${baseSlug}-${scheduleDate}`;
+    if (trips.some((t) => t.slug === newSlug)) {
+      newSlug = `${baseSlug}-${scheduleDate}-${Math.random().toString(36).substring(2, 6)}`;
+    }
 
     setFormData({
       ...cloneData,
       slug: newSlug,
       date: scheduleDate,
-      status: "published"
+      startDate: scheduleDate,
+      endDate: cloneData.endDate || scheduleDate,
+      status: "published",
+      participants: []
     });
     setEditId(null); // Setting editId to null creates a NEW trip on save!
     setSchedulingMonth(null);
