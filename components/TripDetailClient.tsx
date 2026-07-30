@@ -335,6 +335,9 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [waUrl, setWaUrl] = useState("");
 
+  const batches = (trip.batches || []).filter((b: any) => b && (b.startDate || b.endDate));
+  const [selectedBatch, setSelectedBatch] = useState<any>(() => (batches.length > 0 ? batches[0] : null));
+
   // Auto-scroll image slider states
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -417,6 +420,12 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
     setSubmitting(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const batchDetailStr = selectedBatch
+        ? `Selected Batch: ${selectedBatch.label || `${formatDate(selectedBatch.startDate)} to ${formatDate(selectedBatch.endDate)}`}`
+        : "";
+
+      const fullMsg = `Trip booking request for: "${trip.title || trip.destination}" (${trip.duration}). ${batchDetailStr ? `${batchDetailStr}. ` : ""}Travellers: ${form.travelers}. Additional Message: ${form.message}`;
+
       const res = await fetch(`${API_URL}/contacts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -427,7 +436,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
           age: Number(form.age),
           bloodGroup: form.bloodGroup,
           destination: trip.destination,
-          message: `Trip booking request for: "${trip.title || trip.destination}" (${trip.duration}). Travellers: ${form.travelers}. Additional Message: ${form.message}`
+          message: fullMsg
         })
       });
 
@@ -436,7 +445,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
       }
 
       // Open WhatsApp chat prefilled with booking data
-      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${form.full_name}.\nAge: ${form.age}\nBlood Group: ${form.bloodGroup}\nMobile: ${form.mobile}\nEmail: ${form.email}\nI want to book a seat for the trip: "${trip.title || trip.destination}" (${trip.duration}). Travellers: ${form.travelers}.\nMessage: ${form.message}`);
+      const waText = encodeURIComponent(`Hi WeAreSoloz, my name is ${form.full_name}.\nAge: ${form.age}\nBlood Group: ${form.bloodGroup}\nMobile: ${form.mobile}\nEmail: ${form.email}\nI want to book a seat for the trip: "${trip.title || trip.destination}" (${trip.duration}).\n${batchDetailStr ? `${batchDetailStr}\n` : ""}Travellers: ${form.travelers}.\nMessage: ${form.message}`);
       const generatedWaUrl = `https://wa.me/919966085310?text=${waText}`;
       setWaUrl(generatedWaUrl);
       window.open(generatedWaUrl, "_blank");
@@ -544,17 +553,19 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
       <section className="px-6 md:px-10 py-20">
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-12">
           <div className="md:col-span-2">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
               {[
                 { 
                   icon: Calendar, 
-                  label: locale === "te" ? "ప్రారంభ తేదీ" : locale === "hi" ? "प्रारंभ तिथि" : "Start Date", 
-                  value: trip.destination?.toLowerCase().includes("sabarimala") 
-                    ? (locale === "te" ? "ప్రతి నెల" : locale === "hi" ? "हर महीने" : "Every Month") 
-                    : formatDate(trip.date) 
+                  label: locale === "te" ? "ప్రారంభ తేదీ / బ్యాచ్‌లు" : locale === "hi" ? "प्रारंभ तिथि / बैच" : "Start Date / Batches", 
+                  value: batches.length > 0
+                    ? `${batches.length} Batches (${formatDate(batches[0].startDate)})`
+                    : (trip.destination?.toLowerCase().includes("sabarimala") 
+                      ? (locale === "te" ? "ప్రతి నెల" : locale === "hi" ? "హర మహీనే" : "Every Month") 
+                      : formatDate(trip.date))
                 },
-                { icon: Clock, label: locale === "te" ? "వ్యవధి" : locale === "hi" ? "अवधि" : "Duration", value: trip.duration || "—" },
-                { icon: MapPin, label: locale === "te" ? "ప్రాంతం" : locale === "hi" ? "क्षेत्र" : "Region", value: trip.destination },
+                { icon: Clock, label: locale === "te" ? "వ్యవధి" : locale === "hi" ? "అవధి" : "Duration", value: trip.duration || "—" },
+                { icon: MapPin, label: locale === "te" ? "ప్రాంతం" : locale === "hi" ? "క్షేత్ర" : "Region", value: trip.destination },
               ].map((s: any) => (
                 <div key={s.label} className="glass rounded-xl p-4 border border-stone-200">
                   <s.icon className="w-4 h-4 text-soloz-primary mb-2" />
@@ -683,6 +694,20 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                   </button>
                 </div>
               </div>
+
+              {selectedBatch && (
+                <div className="rounded-xl bg-orange-50 p-3 border border-[#ea580c]/30 flex items-center justify-between">
+                  <div>
+                    <span className="text-[9px] uppercase tracking-widest text-[#ea580c] font-bold block">Selected Departure Batch</span>
+                    <span className="text-xs font-semibold text-stone-900 font-display">
+                      {selectedBatch.label || `${formatDate(selectedBatch.startDate)} to ${formatDate(selectedBatch.endDate)}`}
+                    </span>
+                  </div>
+                  <span className="text-[9px] font-bold bg-[#ea580c] text-white px-2 py-0.5 rounded-full">
+                    Selected
+                  </span>
+                </div>
+              )}
 
               {/* Full Name */}
               <div className="space-y-1">

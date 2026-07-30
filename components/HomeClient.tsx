@@ -825,13 +825,17 @@ export function TripCard({ trip, showDate = false }: { trip: any; showDate?: boo
               loading="lazy"
               className="w-full h-full object-cover image-zoom"
             />
-            {trip.date && (showDate || trip.destination?.toLowerCase().includes("sabarimala")) && (
+            {trip.batches && trip.batches.length > 0 ? (
+              <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-[#ea580c] text-white border border-orange-500 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[10px] uppercase tracking-widest font-extrabold shadow-md">
+                {trip.batches.length} {trip.batches.length === 1 ? "Batch" : "Batches"} Available
+              </div>
+            ) : (trip.date && (showDate || trip.destination?.toLowerCase().includes("sabarimala")) && (
               <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-white/90 backdrop-blur-md border border-stone-200 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[10px] uppercase tracking-widest text-stone-900 font-semibold">
                 {trip.destination?.toLowerCase().includes("sabarimala")
                   ? "Every Month"
                   : new Date(trip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               </div>
-            )}
+            ))}
             {trip.state?.toLowerCase() === "sri lanka" && (
               <div className="absolute top-2 right-2 md:top-4 md:right-4 bg-[#ea580c] border border-orange-500 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[9px] uppercase tracking-widest text-white font-extrabold shadow-md animate-pulse">
                 Budget <span className="hidden sm:inline">International</span><span className="sm:hidden">Intl</span>
