@@ -7,6 +7,15 @@ const tripSchema = new mongoose.Schema(
     category: { type: String, enum: ["Temples", "Treks", "Adventure"], default: "Adventure" },
     slug: { type: String, required: true, unique: true },
     date: { type: Date, required: true },
+    startDate: { type: Date },
+    endDate: { type: Date },
+    batches: [{
+      startDate: { type: Date },
+      endDate: { type: Date },
+      seats: { type: Number },
+      price: { type: String },
+      label: { type: String }
+    }],
     duration: { type: String, required: true },
     price: { type: String, required: true },
     seats: { type: Number, required: true },

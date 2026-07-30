@@ -19,6 +19,14 @@ interface Participant {
   phone: string;
 }
 
+export interface BatchItem {
+  startDate: string;
+  endDate: string;
+  seats?: number;
+  price?: string;
+  label?: string;
+}
+
 interface TripData {
   _id?: string;
   destination: string;
@@ -26,6 +34,9 @@ interface TripData {
   category?: string;
   slug: string;
   date: string;
+  startDate?: string;
+  endDate?: string;
+  batches?: BatchItem[];
   duration: string;
   price: string;
   seats: number;
@@ -90,6 +101,9 @@ const emptyForm: TripData = {
   category: "Adventure",
   slug: "",
   date: "",
+  startDate: "",
+  endDate: "",
+  batches: [],
   duration: "",
   price: "",
   seats: 10,
@@ -185,12 +199,149 @@ export default function AdminTripsPage() {
     }
   };
 
+  const [selectedBatchMonth, setSelectedBatchMonth] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  });
+
+  const calcDuration = (startStr?: string, endStr?: string): string => {
+    if (!startStr || !endStr) return "";
+    const s = new Date(startStr);
+    const e = new Date(endStr);
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) return "";
+    const diffTime = e.getTime() - s.getTime();
+    if (diffTime < 0) return "1 Day";
+    const days = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    const nights = Math.max(0, days - 1);
+    if (nights === 0) return `${days} Day${days > 1 ? "s" : ""}`;
+    return `${days} Days / ${nights} Night${nights > 1 ? "s" : ""}`;
+  };
+
+  const handleStartDateChange = (val: string) => {
+    const nextForm = { ...formData, startDate: val, date: val };
+    if (!formData.endDate || formData.endDate < val) {
+      nextForm.endDate = val;
+    }
+    const autoDur = calcDuration(val, nextForm.endDate);
+    if (autoDur) {
+      nextForm.duration = autoDur;
+    }
+    setFormData(nextForm);
+  };
+
+  const handleEndDateChange = (val: string) => {
+    const nextForm = { ...formData, endDate: val };
+    const autoDur = calcDuration(formData.startDate || formData.date, val);
+    if (autoDur) {
+      nextForm.duration = autoDur;
+    }
+    setFormData(nextForm);
+  };
+
+  const generateWeekendBatches = (yearMonthStr: string) => {
+    if (!yearMonthStr) return;
+    const [yearStr, monthStr] = yearMonthStr.split("-");
+    const year = parseInt(yearStr);
+    const monthIdx = parseInt(monthStr) - 1;
+
+    let tripDays = 2;
+    const durMatch = (formData.duration || "").match(/(\d+)\s*Day/i);
+    if (durMatch) {
+      tripDays = parseInt(durMatch[1]) || 2;
+    }
+
+    const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+    const newBatches: BatchItem[] = [];
+
+    // For 3+ day trips start on Friday (5), else Saturday (6)
+    const startDayTarget = tripDays >= 3 ? 5 : 6;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateObj = new Date(year, monthIdx, d);
+      if (dateObj.getDay() === startDayTarget) {
+        const startStr = `${year}-${String(monthIdx + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        const endObj = new Date(year, monthIdx, d + (tripDays - 1));
+        const endStr = `${endObj.getFullYear()}-${String(endObj.getMonth() + 1).padStart(2, "0")}-${String(endObj.getDate()).padStart(2, "0")}`;
+        const monthName = dateObj.toLocaleDateString("en-IN", { month: "short" });
+
+        newBatches.push({
+          startDate: startStr,
+          endDate: endStr,
+          seats: formData.seats || 10,
+          price: formData.price || "",
+          label: `${monthName} ${d} - ${endObj.getDate()}`
+        });
+      }
+    }
+
+    if (newBatches.length > 0) {
+      const existing = formData.batches || [];
+      setFormData(prev => ({
+        ...prev,
+        startDate: prev.startDate || newBatches[0].startDate,
+        endDate: prev.endDate || newBatches[0].endDate,
+        date: prev.date || newBatches[0].startDate,
+        batches: [...existing, ...newBatches]
+      }));
+    } else {
+      alert("No weekend dates found for the selected month.");
+    }
+  };
+
+  const addSingleBatch = () => {
+    const existing = formData.batches || [];
+    setFormData({
+      ...formData,
+      batches: [
+        ...existing,
+        {
+          startDate: formData.startDate || "",
+          endDate: formData.endDate || "",
+          seats: formData.seats || 10,
+          price: formData.price || "",
+          label: `Batch ${existing.length + 1}`
+        }
+      ]
+    });
+  };
+
+  const removeBatch = (idx: number) => {
+    const existing = formData.batches || [];
+    setFormData({
+      ...formData,
+      batches: existing.filter((_, i) => i !== idx)
+    });
+  };
+
+  const updateBatch = (idx: number, field: keyof BatchItem, val: any) => {
+    const existing = [...(formData.batches || [])];
+    if (existing[idx]) {
+      existing[idx] = { ...existing[idx], [field]: val };
+      if (field === "startDate" && existing[idx].endDate && existing[idx].endDate < val) {
+        existing[idx].endDate = val;
+      }
+      setFormData({ ...formData, batches: existing });
+    }
+  };
+
   const handleEdit = (trip: TripData) => {
     // Format date string to YYYY-MM-DD for date input
     const formattedDate = trip.date ? new Date(trip.date).toISOString().split("T")[0] : "";
+    const formattedStartDate = trip.startDate ? new Date(trip.startDate).toISOString().split("T")[0] : formattedDate;
+    const formattedEndDate = trip.endDate ? new Date(trip.endDate).toISOString().split("T")[0] : formattedDate;
+
+    const formattedBatches = (trip.batches || []).map(b => ({
+      ...b,
+      startDate: b.startDate ? new Date(b.startDate).toISOString().split("T")[0] : "",
+      endDate: b.endDate ? new Date(b.endDate).toISOString().split("T")[0] : ""
+    }));
+
     setFormData({
       ...trip,
       date: formattedDate,
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
+      batches: formattedBatches,
       images: trip.images || [],
       participants: trip.participants || [],
       recap: trip.recap || ""
@@ -414,10 +565,18 @@ export default function AdminTripsPage() {
       const url = editId ? `${API_URL}/admin/trips/${editId}` : `${API_URL}/admin/trips`;
       const method = editId ? "PATCH" : "POST";
 
+      const payload = {
+        ...formData,
+        date: formData.startDate || formData.date,
+        startDate: formData.startDate || formData.date,
+        endDate: formData.endDate || formData.startDate || formData.date,
+        batches: formData.batches || []
+      };
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) throw new Error("Failed to save trip settings");
@@ -986,14 +1145,25 @@ export default function AdminTripsPage() {
             </div>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-4">
+          {/* Main Trip Schedule: Start Date, End Date, Duration, Price, Seats */}
+          <div className="grid gap-6 sm:grid-cols-5">
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Date</label>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Start Date *</label>
               <input
                 type="date"
                 required
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                value={formData.startDate || formData.date || ""}
+                onChange={(e) => handleStartDateChange(e.target.value)}
+                className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">End Date *</label>
+              <input
+                type="date"
+                required
+                value={formData.endDate || formData.startDate || formData.date || ""}
+                onChange={(e) => handleEndDateChange(e.target.value)}
                 className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
               />
             </div>
@@ -1002,7 +1172,7 @@ export default function AdminTripsPage() {
               <input
                 type="text"
                 required
-                placeholder="6D / 5N"
+                placeholder="2 Days / 1 Night"
                 value={formData.duration}
                 onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
                 className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
@@ -1013,7 +1183,7 @@ export default function AdminTripsPage() {
               <input
                 type="text"
                 required
-                placeholder="₹18,999"
+                placeholder="₹5,599"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
@@ -1029,6 +1199,99 @@ export default function AdminTripsPage() {
                 className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
               />
             </div>
+          </div>
+
+          {/* Upcoming Batches & Weekend Schedule Generator */}
+          <div className="rounded-xl border border-soloz-ember/30 bg-soloz-ember/5 p-4 sm:p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-soloz-ember/20 pb-3">
+              <div>
+                <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <span>📅</span> Upcoming Batches & Weekend Schedule Generator
+                </h4>
+                <p className="text-xs text-soloz-ash/70 mt-0.5">
+                  Configure multiple batches for different weekends of the month.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="month"
+                  value={selectedBatchMonth}
+                  onChange={(e) => setSelectedBatchMonth(e.target.value)}
+                  className="h-8 rounded-lg border border-white/10 bg-[#14110d] px-2 text-xs text-white focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => generateWeekendBatches(selectedBatchMonth)}
+                  className="h-8 px-3 rounded-lg bg-soloz-ember text-white text-xs font-medium hover:bg-soloz-ember/90 transition-colors flex items-center gap-1"
+                >
+                  <span>⚡</span> Auto-Generate Weekend Batches
+                </button>
+                <button
+                  type="button"
+                  onClick={addSingleBatch}
+                  className="h-8 px-3 rounded-lg bg-white/10 text-white text-xs font-medium hover:bg-white/20 transition-colors"
+                >
+                  + Add Single Batch
+                </button>
+              </div>
+            </div>
+
+            {(!formData.batches || formData.batches.length === 0) ? (
+              <div className="text-center py-4 text-xs text-soloz-ash/50 italic border border-dashed border-white/10 rounded-lg">
+                No extra batches configured. Click "Auto-Generate Weekend Batches" above to populate all weekend dates for the month automatically.
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between text-[11px] font-semibold text-soloz-ash/60 px-1 uppercase tracking-wider">
+                  <span>Configured Batches ({(formData.batches || []).length})</span>
+                  <span>Trip Duration: {formData.duration || "N/A"}</span>
+                </div>
+                <div className="grid gap-2.5 max-h-60 overflow-y-auto pr-1">
+                  {(formData.batches || []).map((batch, bIdx) => (
+                    <div key={bIdx} className="flex flex-wrap sm:flex-nowrap items-center gap-2 rounded-lg border border-white/10 bg-[#14110d] p-2.5">
+                      <div className="w-full sm:w-28 text-xs font-medium text-soloz-ember truncate">
+                        {batch.label || `Batch ${bIdx + 1}`}
+                      </div>
+                      <div className="flex-1 min-w-[120px]">
+                        <span className="text-[9px] uppercase text-soloz-ash/50 block mb-0.5">Start Date</span>
+                        <input
+                          type="date"
+                          value={batch.startDate || ""}
+                          onChange={(e) => updateBatch(bIdx, "startDate", e.target.value)}
+                          className="h-7 w-full rounded border border-white/10 bg-white/5 px-2 text-xs text-white focus:outline-none"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-[120px]">
+                        <span className="text-[9px] uppercase text-soloz-ash/50 block mb-0.5">End Date</span>
+                        <input
+                          type="date"
+                          value={batch.endDate || ""}
+                          onChange={(e) => updateBatch(bIdx, "endDate", e.target.value)}
+                          className="h-7 w-full rounded border border-white/10 bg-white/5 px-2 text-xs text-white focus:outline-none"
+                        />
+                      </div>
+                      <div className="w-20">
+                        <span className="text-[9px] uppercase text-soloz-ash/50 block mb-0.5">Seats</span>
+                        <input
+                          type="number"
+                          value={batch.seats || formData.seats || 10}
+                          onChange={(e) => updateBatch(bIdx, "seats", parseInt(e.target.value) || 0)}
+                          className="h-7 w-full rounded border border-white/10 bg-white/5 px-2 text-xs text-white focus:outline-none"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeBatch(bIdx)}
+                        className="h-7 w-7 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 flex items-center justify-center text-xs mt-3.5 transition-colors"
+                        title="Remove Batch"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
