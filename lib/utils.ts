@@ -24,3 +24,29 @@ export function getOptimizedImageUrl(url: string, width = 600) {
   }
   return url;
 }
+
+export function isUpcomingTrip(trip: any): boolean {
+  if (!trip) return false;
+  if (trip.status && trip.status !== "published") return false;
+
+  // Sabarimala is a recurring trip
+  if (trip.destination?.toLowerCase().includes("sabarimala")) return true;
+
+  const todayStart = new Date().setHours(0, 0, 0, 0);
+
+  // Check batches first
+  if (trip.batches && Array.isArray(trip.batches) && trip.batches.length > 0) {
+    const hasFutureBatch = trip.batches.some((b: any) => {
+      const bDate = b.endDate || b.startDate;
+      if (!bDate) return false;
+      return new Date(bDate).getTime() >= todayStart;
+    });
+    if (hasFutureBatch) return true;
+  }
+
+  // Check main endDate or startDate or date
+  const tripDate = trip.endDate || trip.startDate || trip.date;
+  if (!tripDate) return false;
+
+  return new Date(tripDate).getTime() >= todayStart;
+}

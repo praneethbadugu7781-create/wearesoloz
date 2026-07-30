@@ -7,6 +7,7 @@ import Reveal, { SectionLabel } from "@/components/Reveal";
 import { TripCard } from "@/components/HomeClient";
 import TripsHeroSlider from "@/components/TripsHeroSlider";
 import { useLanguage } from "@/lib/LanguageContext";
+import { isUpcomingTrip } from "@/lib/utils";
 
 interface TripsClientProps {
   initialTrips: any[];
@@ -70,11 +71,12 @@ const internationalDestinations = [
   { name: "Sri Lanka", image: "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=800&q=80" }
 ];
 
-const groupTripsByMonth = (tripsList: any[]) => {
-  const groups: { [key: string]: any[] } = {};
+// Partition trips into month groups (e.g. "July 2026", "August 2026")
+const partitionTripsByMonth = (tripsList: any[]) => {
+  const groups: Record<string, any[]> = {};
   
-  // Pre-initialize 12 upcoming months starting from July 2026
-  const startDate = new Date(2026, 6, 1); // July 2026
+  // Pre-initialize 12 upcoming months starting from current month
+  const startDate = new Date();
   for (let i = 0; i < 12; i++) {
     const d = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
     const label = d.toLocaleString("en-US", { month: "long", year: "numeric" });
@@ -83,10 +85,10 @@ const groupTripsByMonth = (tripsList: any[]) => {
 
   // Sort published/scheduled trips chronologically ascending and partition them
   tripsList
-    .filter((t) => t.status === "published" && t.date)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .filter((t) => isUpcomingTrip(t))
+    .sort((a, b) => new Date(a.startDate || a.date).getTime() - new Date(b.startDate || b.date).getTime())
     .forEach((trip) => {
-      const tripDate = new Date(trip.date);
+      const tripDate = new Date(trip.startDate || trip.date);
       if (!isNaN(tripDate.getTime())) {
         const label = tripDate.toLocaleString("en-US", { month: "long", year: "numeric" });
         if (!groups[label]) groups[label] = []; // Fallback for outside the 12 month range
@@ -128,11 +130,14 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
 
   const categoriesList = ["All", "Temples", "Treks", "Adventure"];
 
-  // Sort trips chronologically by date to guarantee next month's trips show first
-  const sortedTrips = [...initialTrips].sort((a, b) => {
-    if (!a.date) return 1;
-    if (!b.date) return -1;
-    return new Date(a.date).getTime() - new Date(b.date).getTime();
+  // Filter only upcoming trips (where date or batch date >= today) and sort chronologically
+  const upcomingTripsOnly = initialTrips.filter((t) => isUpcomingTrip(t));
+  const sortedTrips = [...upcomingTripsOnly].sort((a, b) => {
+    const aDate = a.startDate || a.date;
+    const bDate = b.startDate || b.date;
+    if (!aDate) return 1;
+    if (!bDate) return -1;
+    return new Date(aDate).getTime() - new Date(bDate).getTime();
   });
 
   const countTrips = (stateName: string) => {
@@ -447,7 +452,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
         /* Month-wise Schedule */
         <section className="py-16 px-6 md:px-10">
           <div className="max-w-7xl mx-auto space-y-16">
-            {Object.entries(groupTripsByMonth(sortedTrips)).map(([month, monthTrips]) => (
+            {Object.entries(partitionTripsByMonth(sortedTrips)).map(([month, monthTrips]) => (
               <Reveal key={month}>
                 <div className="space-y-6">
                   {/* Month header */}

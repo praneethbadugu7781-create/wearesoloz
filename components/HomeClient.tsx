@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import Reveal, { stagger, item, SectionLabel } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
-import { getOptimizedImageUrl } from "@/lib/utils";
+import { getOptimizedImageUrl, isUpcomingTrip } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { HomeHero } from "@/components/home-hero";
@@ -129,24 +129,20 @@ export default function HomeClient({
     { icon: Sparkles, title: t("why_5_title"), text: t("why_5_desc") },
     { icon: Heart, title: t("why_6_title"), text: t("why_6_desc") },
   ];
+
+  const activeUpcomingTrips = trips.filter((t) => isUpcomingTrip(t));
+
   // 1. Upcoming Trips (Treks/Adventure combined - everything except Temples)
-  const upcomingTrips = trips.filter(
+  const upcomingTrips = activeUpcomingTrips.filter(
     (t) => (t.category || "").toLowerCase() !== "temples"
   );
-  const displayUpcoming = upcomingTrips.length > 0 ? upcomingTrips : trips;
+  const displayUpcoming = upcomingTrips;
 
   // 2. Spiritual Journeys (Temples)
-  const spiritualJourneys = trips.filter(
+  const spiritualJourneys = activeUpcomingTrips.filter(
     (t) => (t.category || "").toLowerCase() === "temples"
   );
-  const displaySpiritual =
-    spiritualJourneys.length > 0
-      ? spiritualJourneys
-      : trips.filter(
-          (t) =>
-            (t.destination || "").toLowerCase().includes("srisailam") ||
-            (t.category || "").toLowerCase() === "temples"
-        ).slice(0, 3);
+  const displaySpiritual = spiritualJourneys;
 
   // Contact Form States
   const [form, setForm] = useState({ full_name: "", mobile: "", email: "", destination: "", message: "", age: "", bloodGroup: "" });
