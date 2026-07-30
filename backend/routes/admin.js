@@ -195,39 +195,45 @@ JSON Schema:
 
     let parsedData = null;
 
-    // 2. Use Groq if key is present (Highly Recommended / Free and fast!)
+    // 2. Try Groq AI (Vision model if image uploaded, versatile model for text)
     if (groqKey) {
-      const content = [{ type: "text", text: prompt }];
-      if (imageUrl) {
-        content.push({
-          type: "image_url",
-          image_url: {
-            url: `data:${mimeType};base64,${base64}`
-          }
-        });
-      }
-      if (text) {
-        content.push({
-          type: "text",
-          text: `Raw text reference:\n${text}`
-        });
-      }
+      try {
+        const groqModel = imageUrl ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile";
+        const content = [{ type: "text", text: prompt }];
+        if (imageUrl) {
+          content.push({
+            type: "image_url",
+            image_url: {
+              url: `data:${mimeType};base64,${base64}`
+            }
+          });
+        }
+        if (text) {
+          content.push({
+            type: "text",
+            text: `Raw text reference:\n${text}`
+          });
+        }
 
-      const payload = {
-        model: "meta-llama/llama-4-scout-17b-16e-instruct",
-        messages: [{ role: "user", content }],
-        temperature: 0.1,
-        response_format: { type: "json_object" }
-      };
+        const payload = {
+          model: groqModel,
+          messages: [{ role: "user", content }],
+          temperature: 0.1,
+          response_format: { type: "json_object" }
+        };
 
-      const groqRes = await callGroqApi(groqKey, payload);
-      const choiceText = groqRes.choices[0].message.content;
-      parsedData = JSON.parse(choiceText.trim());
-    } 
-    // 3. Fallback to Gemini
-    else if (geminiKey) {
+        const groqRes = await callGroqApi(groqKey, payload);
+        const choiceText = groqRes.choices[0].message.content;
+        parsedData = JSON.parse(choiceText.trim());
+      } catch (groqErr) {
+        console.error("Groq AI extraction failed, falling back to Gemini:", groqErr.message);
+      }
+    }
+
+    // 3. Fallback to Gemini if Groq was not used or failed
+    if (!parsedData && geminiKey) {
       const genAI = new GoogleGenerativeAI(geminiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); // Use 2.0-flash as it's the standard free model
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
       let contentParts = [prompt];
       if (imageUrl) {
