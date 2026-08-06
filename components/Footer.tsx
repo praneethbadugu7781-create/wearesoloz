@@ -217,8 +217,31 @@ export default function Footer() {
           </span>
         </div>
 
+        {/* Razorpay Compliance Legal Links */}
+        <div className="relative border-t border-stone-100 pt-6 pb-4 flex flex-wrap items-center justify-center gap-4 md:gap-6 text-[11px] text-stone-500 font-medium z-10">
+          <Link href="/terms-and-conditions" className="hover:text-[#ea580c] transition-colors">
+            Terms & Conditions
+          </Link>
+          <span className="text-stone-300">•</span>
+          <Link href="/privacy-policy" className="hover:text-[#ea580c] transition-colors">
+            Privacy Policy
+          </Link>
+          <span className="text-stone-300">•</span>
+          <Link href="/refund-policy" className="hover:text-[#ea580c] transition-colors">
+            Refund & Cancellation Policy
+          </Link>
+          <span className="text-stone-300">•</span>
+          <Link href="/shipping-policy" className="hover:text-[#ea580c] transition-colors">
+            Shipping & Fulfillment
+          </Link>
+          <span className="text-stone-300">•</span>
+          <Link href="/contact" className="hover:text-[#ea580c] transition-colors">
+            Contact & Support
+          </Link>
+        </div>
+
         {/* Footer Bottom copyright */}
-        <div className="relative border-t border-stone-100 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500 font-medium z-10">
+        <div className="relative border-t border-stone-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500 font-medium z-10">
           <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
             <span>© {new Date().getFullYear()} WeAreSoloz. {locale === "te" ? "అన్ని హక్కులు ప్రత్యేకించబడ్డాయి." : locale === "hi" ? "सर्वाधिकार सुरक्षित।" : "All rights reserved."}</span>
             <span className="text-stone-300 hidden sm:inline">|</span>

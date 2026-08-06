@@ -7,6 +7,7 @@ const { connectDB } = require("./lib/db");
 const authRoutes = require("./routes/auth");
 const publicRoutes = require("./routes/public");
 const adminRoutes = require("./routes/admin");
+const paymentRoutes = require("./routes/payment");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -46,10 +47,18 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: "10mb" }));
+app.use(
+  express.json({
+    limit: "10mb",
+    verify: (req, res, buf) => {
+      req.rawBody = buf;
+    }
+  })
+);
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/payment", paymentRoutes);
 app.use("/api", publicRoutes);
 app.use("/api/admin", adminRoutes);
 

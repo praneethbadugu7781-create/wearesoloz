@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Calendar, Clock, Users, MapPin, ArrowRight, Download } from "lucide-react";
+import { Calendar, Clock, Users, MapPin, ArrowRight, Download, CreditCard, MessageCircle, ShieldCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import TermsModal from "./TermsModal";
 import SuccessModal from "./SuccessModal";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
+import { loadRazorpayScript } from "@/lib/razorpay";
 import { jsPDF } from "jspdf";
 
 interface TripDetailClientProps {
@@ -328,12 +330,14 @@ const formatDate = (dateStr: string | Date | undefined) => {
 };
 
 export default function TripDetailClient({ trip }: TripDetailClientProps) {
+  const router = useRouter();
   const { t, locale } = useLanguage();
   const [form, setForm] = useState({ full_name: "", mobile: "", email: "", travelers: 1, message: "", age: "", bloodGroup: "" });
   const [submitting, setSubmitting] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [waUrl, setWaUrl] = useState("");
+  const [bookingAction, setBookingAction] = useState<"razorpay" | "whatsapp">("razorpay");
 
   const batches = (trip.batches || []).filter((b: any) => b && (b.startDate || b.endDate));
   const [selectedBatch, setSelectedBatch] = useState<any>(() => (batches.length > 0 ? batches[0] : null));
@@ -388,8 +392,10 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
     setTouchEnd(null);
   };
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submit = async (e?: React.FormEvent, action: "razorpay" | "whatsapp" = "razorpay") => {
+    if (e) e.preventDefault();
+    setBookingAction(action);
+
     if (!form.full_name || form.full_name.length < 2) {
       toast.error(locale === "te" ? "దయచేసి మీ పూర్తి పేరును నమోదు చేయండి (కనీసం 2 అక్షరాలు)" : locale === "hi" ? "कृपया अपना पूरा नाम दर्ज करें (कम से कम 2 अक्षर)" : "Please enter your full name (minimum 2 characters)");
       return;
@@ -417,7 +423,124 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
   };
 
   const handleActualSubmit = async () => {
+    setShowTerms(false);
     setSubmitting(true);
+
+    if (bookingAction === "razorpay") {
+      await handleRazorpayCheckout();
+    } else {
+      await handleWhatsAppInquirySubmit();
+    }
+  };
+
+  const handleRazorpayCheckout = async () => {
+    try {
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded) {
+        toast.error("Razorpay SDK failed to load. Please check your internet connection.");
+        setSubmitting(false);
+        return;
+      }
+
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const unitPrice = parseFloat(trip.price?.toString().replace(/[^0-9.]/g, "")) || 2999;
+
+      // 1. Create Razorpay order on backend
+      const orderRes = await fetch(`${API_URL}/payment/create-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tripId: trip._id || trip.id,
+          tripTitle: trip.title || trip.destination,
+          tripSlug: trip.slug || "",
+          destination: trip.destination,
+          customerName: form.full_name.trim(),
+          customerEmail: form.email.trim(),
+          customerMobile: form.mobile.trim(),
+          age: Number(form.age),
+          bloodGroup: form.bloodGroup,
+          travelers: form.travelers,
+          selectedBatch: selectedBatch || null,
+          amount: unitPrice
+        })
+      });
+
+      const orderData = await orderRes.json();
+      if (!orderRes.ok || !orderData.orderId) {
+        throw new Error(orderData.error || "Could not generate Razorpay order");
+      }
+
+      // 2. Configure Razorpay Standard Checkout Options
+      const options = {
+        key: orderData.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_YourKeyIdHere",
+        amount: orderData.amount,
+        currency: orderData.currency || "INR",
+        name: "WeAreSoloz",
+        description: `${trip.title || trip.destination} (${form.travelers} Traveler${form.travelers > 1 ? "s" : ""})`,
+        image: "https://wearesoloz.com/logo.png",
+        order_id: orderData.orderId,
+        prefill: {
+          name: form.full_name.trim(),
+          email: form.email.trim(),
+          contact: form.mobile.trim()
+        },
+        theme: {
+          color: "#ea580c"
+        },
+        handler: async function (response: any) {
+          try {
+            // 3. Verify payment signature on backend
+            const verifyRes = await fetch(`${API_URL}/payment/verify`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                bookingId: orderData.bookingId
+              })
+            });
+
+            const verifyData = await verifyRes.json();
+            if (verifyRes.ok && verifyData.success) {
+              toast.success("Payment verified successfully! Redirecting...");
+              router.push(`/booking-success?bookingId=${orderData.bookingId}&paymentId=${response.razorpay_payment_id}`);
+            } else {
+              toast.error(verifyData.error || "Payment verification failed");
+              router.push(`/booking-failed?error=${encodeURIComponent(verifyData.error || "Verification failed")}&slug=${trip.slug || ""}`);
+            }
+          } catch (err: any) {
+            console.error("Verification error:", err);
+            toast.error("Payment verification error");
+            router.push(`/booking-failed?error=${encodeURIComponent("Server verification failed")}&slug=${trip.slug || ""}`);
+          } finally {
+            setSubmitting(false);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setSubmitting(false);
+            toast.info("Payment process cancelled.");
+          }
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on("payment.failed", function (response: any) {
+        setSubmitting(false);
+        toast.error(response.error?.description || "Payment failed");
+        router.push(`/booking-failed?error=${encodeURIComponent(response.error?.description || "Payment failed")}&slug=${trip.slug || ""}`);
+      });
+
+      rzp.open();
+    } catch (error: any) {
+      setSubmitting(false);
+      console.error("Razorpay Checkout Error:", error);
+      toast.error(error.message || "Failed to initiate payment");
+    }
+  };
+
+  const handleWhatsAppInquirySubmit = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
       const batchDetailStr = selectedBatch
@@ -909,14 +1032,38 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                 <strong>{locale === "te" ? "⚠️ బుకింగ్ నోటీసు:" : locale === "hi" ? "⚠️ बुकिंग सूचना:" : "⚠️ Booking Notice:"}</strong> {locale === "te" ? "ప్రారంభ నగరానికి రైలు/విమాన టిక్కెట్లు చేర్చబడవు. మీరు నేరుగా అసెంబ్లీ పాయింట్ వద్ద అఖిల్‌ను కలుస్తారు." : locale === "hi" ? "शुरुआती शहर के लिए ट्रेन/उड़ान टिकट शामिल नहीं हैं। आप सीधे असेंबली पॉइंट पर अखिल से मिलेंगे।" : "Train/flight tickets to the starting city are not included. You will meet Akhil directly at the assembly point."}
               </div>
 
-              <Button
-                type="submit"
-                disabled={submitting}
-                data-testid="join-submit"
-                className="w-full gradient-orange text-white hover:opacity-95 rounded-full h-12 font-medium"
-              >
-                {submitting ? t("submitting") : (locale === "te" ? "చేరడానికి అభ్యర్థించండి" : locale === "hi" ? "शामिल होने का अनुरोध करें" : "Request to Join")} <ArrowRight className="w-4 h-4 ml-1 inline-block" />
-              </Button>
+              <div className="space-y-2.5 pt-2">
+                <Button
+                  type="button"
+                  disabled={submitting}
+                  onClick={(e) => submit(e, "razorpay")}
+                  data-testid="join-submit-razorpay"
+                  className="w-full gradient-orange text-white hover:opacity-95 rounded-full h-12 font-medium flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
+                >
+                  {submitting && bookingAction === "razorpay" ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Initiating Razorpay...
+                    </span>
+                  ) : (
+                    <>
+                      <CreditCard className="w-4 h-4" />
+                      {locale === "te" ? "ఆన్‌లైన్ చెల్లించి సీటు పొందండి (Razorpay)" : locale === "hi" ? "ऑनलाइन भुगतान करें और सीट बुक करें (Razorpay)" : "Book & Pay Online (Razorpay)"}
+                    </>
+                  )}
+                </Button>
+
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={(e) => submit(e, "whatsapp")}
+                  data-testid="join-submit-whatsapp"
+                  className="w-full py-2.5 px-4 rounded-full border border-emerald-500/40 bg-emerald-50/60 text-emerald-800 hover:bg-emerald-100 font-semibold text-xs flex items-center justify-center gap-2 transition-all"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-600" />
+                  {locale === "te" ? "వాట్సాప్ ద్వారా విచారించండి" : locale === "hi" ? "व्हाट्सएप द्वारा पूछताछ करें" : "Inquire / Reserve via WhatsApp"}
+                </button>
+              </div>
             </form>
           </div>
         </div>
