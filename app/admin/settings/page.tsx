@@ -169,6 +169,28 @@ export default function AdminSettingsPage() {
     whatsapp: "https://wa.me/919966085310"
   });
 
+  const [tickerId, setTickerId] = useState<string | null>(null);
+  const [ticker, setTicker] = useState({
+    enabled: true,
+    badgeText: "Trending",
+    bgStyle: "orange",
+    speed: 25,
+    itemsText: ""
+  });
+
+  const [popupId, setPopupId] = useState<string | null>(null);
+  const [popup, setPopup] = useState({
+    enabled: true,
+    tripSlug: "",
+    title: "🔥 Special Upcoming Expedition!",
+    subheading: "Join solo travelers on this curated trip. Limited seats remaining—book online or reserve via WhatsApp!",
+    badgeText: "Akhil's Pick of the Month",
+    showCountdown: true,
+    delaySeconds: 3.5
+  });
+
+  const [allTrips, setAllTrips] = useState<any[]>([]);
+
   useEffect(() => {
     fetchSettings();
   }, []);
@@ -176,6 +198,13 @@ export default function AdminSettingsPage() {
   const fetchSettings = async () => {
     setLoading(true);
     try {
+      // Fetch admin trips for dropdown select
+      const tripsRes = await fetch(`${API_URL}/admin/trips`, { headers: getAuthHeaders() });
+      if (tripsRes.ok) {
+        const tripsData = await tripsRes.json();
+        setAllTrips(Array.isArray(tripsData) ? tripsData : []);
+      }
+
       const res = await fetch(`${API_URL}/admin/site_settings`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to load settings");
       const data: DBSetting[] = await res.json();
@@ -193,6 +222,35 @@ export default function AdminSettingsPage() {
       if (contactRecord) {
         setContact(contactRecord.value);
         setContactId(contactRecord._id);
+      }
+
+      const tickerRecord = data.find((item) => item.key === "ticker");
+      if (tickerRecord) {
+        const val = tickerRecord.value || {};
+        const itemsArr = Array.isArray(val.items) ? val.items : [];
+        setTicker({
+          enabled: val.enabled !== false,
+          badgeText: val.badgeText || "Trending",
+          bgStyle: val.bgStyle || "orange",
+          speed: val.speed || 25,
+          itemsText: itemsArr.map((i: any) => typeof i === "string" ? i : i.text).join("\n")
+        });
+        setTickerId(tickerRecord._id);
+      }
+
+      const popupRecord = data.find((item) => item.key === "featured_popup");
+      if (popupRecord) {
+        const val = popupRecord.value || {};
+        setPopup({
+          enabled: val.enabled !== false,
+          tripSlug: val.tripSlug || "",
+          title: val.title || "🔥 Special Upcoming Expedition!",
+          subheading: val.subheading || "Join solo travelers on this curated trip. Limited seats remaining—book online or reserve via WhatsApp!",
+          badgeText: val.badgeText || "Akhil's Pick of the Month",
+          showCountdown: val.showCountdown !== false,
+          delaySeconds: val.delaySeconds || 3.5
+        });
+        setPopupId(popupRecord._id);
       }
     } catch (err) {
       console.error(err);
@@ -227,23 +285,63 @@ export default function AdminSettingsPage() {
         setHomepageId(newRecord._id);
       }
 
-      // 2. Update Contact settings
-      if (contactId) {
-        const res = await fetch(`${API_URL}/admin/site_settings/${contactId}`, {
+      // 3. Update Ticker settings
+      const tickerItems = ticker.itemsText
+        ? ticker.itemsText.split("\n").map(l => l.trim()).filter(Boolean)
+        : [];
+      const tickerPayload = {
+        enabled: ticker.enabled,
+        badgeText: ticker.badgeText,
+        bgStyle: ticker.bgStyle,
+        speed: Number(ticker.speed) || 25,
+        items: tickerItems
+      };
+
+      if (tickerId) {
+        await fetch(`${API_URL}/admin/site_settings/${tickerId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-          body: JSON.stringify({ key: "contact", value: contact })
+          body: JSON.stringify({ key: "ticker", value: tickerPayload })
         });
-        if (!res.ok) throw new Error("Failed to update contact settings");
       } else {
         const res = await fetch(`${API_URL}/admin/site_settings`, {
           method: "POST",
           headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-          body: JSON.stringify({ key: "contact", value: contact })
+          body: JSON.stringify({ key: "ticker", value: tickerPayload })
         });
-        if (!res.ok) throw new Error("Failed to create contact settings");
-        const newRecord = await res.json();
-        setContactId(newRecord._id);
+        if (res.ok) {
+          const newRec = await res.json();
+          setTickerId(newRec._id);
+        }
+      }
+
+      // 4. Update Featured Pop-Up settings
+      const popupPayload = {
+        enabled: popup.enabled,
+        tripSlug: popup.tripSlug,
+        title: popup.title,
+        subheading: popup.subheading,
+        badgeText: popup.badgeText,
+        showCountdown: popup.showCountdown,
+        delaySeconds: Number(popup.delaySeconds) || 3.5
+      };
+
+      if (popupId) {
+        await fetch(`${API_URL}/admin/site_settings/${popupId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+          body: JSON.stringify({ key: "featured_popup", value: popupPayload })
+        });
+      } else {
+        const res = await fetch(`${API_URL}/admin/site_settings`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+          body: JSON.stringify({ key: "featured_popup", value: popupPayload })
+        });
+        if (res.ok) {
+          const newRec = await res.json();
+          setPopupId(newRec._id);
+        }
       }
 
       setSuccess(true);
@@ -363,41 +461,168 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
-        {/* SOCIAL LINKS & DIRECT CONTACT */}
+        {/* ANNOUNCEMENT TICKER CONFIGURATIONS */}
         <div className="rounded-xl border border-white/10 bg-[#14110d] p-6 sm:p-8 space-y-6">
-          <h3 className="font-display text-xl font-bold text-white border-b border-white/5 pb-3 flex items-center gap-2">
-            <Settings className="text-soloz-amber" size={18} />
-            Contact & Social Configurations
-          </h3>
+          <div className="flex items-center justify-between border-b border-white/5 pb-3">
+            <h3 className="font-display text-xl font-bold text-white flex items-center gap-2">
+              <Sparkles className="text-soloz-ember" size={18} />
+              📢 Top Announcement Ticker Bar
+            </h3>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={ticker.enabled}
+                onChange={(e) => setTicker({ ...ticker, enabled: e.target.checked })}
+                className="w-4 h-4 accent-[#ea580c] rounded"
+              />
+              <span className="text-xs font-semibold text-white">Enable Ticker Bar</span>
+            </label>
+          </div>
 
           <div className="grid gap-6 sm:grid-cols-3">
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">WhatsApp Phone Number</label>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Badge Text</label>
               <input
                 type="text"
-                required
-                value={contact.phone}
-                onChange={(e) => setContact({ ...contact, phone: e.target.value })}
+                value={ticker.badgeText}
+                onChange={(e) => setTicker({ ...ticker, badgeText: e.target.value })}
+                placeholder="Trending"
                 className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
               />
             </div>
+
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Instagram Link</label>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Color Theme</label>
+              <select
+                value={ticker.bgStyle}
+                onChange={(e) => setTicker({ ...ticker, bgStyle: e.target.value })}
+                className="h-10 w-full rounded-lg border border-white/10 bg-[#1f1b15] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none cursor-pointer"
+              >
+                <option value="orange">Soloz Orange Gradient</option>
+                <option value="dark">Sleek Dark Mode</option>
+                <option value="emerald">Emerald Green</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Scroll Duration (Seconds)</label>
               <input
-                type="text"
-                required
-                value={contact.instagram}
-                onChange={(e) => setContact({ ...contact, instagram: e.target.value })}
+                type="number"
+                value={ticker.speed}
+                onChange={(e) => setTicker({ ...ticker, speed: parseInt(e.target.value) || 25 })}
                 className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">
+              Custom Announcements (One per line)
+            </label>
+            <textarea
+              rows={4}
+              value={ticker.itemsText}
+              onChange={(e) => setTicker({ ...ticker, itemsText: e.target.value })}
+              placeholder="🔥 Next Weekend Batch: Ananthagiri Hills (Aug 15-16) — Only 4 Seats Left!&#10;✈️ Budget International: Sri Lanka 5D/4N Special Expedition — Bookings Open!"
+              className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none resize-none font-mono"
+            />
+            <p className="text-[11px] text-soloz-ash/50 mt-1">
+              💡 <em>If left empty, the website will automatically scroll your published upcoming trips!</em>
+            </p>
+          </div>
+        </div>
+
+        {/* FEATURED TRIP SPOTLIGHT POP-UP MODAL */}
+        <div className="rounded-xl border border-white/10 bg-[#14110d] p-6 sm:p-8 space-y-6">
+          <div className="flex items-center justify-between border-b border-white/5 pb-3">
+            <h3 className="font-display text-xl font-bold text-white flex items-center gap-2">
+              <Sparkles className="text-soloz-amber" size={18} />
+              🌟 Featured Trip Spotlight Pop-Up Modal
+            </h3>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={popup.enabled}
+                onChange={(e) => setPopup({ ...popup, enabled: e.target.checked })}
+                className="w-4 h-4 accent-[#ea580c] rounded"
+              />
+              <span className="text-xs font-semibold text-white">Enable Welcome Pop-Up</span>
+            </label>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2">
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">WhatsApp Direct Chat Link</label>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Select Featured Trip to Spotlight</label>
+              <select
+                value={popup.tripSlug}
+                onChange={(e) => setPopup({ ...popup, tripSlug: e.target.value })}
+                className="h-10 w-full rounded-lg border border-white/10 bg-[#1f1b15] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none cursor-pointer"
+              >
+                <option value="">-- Auto Pick First Upcoming Trip --</option>
+                {allTrips.map((t: any) => (
+                  <option key={t._id || t.id} value={t.slug || t.id}>
+                    {t.title || t.destination} ({t.status || "published"})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Badge Text</label>
               <input
                 type="text"
-                required
-                value={contact.whatsapp}
-                onChange={(e) => setContact({ ...contact, whatsapp: e.target.value })}
+                value={popup.badgeText}
+                onChange={(e) => setPopup({ ...popup, badgeText: e.target.value })}
+                placeholder="Akhil's Pick of the Month"
+                className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Pop-Up Heading Title</label>
+              <input
+                type="text"
+                value={popup.title}
+                onChange={(e) => setPopup({ ...popup, title: e.target.value })}
+                placeholder="🔥 Special Upcoming Expedition!"
+                className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Subheading / Description</label>
+              <textarea
+                rows={2}
+                value={popup.subheading}
+                onChange={(e) => setPopup({ ...popup, subheading: e.target.value })}
+                className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none resize-none"
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 pt-2">
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="showCountdown"
+                checked={popup.showCountdown}
+                onChange={(e) => setPopup({ ...popup, showCountdown: e.target.checked })}
+                className="w-4 h-4 accent-[#ea580c] rounded"
+              />
+              <label htmlFor="showCountdown" className="text-xs text-white font-medium cursor-pointer">
+                Show Live Departure Countdown Timer
+              </label>
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block mb-1">Pop-Up Delay (Seconds)</label>
+              <input
+                type="number"
+                step="0.5"
+                value={popup.delaySeconds}
+                onChange={(e) => setPopup({ ...popup, delaySeconds: parseFloat(e.target.value) || 3.5 })}
                 className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
               />
             </div>

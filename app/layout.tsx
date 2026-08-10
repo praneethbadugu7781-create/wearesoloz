@@ -12,6 +12,8 @@ import Script from "next/script";
 import SolozAiChat from "@/components/SolozAiChat";
 import MetaPixel from "@/components/MetaPixel";
 import AdSense from "@/components/AdSense";
+import AnnouncementTicker from "@/components/AnnouncementTicker";
+import FeaturedTripModal from "@/components/FeaturedTripModal";
 import { Suspense } from "react";
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", weight: ["300", "400", "500", "600", "700"] });
@@ -99,11 +101,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
         <LanguageProvider>
           <Preloader />
+          <AnnouncementTicker />
           <Navbar />
           {children}
           {/* Footer has already been modified to handle static checks */}
           <Footer />
           <BookingModal />
+          <FeaturedTripModal />
           <SolozAiChat />
           <Suspense fallback={null}>
             <MetaPixel />
