@@ -101,7 +101,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
         <LanguageProvider>
           <Preloader />
-          <AnnouncementTicker />
           <Navbar />
           {children}
           {/* Footer has already been modified to handle static checks */}

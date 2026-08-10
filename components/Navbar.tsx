@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/LanguageContext";
 import { Locale } from "@/lib/translations";
 
+import AnnouncementTicker from "@/components/AnnouncementTicker";
+
 export function Navbar() {
   const pathname = usePathname();
   const { locale, setLocale, t } = useLanguage();
@@ -55,16 +57,17 @@ export function Navbar() {
   return (
     <header
       data-testid="navbar"
-      className={`sticky top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         showScrolled
-          ? "bg-white/80 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.06)] border-b border-stone-100 py-1.5"
-          : "bg-white/5 backdrop-blur-md border-b border-white/10 shadow-sm py-2.5"
+          ? "bg-white/90 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.06)] border-b border-stone-100 pb-1.5"
+          : "bg-white/5 backdrop-blur-md border-b border-white/10 shadow-sm pb-2.5"
       }`}
     >
+      <AnnouncementTicker />
       {/* Subtle orange accent line at top */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] gradient-orange" />
+      <div className="h-[2px] gradient-orange w-full" />
 
-      <div className="max-w-7xl mx-auto px-4 md:px-10 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 md:px-10 flex items-center justify-between pt-2">
         {/* Logo */}
         <Link href="/" data-testid="logo-link" className="flex items-center gap-2 md:gap-3 group">
           <div className="relative">
