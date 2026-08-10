@@ -77,11 +77,11 @@ export default function FeaturedTripModal() {
         setPopupSettings(settingsData || {});
         setFeaturedTrip(activeTrip);
 
-        // Calculate countdown to trip date
         const targetDateStr = activeTrip.batches && activeTrip.batches.length > 0
           ? activeTrip.batches[0].startDate
           : (activeTrip.startDate || activeTrip.date);
 
+        let intervalId: any = null;
         if (targetDateStr) {
           const targetTime = new Date(targetDateStr).getTime();
           const updateCountdown = () => {
@@ -100,17 +100,19 @@ export default function FeaturedTripModal() {
           };
 
           updateCountdown();
-          const timer = setInterval(updateCountdown, 1000);
-          return () => clearInterval(timer);
+          intervalId = setInterval(updateCountdown, 1000);
         }
 
-        // Open modal after delay (default 2.5 seconds)
-        const delay = (settingsData?.delaySeconds || 2.5) * 1000;
-        const timeout = setTimeout(() => {
+        // Open modal after delay (default 1.5 seconds)
+        const delay = (settingsData?.delaySeconds || 1.5) * 1000;
+        const popupTimeoutId = setTimeout(() => {
           setOpen(true);
         }, delay);
 
-        return () => clearTimeout(timeout);
+        return () => {
+          if (intervalId) clearInterval(intervalId);
+          clearTimeout(popupTimeoutId);
+        };
       } catch (err) {
         console.warn("Featured trip modal init notice:", err);
       }
