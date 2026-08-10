@@ -2,15 +2,26 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Sparkles, Calendar, Clock, MapPin, ArrowRight, X, MessageCircle, Flame, ShieldCheck } from "lucide-react";
+import { Clock, MapPin, ArrowRight, X, MessageCircle, Flame } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+
+const DEFAULT_FEATURED_TRIP = {
+  title: "Ananthagiri Hills Adventure Trek",
+  destination: "Ananthagiri Hills, Vikarabad",
+  category: "Weekend Expedition",
+  duration: "2 Days / 1 Night",
+  price: "₹2,499",
+  image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
+  slug: "ananthagiri-hills-trek",
+  batches: [{ startDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString() }]
+};
 
 export default function FeaturedTripModal() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [popupSettings, setPopupSettings] = useState<any>(null);
-  const [featuredTrip, setFeaturedTrip] = useState<any>(null);
+  const [featuredTrip, setFeaturedTrip] = useState<any>(DEFAULT_FEATURED_TRIP);
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
 
   // Do not show modal on admin pages
@@ -24,46 +35,52 @@ export default function FeaturedTripModal() {
 
     async function initModal() {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-        const settingsRes = await fetch(`${API_URL}/settings/featured_popup`);
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://wearesoloz.com/api";
         
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+        const [settingsRes, tripsRes] = await Promise.allSettled([
+          fetch(`${API_URL}/settings/featured_popup`, { signal: controller.signal }),
+          fetch(`${API_URL}/trips?all=true`, { signal: controller.signal })
+        ]);
+
+        clearTimeout(timeoutId);
+
         let settingsData: any = null;
-        if (settingsRes.ok) {
-          settingsData = await settingsRes.json();
+        if (settingsRes.status === "fulfilled" && settingsRes.value.ok) {
+          settingsData = await settingsRes.value.json();
         }
 
-        // Check if enabled (defaults to true if trip exists)
+        // Check if explicitly disabled in admin settings
         if (settingsData && settingsData.enabled === false) {
           return;
         }
 
-        // Fetch trips to find the featured trip
-        const tripsRes = await fetch(`${API_URL}/trips?all=true`);
-        if (!tripsRes.ok) return;
-        const allTrips = await tripsRes.json();
+        let allTrips: any[] = [];
+        if (tripsRes.status === "fulfilled" && tripsRes.value.ok) {
+          const tData = await tripsRes.value.json();
+          if (Array.isArray(tData)) allTrips = tData;
+        }
 
-        if (!Array.isArray(allTrips) || allTrips.length === 0) return;
-
-        // Find trip by slug configured in admin, or pick the first published upcoming trip
         let tripToFeature = null;
-        if (settingsData?.tripSlug) {
+        if (settingsData?.tripSlug && allTrips.length > 0) {
           tripToFeature = allTrips.find((t: any) => t.slug === settingsData.tripSlug || t.id === settingsData.tripSlug);
         }
 
-        if (!tripToFeature) {
+        if (!tripToFeature && allTrips.length > 0) {
           const published = allTrips.filter((t: any) => t.status === "published");
           tripToFeature = published.length > 0 ? published[0] : allTrips[0];
         }
 
-        if (!tripToFeature) return;
-
+        const activeTrip = tripToFeature || DEFAULT_FEATURED_TRIP;
         setPopupSettings(settingsData || {});
-        setFeaturedTrip(tripToFeature);
+        setFeaturedTrip(activeTrip);
 
         // Calculate countdown to trip date
-        const targetDateStr = tripToFeature.batches && tripToFeature.batches.length > 0
-          ? tripToFeature.batches[0].startDate
-          : (tripToFeature.startDate || tripToFeature.date);
+        const targetDateStr = activeTrip.batches && activeTrip.batches.length > 0
+          ? activeTrip.batches[0].startDate
+          : (activeTrip.startDate || activeTrip.date);
 
         if (targetDateStr) {
           const targetTime = new Date(targetDateStr).getTime();
@@ -87,15 +104,15 @@ export default function FeaturedTripModal() {
           return () => clearInterval(timer);
         }
 
-        // Open modal after delay (default 3 seconds)
-        const delay = (settingsData?.delaySeconds || 3.5) * 1000;
+        // Open modal after delay (default 2.5 seconds)
+        const delay = (settingsData?.delaySeconds || 2.5) * 1000;
         const timeout = setTimeout(() => {
           setOpen(true);
         }, delay);
 
         return () => clearTimeout(timeout);
       } catch (err) {
-        console.error("Error initializing featured trip popup:", err);
+        console.warn("Featured trip modal init notice:", err);
       }
     }
 
@@ -162,7 +179,7 @@ export default function FeaturedTripModal() {
         <div className="p-6 space-y-5">
           <div className="space-y-1">
             <h4 className="font-display text-lg font-bold text-stone-900">
-              {popupSettings?.title || "🔥 Featured Upcoming Expedition!"}
+              {popupSettings?.title || "🔥 Special Upcoming Expedition!"}
             </h4>
             <p className="text-xs text-stone-600 leading-relaxed">
               {popupSettings?.subheading || "Join solo travelers on this curated trip. Limited seats remaining—book your slot online or via WhatsApp!"}
