@@ -3,7 +3,7 @@
 import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Calendar, MapPin, User, Mail, Phone, CreditCard, Home, Download, MessageCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, Calendar, MapPin, User, Mail, Phone, CreditCard, Home, Download, MessageCircle, Loader2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 function BookingSuccessContent() {
@@ -14,7 +14,7 @@ function BookingSuccessContent() {
 
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [downloaded, setDownloaded] = useState(false);
 
   useEffect(() => {
     async function fetchBookingDetails() {
@@ -27,12 +27,12 @@ function BookingSuccessContent() {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
         const res = await fetch(`${API_URL}/payment/booking/${idToFetch}`);
-        if (!res.ok) throw new Error("Could not load booking details");
-        const data = await res.json();
-        setBooking(data);
+        if (res.ok) {
+          const data = await res.json();
+          setBooking(data);
+        }
       } catch (err: any) {
         console.error(err);
-        setError(err.message || "Failed to fetch booking details");
       } finally {
         setLoading(false);
       }
@@ -40,6 +40,212 @@ function BookingSuccessContent() {
 
     fetchBookingDetails();
   }, [bookingId, orderId]);
+
+  const paymentId = searchParams.get("paymentId") || booking?.payuMihpayid || booking?.payuTxnId || booking?.razorpayPaymentId || "PAYU-VERIFIED";
+
+  const details = booking || {
+    bookingId: bookingId || "WS-BOOKING-SUCCESS",
+    tripTitle: searchParams.get("trip") || "WeAreSoloz Expedition",
+    amount: searchParams.get("amount") ? Number(searchParams.get("amount")) : null,
+    customerName: searchParams.get("name") || "Valued Explorer",
+    customerMobile: searchParams.get("phone") || "",
+    customerEmail: searchParams.get("email") || "",
+    paymentId: paymentId,
+    status: "PAID",
+    createdAt: new Date().toISOString()
+  };
+
+  const handleDownloadInvoice = async (bookingDetails: any) => {
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+      });
+
+      // Top Accent Line
+      doc.setFillColor(234, 88, 12);
+      doc.rect(0, 0, 210, 6, "F");
+
+      // Brand Title
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(20, 17, 13);
+      doc.text("WEARE", 15, 22);
+      doc.setTextColor(234, 88, 12);
+      doc.text("SOLOZ", 52, 22);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(120, 120, 120);
+      doc.text("Start Solo. Travel Together. | www.wearesoloz.com", 15, 27);
+
+      // Invoice Header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(20, 17, 13);
+      doc.text("TAX INVOICE & RECEIPT", 195, 22, { align: "right" });
+
+      doc.setFontSize(8.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Booking ID: ${bookingDetails.bookingId || "N/A"}`, 195, 27, { align: "right" });
+      doc.text(`Date: ${new Date().toLocaleDateString("en-IN")}`, 195, 32, { align: "right" });
+
+      // Divider Line
+      doc.setDrawColor(220, 220, 220);
+      doc.setLineWidth(0.4);
+      doc.line(15, 36, 195, 36);
+
+      // Customer Details Box
+      doc.setFillColor(253, 247, 242);
+      doc.roundedRect(15, 41, 88, 38, 3, 3, "F");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(234, 88, 12);
+      doc.text("CUSTOMER DETAILS", 20, 48);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(40, 40, 40);
+      doc.text(`Name: ${bookingDetails.customerName || "Explorer"}`, 20, 54);
+      doc.text(`Mobile: ${bookingDetails.customerMobile || "N/A"}`, 20, 60);
+      doc.text(`Email: ${bookingDetails.customerEmail || "N/A"}`, 20, 66);
+      if (bookingDetails.age) doc.text(`Age / Blood: ${bookingDetails.age} yrs | ${bookingDetails.bloodGroup || "N/A"}`, 20, 72);
+
+      // Enterprise Details Box
+      doc.setFillColor(250, 250, 250);
+      doc.roundedRect(107, 41, 88, 38, 3, 3, "F");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(20, 17, 13);
+      doc.text("ENTERPRISE DETAILS", 112, 48);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(80, 80, 80);
+      doc.text("WEARESOLOZ (Proprietor: Pasupuleti Akhil)", 112, 54);
+      doc.text("Udyam Reg: UDYAM-TS-09-0255691", 112, 60);
+      doc.text("Shop Reg: NEST2026627990", 112, 66);
+      doc.text("Gachibowli, Hyderabad, Telangana - 500032", 112, 72);
+
+      // Table Header
+      let y = 86;
+      doc.setFillColor(20, 17, 13);
+      doc.rect(15, y, 180, 8, "F");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(255, 255, 255);
+      doc.text("DESCRIPTION / TRIP EXPEDITION", 20, y + 5.5);
+      doc.text("TRAVELERS", 130, y + 5.5, { align: "center" });
+      doc.text("AMOUNT (INR)", 190, y + 5.5, { align: "right" });
+
+      y += 8;
+
+      // Table Row Body
+      doc.setFillColor(255, 255, 255);
+      doc.rect(15, y, 180, 24, "F");
+      doc.setDrawColor(230, 230, 230);
+      doc.rect(15, y, 180, 24, "S");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(20, 17, 13);
+      doc.text(bookingDetails.tripTitle || "WeAreSoloz Expedition", 20, y + 7);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+
+      const batchStr = bookingDetails.selectedBatch
+        ? (typeof bookingDetails.selectedBatch === "string" ? bookingDetails.selectedBatch : (bookingDetails.selectedBatch.label || `${bookingDetails.selectedBatch.startDate} to ${bookingDetails.selectedBatch.endDate}`))
+        : "Standard Departure";
+
+      doc.text(`Schedule: ${batchStr}`, 20, y + 13);
+      doc.text(`Payment Status: PAID & VERIFIED (PayU Gateway)`, 20, y + 19);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(20, 17, 13);
+      doc.text(`${bookingDetails.travelers || 1} Person(s)`, 130, y + 12, { align: "center" });
+
+      const totalAmtStr = bookingDetails.amount ? `₹${Number(bookingDetails.amount).toLocaleString("en-IN")}` : "₹0";
+      doc.setTextColor(22, 163, 74);
+      doc.text(totalAmtStr, 190, y + 12, { align: "right" });
+
+      y += 30;
+
+      // Payment Summary Box
+      doc.setFillColor(245, 245, 245);
+      doc.roundedRect(115, y, 80, 28, 2, 2, "F");
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(80, 80, 80);
+      doc.text("Subtotal:", 120, y + 7);
+      doc.text(totalAmtStr, 190, y + 7, { align: "right" });
+
+      doc.text("Taxes & Charges:", 120, y + 14);
+      doc.text("Included", 190, y + 14, { align: "right" });
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(234, 88, 12);
+      doc.text("Total Paid:", 120, y + 23);
+      doc.text(totalAmtStr, 190, y + 23, { align: "right" });
+
+      y += 34;
+
+      // PayU Reference Card
+      doc.setFillColor(253, 247, 242);
+      doc.setDrawColor(234, 88, 12);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(15, y, 180, 18, 2, 2, "FD");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(234, 88, 12);
+      doc.text("PAYMENT REFERENCE DETAILS", 20, y + 5.5);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(60, 60, 60);
+      const payId = bookingDetails.payuMihpayid || bookingDetails.payuTxnId || bookingDetails.paymentId || bookingDetails.bookingId;
+      const utrStr = bookingDetails.bankRefNum ? ` | UTR / Bank Ref: ${bookingDetails.bankRefNum}` : "";
+      doc.text(`PayU Txn ID: ${payId}${utrStr}`, 20, y + 11);
+      doc.text(`Payment Gateway: PayU Verified | Status: SUCCESS`, 20, y + 15);
+
+      y += 28;
+
+      // Footer Sign off
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(20, 17, 13);
+      doc.text("Thank you for traveling with WeAreSoloz!", 105, y, { align: "center" });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(120, 120, 120);
+      doc.text("Contact Akhil Pasupuleti on WhatsApp: +91 9966085310 | @wearesolozindia", 105, y + 4.5, { align: "center" });
+
+      doc.save(`WeAreSoloz_Invoice_${bookingDetails.bookingId || "Receipt"}.pdf`);
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!loading && details && !downloaded) {
+      setDownloaded(true);
+      setTimeout(() => {
+        handleDownloadInvoice(details);
+      }, 800);
+    }
+  }, [loading, details, downloaded]);
 
   if (loading) {
     return (
@@ -51,18 +257,6 @@ function BookingSuccessContent() {
       </div>
     );
   }
-
-  const paymentId = searchParams.get("paymentId") || booking?.payuMihpayid || booking?.payuTxnId || booking?.razorpayPaymentId || "PAYU-VERIFIED";
-
-  const details = booking || {
-    bookingId: bookingId || "WS-BOOKING-SUCCESS",
-    tripTitle: searchParams.get("trip") || "WeAreSoloz Expedition",
-    amount: searchParams.get("amount") ? Number(searchParams.get("amount")) : null,
-    customerName: searchParams.get("name") || "Valued Explorer",
-    paymentId: paymentId,
-    status: "PAID",
-    createdAt: new Date().toISOString()
-  };
 
   const waText = encodeURIComponent(
     `Hi WeAreSoloz, my payment was successful!\nBooking ID: ${details.bookingId}\nTrip: ${details.tripTitle}\nName: ${details.customerName}\nPayment ID: ${details.payuMihpayid || details.payuTxnId || details.paymentId || ""}`
@@ -85,7 +279,7 @@ function BookingSuccessContent() {
             Booking Confirmed! 🎉
           </h1>
           <p className="text-xs md:text-sm text-stone-600 max-w-md mx-auto">
-            Thank you for choosing <strong>WeAreSoloz</strong>! Your slot has been reserved. Akhil will reach out via WhatsApp with final coordination details.
+            Thank you for choosing <strong>WeAreSoloz</strong>! Your slot has been reserved, your PDF tax invoice has been sent to your email and downloaded.
           </p>
         </div>
 
@@ -149,18 +343,27 @@ function BookingSuccessContent() {
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center gap-3">
-          <a
-            href={`https://wa.me/919966085310?text=${waText}`}
-            target="_blank"
-            rel="noreferrer"
-            className="w-full sm:w-1/2 py-3 px-4 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md"
-          >
-            <MessageCircle className="w-4 h-4" /> Message Akhil on WhatsApp
-          </a>
+        <div className="mt-8 space-y-3">
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <Button
+              onClick={() => handleDownloadInvoice(details)}
+              className="w-full sm:w-1/2 rounded-full h-11 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md"
+            >
+              <FileText className="w-4 h-4" /> Download PDF Invoice
+            </Button>
 
-          <Link href="/" className="w-full sm:w-1/2">
-            <Button className="w-full rounded-full h-11 bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs flex items-center justify-center gap-2">
+            <a
+              href={`https://wa.me/919966085310?text=${waText}`}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full sm:w-1/2 py-3 px-4 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md block text-center"
+            >
+              <MessageCircle className="w-4 h-4 inline-block" /> Message Akhil on WhatsApp
+            </a>
+          </div>
+
+          <Link href="/" className="block">
+            <Button variant="ghost" className="w-full rounded-full h-11 border border-stone-200 text-stone-700 hover:bg-stone-100 font-bold text-xs flex items-center justify-center gap-2">
               <Home className="w-4 h-4" /> Return to Home
             </Button>
           </Link>

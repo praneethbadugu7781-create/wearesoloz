@@ -731,6 +731,82 @@ async function sendCertificateIssuedEmail(waiver, trip, certUrl) {
   return sendResendEmail({ to: waiver.email, subject, text, html });
 }
 
+async function sendBookingPaymentInvoiceEmail(booking) {
+  if (!booking || !booking.customerEmail) return false;
+
+  const tripName = booking.tripTitle || booking.destination || "WeAreSoloz Expedition";
+  const formattedAmount = `INR ${Number(booking.amount).toLocaleString("en-IN")}/-`;
+  const paymentTxnId = booking.payuMihpayid || booking.payuTxnId || booking.bookingId;
+
+  const subject = `Official Tax Invoice & Booking Confirmation - WeAreSoloz (${booking.bookingId})`;
+  const title = "Official Booking Invoice & Confirmation";
+
+  const content = `
+    Hi <strong>${booking.customerName}</strong>,<br><br>
+    Thank you for booking your slot with <strong>WeAreSoloz</strong>! Your payment has been successfully processed via PayU and your trip booking is <strong>Confirmed & Paid</strong> 🎉<br><br>
+    
+    <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-family: sans-serif; font-size: 14px;">
+      <tr style="background: #fdf7f2;">
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; color: #666; width: 140px;">Booking ID:</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; font-weight: bold; color: #ea580c;">${booking.bookingId}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; color: #666;">Customer Name:</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; font-weight: bold;">${booking.customerName} (${booking.customerMobile})</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; color: #666;">Trip Expedition:</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; font-weight: bold; color: #ea580c;">${tripName}</td>
+      </tr>
+      ${booking.selectedBatch ? `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; color: #666;">Batch Schedule:</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; font-weight: bold;">${typeof booking.selectedBatch === "string" ? booking.selectedBatch : (booking.selectedBatch.label || `${booking.selectedBatch.startDate} to ${booking.selectedBatch.endDate}`)}</td>
+      </tr>
+      ` : ''}
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; color: #666;">Travelers Count:</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; font-weight: bold;">${booking.travelers || 1} Person(s)</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; color: #666;">Amount Paid:</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; font-weight: bold; color: #16a34a; font-size: 16px;">${formattedAmount}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; color: #666;">PayU Txn / UTR:</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; font-family: monospace;">${paymentTxnId} ${booking.bankRefNum ? `(UTR: ${booking.bankRefNum})` : ''}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; color: #666;">Payment Status:</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eae8e5; font-weight: bold; color: #16a34a;">PAID & VERIFIED ✓</td>
+      </tr>
+    </table>
+    
+    <div style="background: #fcfcfc; border: 1px solid #eee; padding: 12px; border-radius: 8px; font-size: 12px; color: #555; margin-top: 15px;">
+      <strong>Enterprise Details:</strong><br>
+      WEARESOLOZ (Proprietor: Pasupuleti Akhil)<br>
+      Udyam Reg: UDYAM-TS-09-0255691 | Shop Reg: NEST2026627990<br>
+      Address: Plot 395, Ayan Nilayam, TNGO Colony Phase-2, Gachibowli, Hyderabad, Telangana - 500032
+    </div><br>
+    
+    Akhil will reach out on WhatsApp to share your final trip pickup points and travel guidelines!
+  `;
+
+  const html = wrapPremiumEmail(title, content, "Contact Akhil on WhatsApp", "https://wa.me/919966085310");
+  const text = `Hi ${booking.customerName}, your booking invoice for ${tripName} (Booking ID: ${booking.bookingId}) is confirmed! Amount Paid: ${formattedAmount}. Status: PAID.`;
+
+  // Send to Customer
+  const customerSent = await sendResendEmail({ to: booking.customerEmail, subject, text, html });
+
+  // Send Admin copy
+  const adminEmail = await getAdminEmail();
+  const recipients = Array.from(new Set([adminEmail, "wearesolozindia@gmail.com", "wearesoloz@gmail.com"].filter(Boolean)));
+  const adminSubject = `[NEW PAID BOOKING] ${booking.customerName} - ${tripName} (${formattedAmount})`;
+  sendResendEmail({ to: recipients, subject: adminSubject, text, html }).catch(console.error);
+
+  return customerSent;
+}
+
 module.exports = {
   sendContactEmail,
   sendCareerEmail,
@@ -750,5 +826,6 @@ module.exports = {
   sendCareerRejectionEmail,
   sendTripMemoryOtpEmail,
   sendWaiverInvoiceEmail,
-  sendCertificateIssuedEmail
+  sendCertificateIssuedEmail,
+  sendBookingPaymentInvoiceEmail
 };

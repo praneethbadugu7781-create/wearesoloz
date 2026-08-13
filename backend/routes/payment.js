@@ -2,6 +2,7 @@ const express = require("express");
 const crypto = require("crypto");
 const Booking = require("../models/Booking");
 const { connectDB } = require("../lib/db");
+const { sendBookingPaymentInvoiceEmail } = require("../lib/mailer");
 
 const router = express.Router();
 
@@ -337,6 +338,10 @@ router.post("/payu-callback", async (req, res) => {
       },
       { new: true }
     );
+
+    if (booking && targetStatus === "PAID") {
+      sendBookingPaymentInvoiceEmail(booking).catch(console.error);
+    }
 
     const frontendUrl = process.env.FRONTEND_URL || "https://wearesoloz.com";
 
