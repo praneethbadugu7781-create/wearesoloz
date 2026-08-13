@@ -344,10 +344,10 @@ router.post("/payu-callback", async (req, res) => {
 });
 
 // 4. PAYU REAL-TIME SERVER-TO-SERVER SYNC API (verify_payment)
-router.post("/sync-payu-status", async (req, res) => {
+router.all("/sync-payu-status", async (req, res) => {
   try {
     await connectDB();
-    const { txnid, bookingId } = req.body;
+    const { txnid, bookingId } = { ...req.query, ...(req.body || {}) };
     const { key, salt } = getPayUCredentials();
 
     if (!key || !salt) {

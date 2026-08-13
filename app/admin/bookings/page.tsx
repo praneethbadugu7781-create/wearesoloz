@@ -96,9 +96,17 @@ export default function AdminBookingsPage() {
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({ bookingId: bookingId || "" })
       });
-      const data = await res.json();
+
+      const responseText = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseErr) {
+        throw new Error(`Server returned HTML response (${res.status} ${res.statusText}). The backend server may be restarting or updating. Please try again in a few seconds.`);
+      }
+
       if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to sync status with PayU");
+        throw new Error(data.error || data.message || "Failed to sync status with PayU");
       }
       alert(data.message || "PayU status synchronization complete!");
       fetchBookings();
