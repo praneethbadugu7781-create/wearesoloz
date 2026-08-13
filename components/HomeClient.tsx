@@ -821,7 +821,11 @@ export function TripCard({ trip, showDate = false }: { trip: any; showDate?: boo
               loading="lazy"
               className="w-full h-full object-cover image-zoom"
             />
-            {trip.batches && trip.batches.length > 0 ? (
+            {trip.batchLabel ? (
+              <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-[#ea580c] text-white border border-orange-500 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[10px] uppercase tracking-widest font-extrabold shadow-md flex items-center gap-1">
+                <span>📅</span> {trip.batchLabel}
+              </div>
+            ) : trip.batches && trip.batches.length > 0 ? (
               <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-[#ea580c] text-white border border-orange-500 rounded-full px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[10px] uppercase tracking-widest font-extrabold shadow-md">
                 {trip.batches.length} {trip.batches.length === 1 ? "Batch" : "Batches"} Available
               </div>

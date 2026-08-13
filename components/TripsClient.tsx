@@ -71,7 +71,7 @@ const internationalDestinations = [
   { name: "Sri Lanka", image: "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=800&q=80" }
 ];
 
-// Partition trips into month groups (e.g. "July 2026", "August 2026")
+// Partition trips into month groups, expanding each batch date (e.g. "August 2026", "September 2026")
 const partitionTripsByMonth = (tripsList: any[]) => {
   const groups: Record<string, any[]> = {};
   
@@ -83,18 +83,66 @@ const partitionTripsByMonth = (tripsList: any[]) => {
     groups[label] = [];
   }
 
-  // Sort published/scheduled trips chronologically ascending and partition them
-  tripsList
-    .filter((t) => isUpcomingTrip(t))
-    .sort((a, b) => new Date(a.startDate || a.date).getTime() - new Date(b.startDate || b.date).getTime())
-    .forEach((trip) => {
+  const todayMidnight = new Date().setHours(0, 0, 0, 0);
+
+  tripsList.forEach((trip) => {
+    const batches = (trip.batches || []).filter((b: any) => b && (b.startDate || b.endDate));
+
+    if (batches.length > 0) {
+      // Loop over every batch for this trip
+      batches.forEach((b: any) => {
+        const batchStart = b.startDate || b.endDate;
+        if (!batchStart) return;
+
+        const batchDate = new Date(batchStart);
+        if (!isNaN(batchDate.getTime()) && batchDate.getTime() >= todayMidnight) {
+          const monthLabel = batchDate.toLocaleString("en-US", { month: "long", year: "numeric" });
+          if (!groups[monthLabel]) groups[monthLabel] = [];
+
+          let batchDateText = "";
+          if (b.label) {
+            batchDateText = b.label;
+          } else if (b.startDate && b.endDate) {
+            const startD = new Date(b.startDate);
+            const endD = new Date(b.endDate);
+            if (!isNaN(startD.getTime()) && !isNaN(endD.getTime())) {
+              batchDateText = `${startD.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${endD.getDate()}`;
+            } else {
+              batchDateText = `${b.startDate} to ${b.endDate}`;
+            }
+          } else {
+            batchDateText = new Date(batchStart).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          }
+
+          const batchTripObj = {
+            ...trip,
+            startDate: b.startDate || trip.startDate,
+            endDate: b.endDate || trip.endDate,
+            batchLabel: batchDateText
+          };
+
+          groups[monthLabel].push(batchTripObj);
+        }
+      });
+    } else if (isUpcomingTrip(trip)) {
+      // Single-date trip fallback
       const tripDate = new Date(trip.startDate || trip.date);
       if (!isNaN(tripDate.getTime())) {
-        const label = tripDate.toLocaleString("en-US", { month: "long", year: "numeric" });
-        if (!groups[label]) groups[label] = []; // Fallback for outside the 12 month range
-        groups[label].push(trip);
+        const monthLabel = tripDate.toLocaleString("en-US", { month: "long", year: "numeric" });
+        if (!groups[monthLabel]) groups[monthLabel] = [];
+        groups[monthLabel].push(trip);
       }
+    }
+  });
+
+  // Sort trips in each month group chronologically by start date
+  Object.keys(groups).forEach((label) => {
+    groups[label].sort((a, b) => {
+      const aTime = new Date(a.startDate || a.date).getTime();
+      const bTime = new Date(b.startDate || b.date).getTime();
+      return aTime - bTime;
     });
+  });
 
   return groups;
 };
