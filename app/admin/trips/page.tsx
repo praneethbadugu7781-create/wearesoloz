@@ -1344,6 +1344,16 @@ export default function AdminTripsPage() {
                           className="h-7 w-full rounded border border-white/10 bg-white/5 px-2 text-xs text-white focus:outline-none"
                         />
                       </div>
+                      <div className="w-24">
+                        <span className="text-[9px] uppercase text-soloz-ash/50 block mb-0.5">Price (₹)</span>
+                        <input
+                          type="text"
+                          placeholder={formData.price || "Default"}
+                          value={batch.price !== undefined ? batch.price : ""}
+                          onChange={(e) => updateBatch(bIdx, "price", e.target.value)}
+                          className="h-7 w-full rounded border border-white/10 bg-white/5 px-2 text-xs text-emerald-400 font-semibold focus:outline-none"
+                        />
+                      </div>
                       <button
                         type="button"
                         onClick={() => removeBatch(bIdx)}

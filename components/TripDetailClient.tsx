@@ -682,7 +682,21 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                           {startDateStr} {b.endDate ? `to ${endDateStr}` : ""}
                         </div>
                         <div className="flex items-center justify-between text-[11px] text-stone-500 mt-2.5 pt-2 border-t border-stone-100 font-body">
-                          <span>⏱️ {trip.duration || "Weekend"}</span>
+                          <span className="font-extrabold text-[#ea580c] text-xs">
+                            {b.price ? (
+                              (() => {
+                                const num = parseFloat(b.price.toString().replace(/[^0-9.]/g, ""));
+                                return !isNaN(num) ? `₹${num.toLocaleString("en-IN")}` : (b.price.toString().startsWith("₹") ? b.price : `₹${b.price}`);
+                              })()
+                            ) : (
+                              trip.price ? (
+                                (() => {
+                                  const num = parseFloat(trip.price.toString().replace(/[^0-9.]/g, ""));
+                                  return !isNaN(num) ? `₹${num.toLocaleString("en-IN")}` : (trip.price.toString().startsWith("₹") ? trip.price : `₹${trip.price}`);
+                                })()
+                              ) : "₹1"
+                            )}
+                          </span>
                           <span className="font-semibold text-stone-700">{seatsText}</span>
                         </div>
                       </button>
