@@ -118,6 +118,7 @@ router.post("/create-order", async (req, res) => {
       currency: "INR",
       status: "PENDING",
       paymentMethod: "PAYU",
+      paymentMode: "PAYU",
       notes: {
         bookingId,
         customerName: customerName.trim(),
@@ -149,7 +150,6 @@ router.post("/create-order", async (req, res) => {
       udf4,
       udf5,
       bookingId,
-      // Compatibility fields for existing frontend handlers
       orderId: txnid
     });
   } catch (error) {
@@ -166,7 +166,8 @@ router.post("/verify", async (req, res) => {
     const { key, salt } = getPayUCredentials();
 
     const {
-      status,
+      status = "",
+      unmappedstatus = "",
       firstname = "",
       amount = "",
       txnid = "",
@@ -175,16 +176,15 @@ router.post("/verify", async (req, res) => {
       productinfo = "",
       email = "",
       mihpayid = "",
+      mode = "",
+      bank_ref_num = "",
       error_Message = "",
       additionalCharges = "",
-      udf1 = "",
-      udf2 = "",
-      udf3 = "",
-      udf4 = "",
-      udf5 = ""
+      udf1 = ""
     } = payuData;
 
     const receivedHash = posted_hash || bodyHash;
+    const bookingId = udf1 || txnid;
 
     if (!txnid || !status) {
       return res.status(400).json({ error: "Missing required payment verification parameters" });
@@ -194,43 +194,42 @@ router.post("/verify", async (req, res) => {
       return res.status(500).json({ error: "PayU Salt is not configured on server" });
     }
 
-    // PayU Reverse Hash Verification Formula:
-    // If additionalCharges present: sha512(additionalCharges|SALT|status||||||udf5|udf4|udf3|udf2|udf1|email|firstname|productinfo|amount|txnid|key)
-    // Else: sha512(SALT|status||||||udf5|udf4|udf3|udf2|udf1|email|firstname|productinfo|amount|txnid|key)
     let reverseSequence = "";
     if (additionalCharges) {
-      reverseSequence = `${additionalCharges}|${salt}|${status}||||||${udf5}|${udf4}|${udf3}|${udf2}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
+      reverseSequence = `${additionalCharges}|${salt}|${status}||||||${payuData.udf5 || ""}|${payuData.udf4 || ""}|${payuData.udf3 || ""}|${payuData.udf2 || ""}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
     } else {
-      reverseSequence = `${salt}|${status}||||||${udf5}|${udf4}|${udf3}|${udf2}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
+      reverseSequence = `${salt}|${status}||||||${payuData.udf5 || ""}|${payuData.udf4 || ""}|${payuData.udf3 || ""}|${payuData.udf2 || ""}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
     }
 
     const calculatedHash = crypto.createHash("sha512").update(reverseSequence).digest("hex");
-
     const isHashValid = receivedHash
       ? calculatedHash.toLowerCase() === receivedHash.toLowerCase()
-      : true; // If no hash was posted, check transaction status with database record
+      : true;
 
-    const bookingId = udf1 || txnid;
-    const isSuccess = status.toLowerCase() === "success" && isHashValid;
+    const statusLower = status.toLowerCase();
+    const unmappedLower = unmappedstatus.toLowerCase();
 
-    if (!isSuccess) {
-      // Mark booking as FAILED
-      await Booking.findOneAndUpdate(
-        { $or: [{ payuTxnId: txnid }, { bookingId }] },
-        { status: "FAILED", payuMihpayid: mihpayid || "", payuStatus: status || "FAILED" }
-      );
-      return res.status(400).json({ success: false, error: error_Message || "PayU payment signature verification failed" });
+    let targetStatus = "PENDING";
+    if (statusLower === "success" && isHashValid) {
+      targetStatus = "PAID";
+    } else if (statusLower === "usercancelled" || unmappedLower === "usercancelled" || statusLower === "cancelled") {
+      targetStatus = "CANCELLED";
+    } else {
+      targetStatus = "FAILED";
     }
 
-    // Signature verified & Payment Successful — Update booking to PAID
     const booking = await Booking.findOneAndUpdate(
       { $or: [{ payuTxnId: txnid }, { bookingId }] },
       {
-        status: "PAID",
+        status: targetStatus,
         payuMihpayid: mihpayid || txnid,
         payuHash: receivedHash || calculatedHash,
         payuStatus: status,
-        paidAt: new Date()
+        payuUnmappedStatus: unmappedstatus,
+        paymentMode: mode || "PAYU",
+        bankRefNum: bank_ref_num,
+        payuErrorMsg: error_Message,
+        ...(targetStatus === "PAID" ? { paidAt: new Date() } : {})
       },
       { new: true }
     );
@@ -240,8 +239,8 @@ router.post("/verify", async (req, res) => {
     }
 
     res.json({
-      success: true,
-      message: "Payment verified successfully",
+      success: targetStatus === "PAID",
+      message: `Payment status updated to ${targetStatus}`,
       booking
     });
   } catch (error) {
@@ -259,6 +258,7 @@ router.post("/payu-callback", async (req, res) => {
 
     const {
       status = "",
+      unmappedstatus = "",
       firstname = "",
       amount = "",
       txnid = "",
@@ -267,6 +267,8 @@ router.post("/payu-callback", async (req, res) => {
       productinfo = "",
       email = "",
       mihpayid = "",
+      mode = "",
+      bank_ref_num = "",
       error_Message = "Payment cancelled or failed",
       additionalCharges = "",
       udf1 = ""
@@ -275,7 +277,6 @@ router.post("/payu-callback", async (req, res) => {
     const receivedHash = posted_hash || bodyHash;
     const bookingId = udf1 || txnid;
 
-    // Check if client expects JSON (e.g. custom fetch request)
     const isJsonRequest =
       req.headers.accept?.includes("application/json") ||
       req.headers["content-type"]?.includes("application/json");
@@ -284,9 +285,9 @@ router.post("/payu-callback", async (req, res) => {
     if (salt && receivedHash) {
       let reverseSequence = "";
       if (additionalCharges) {
-        reverseSequence = `${additionalCharges}|${salt}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
+        reverseSequence = `${additionalCharges}|${salt}|${status}||||||${payuData.udf5 || ""}|${payuData.udf4 || ""}|${payuData.udf3 || ""}|${payuData.udf2 || ""}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
       } else {
-        reverseSequence = `${salt}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
+        reverseSequence = `${salt}|${status}||||||${payuData.udf5 || ""}|${payuData.udf4 || ""}|${payuData.udf3 || ""}|${payuData.udf2 || ""}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
       }
       const calculatedHash = crypto.createHash("sha512").update(reverseSequence).digest("hex");
       isHashValid = calculatedHash.toLowerCase() === receivedHash.toLowerCase();
@@ -294,42 +295,46 @@ router.post("/payu-callback", async (req, res) => {
       isHashValid = true;
     }
 
+    const statusLower = status.toLowerCase();
+    const unmappedLower = unmappedstatus.toLowerCase();
+
+    let targetStatus = "PENDING";
+    if (statusLower === "success" && isHashValid) {
+      targetStatus = "PAID";
+    } else if (statusLower === "usercancelled" || unmappedLower === "usercancelled" || statusLower === "cancelled") {
+      targetStatus = "CANCELLED";
+    } else {
+      targetStatus = "FAILED";
+    }
+
+    const booking = await Booking.findOneAndUpdate(
+      { $or: [{ payuTxnId: txnid }, { bookingId }] },
+      {
+        status: targetStatus,
+        payuMihpayid: mihpayid || txnid,
+        payuHash: receivedHash,
+        payuStatus: status,
+        payuUnmappedStatus: unmappedstatus,
+        paymentMode: mode || "PAYU",
+        bankRefNum: bank_ref_num,
+        payuErrorMsg: error_Message,
+        ...(targetStatus === "PAID" ? { paidAt: new Date() } : {})
+      },
+      { new: true }
+    );
+
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
 
-    if (status.toLowerCase() === "success" && isHashValid && txnid) {
-      const booking = await Booking.findOneAndUpdate(
-        { $or: [{ payuTxnId: txnid }, { bookingId }] },
-        {
-          status: "PAID",
-          payuMihpayid: mihpayid || txnid,
-          payuHash: receivedHash,
-          payuStatus: status,
-          paidAt: new Date()
-        },
-        { new: true }
-      );
-
+    if (targetStatus === "PAID") {
       if (isJsonRequest) {
         return res.json({ success: true, bookingId: booking?.bookingId || bookingId, paymentId: mihpayid || txnid });
       }
-
-      // Redirect browser to booking-success page
-      const successRedirect = `${frontendUrl}/booking-success?bookingId=${encodeURIComponent(booking?.bookingId || bookingId)}&paymentId=${encodeURIComponent(mihpayid || txnid)}`;
-      return res.redirect(302, successRedirect);
+      return res.redirect(302, `${frontendUrl}/booking-success?bookingId=${encodeURIComponent(booking?.bookingId || bookingId)}&paymentId=${encodeURIComponent(mihpayid || txnid)}`);
     } else {
-      const booking = await Booking.findOneAndUpdate(
-        { $or: [{ payuTxnId: txnid }, { bookingId }] },
-        { status: "FAILED", payuMihpayid: mihpayid || "", payuStatus: status || "FAILED" },
-        { new: true }
-      );
-
       if (isJsonRequest) {
-        return res.status(400).json({ success: false, error: error_Message });
+        return res.status(400).json({ success: false, error: error_Message || `Payment ${targetStatus.toLowerCase()}` });
       }
-
-      // Redirect browser to booking-failed page
-      const failedRedirect = `${frontendUrl}/booking-failed?error=${encodeURIComponent(error_Message)}&slug=${encodeURIComponent(booking?.tripSlug || "")}`;
-      return res.redirect(302, failedRedirect);
+      return res.redirect(302, `${frontendUrl}/booking-failed?error=${encodeURIComponent(error_Message || `Payment ${targetStatus.toLowerCase()}`)}&slug=${encodeURIComponent(booking?.tripSlug || "")}`);
     }
   } catch (error) {
     console.error("Error processing PayU callback:", error);
@@ -338,31 +343,136 @@ router.post("/payu-callback", async (req, res) => {
   }
 });
 
-// 4. PAYU WEBHOOK HANDLER
+// 4. PAYU REAL-TIME SERVER-TO-SERVER SYNC API (verify_payment)
+router.post("/sync-payu-status", async (req, res) => {
+  try {
+    await connectDB();
+    const { txnid, bookingId } = req.body;
+    const { key, salt } = getPayUCredentials();
+
+    if (!key || !salt) {
+      return res.status(500).json({ error: "PayU Merchant Key and Salt must be configured on server." });
+    }
+
+    let query = {};
+    if (txnid || bookingId) {
+      query = { $or: [{ payuTxnId: txnid || bookingId }, { bookingId: bookingId || txnid }] };
+    } else {
+      // Default: Sync all PENDING bookings
+      query = { status: "PENDING" };
+    }
+
+    const bookingsToSync = await Booking.find(query).limit(50);
+    if (bookingsToSync.length === 0) {
+      return res.json({ success: true, message: "No bookings available to sync.", updatedCount: 0 });
+    }
+
+    const txnIdsArray = bookingsToSync.map((b) => b.payuTxnId).filter(Boolean);
+    if (txnIdsArray.length === 0) {
+      return res.json({ success: true, message: "No valid PayU transaction IDs found.", updatedCount: 0 });
+    }
+
+    const var1Str = txnIdsArray.join("|");
+    const command = "verify_payment";
+    const hashSeq = `${key}|${command}|${var1Str}|${salt}`;
+    const hash = crypto.createHash("sha512").update(hashSeq).digest("hex");
+
+    const params = new URLSearchParams();
+    params.append("key", key);
+    params.append("command", command);
+    params.append("var1", var1Str);
+    params.append("hash", hash);
+
+    const payuRes = await fetch("https://info.payu.in/merchant/postfinalpage.php?form=2", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString()
+    });
+
+    const payuData = await payuRes.json();
+    let updatedCount = 0;
+    const results = [];
+
+    if (payuData && payuData.transaction_details) {
+      for (const b of bookingsToSync) {
+        const details = payuData.transaction_details[b.payuTxnId];
+        if (details) {
+          const statusStr = (details.status || "").toLowerCase();
+          const unmapped = (details.unmappedstatus || "").toLowerCase();
+
+          let newStatus = b.status;
+          if (statusStr === "success" || unmapped === "captured") {
+            newStatus = "PAID";
+          } else if (statusStr === "usercancelled" || unmapped === "usercancelled" || statusStr === "cancelled") {
+            newStatus = "CANCELLED";
+          } else if (statusStr === "failure" || statusStr === "failed" || unmapped === "failed") {
+            newStatus = "FAILED";
+          }
+
+          b.payuStatus = details.status || b.payuStatus;
+          b.payuUnmappedStatus = details.unmappedstatus || b.payuUnmappedStatus;
+          b.paymentMode = details.mode || details.card_type || details.bankcode || b.paymentMode;
+          b.bankRefNum = details.bank_ref_num || b.bankRefNum;
+          b.payuErrorMsg = details.error_Message || details.field9 || b.payuErrorMsg;
+          if (details.mihpayid) b.payuMihpayid = details.mihpayid;
+
+          if (newStatus !== b.status) {
+            b.status = newStatus;
+            if (newStatus === "PAID" && !b.paidAt) b.paidAt = new Date();
+            updatedCount++;
+          }
+
+          await b.save();
+          results.push({ bookingId: b.bookingId, status: b.status, mode: b.paymentMode, bankRefNum: b.bankRefNum });
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Checked ${bookingsToSync.length} booking(s) with PayU servers. Updated ${updatedCount} status(es).`,
+      updatedCount,
+      results
+    });
+  } catch (error) {
+    console.error("Error syncing PayU status:", error);
+    res.status(500).json({ error: error.message || "Failed to sync status with PayU" });
+  }
+});
+
+// 5. PAYU WEBHOOK HANDLER
 router.post("/webhook", async (req, res) => {
   try {
     await connectDB();
     const event = req.body;
-    const { key, salt } = getPayUCredentials();
-
     const {
       status = "",
       txnid = "",
       mihpayid = "",
-      udf1 = ""
+      udf1 = "",
+      mode = "",
+      bank_ref_num = ""
     } = event;
 
     const bookingId = udf1 || txnid;
 
-    if (status.toLowerCase() === "success" && txnid) {
+    if (txnid) {
+      const statusLower = status.toLowerCase();
+      let targetStatus = "PENDING";
+      if (statusLower === "success") targetStatus = "PAID";
+      else if (statusLower === "usercancelled" || statusLower === "cancelled") targetStatus = "CANCELLED";
+      else if (statusLower === "failure" || statusLower === "failed") targetStatus = "FAILED";
+
       const booking = await Booking.findOne({ $or: [{ payuTxnId: txnid }, { bookingId }] });
-      if (booking && booking.status !== "PAID") {
-        booking.status = "PAID";
+      if (booking) {
+        booking.status = targetStatus;
         booking.payuMihpayid = mihpayid || booking.payuMihpayid || txnid;
         booking.payuStatus = status;
-        booking.paidAt = new Date();
+        if (mode) booking.paymentMode = mode;
+        if (bank_ref_num) booking.bankRefNum = bank_ref_num;
+        if (targetStatus === "PAID" && !booking.paidAt) booking.paidAt = new Date();
         await booking.save();
-        console.log(`✅ PayU Webhook updated Booking ${booking.bookingId} to PAID`);
+        console.log(`✅ PayU Webhook updated Booking ${booking.bookingId} to ${targetStatus}`);
       }
     }
 
@@ -373,7 +483,7 @@ router.post("/webhook", async (req, res) => {
   }
 });
 
-// 5. FETCH BOOKING DETAILS FOR CONFIRMATION PAGE
+// 6. FETCH BOOKING DETAILS FOR CONFIRMATION PAGE
 router.get("/booking/:id", async (req, res) => {
   try {
     await connectDB();

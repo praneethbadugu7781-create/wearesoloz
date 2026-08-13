@@ -18,8 +18,11 @@ import {
   Eye,
   Trash2,
   Check,
+  Ban,
   Sparkles,
-  ChevronDown
+  Zap,
+  Building2,
+  Smartphone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -31,6 +34,10 @@ interface BookingRecord {
   payuTxnId?: string;
   payuMihpayid?: string;
   payuStatus?: string;
+  payuUnmappedStatus?: string;
+  paymentMode?: string;
+  bankRefNum?: string;
+  payuErrorMsg?: string;
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
   tripTitle: string;
@@ -54,6 +61,7 @@ interface BookingRecord {
 export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncingPayU, setSyncingPayU] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [selectedBooking, setSelectedBooking] = useState<BookingRecord | null>(null);
@@ -76,6 +84,28 @@ export default function AdminBookingsPage() {
       alert(err.message || "Error loading bookings");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Sync Pending / Specific Booking directly with PayU Production API
+  const handleSyncPayUStatus = async (bookingId?: string) => {
+    setSyncingPayU(true);
+    try {
+      const res = await fetch(`${API_URL}/payment/sync-payu-status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        body: JSON.stringify({ bookingId: bookingId || "" })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to sync status with PayU");
+      }
+      alert(data.message || "PayU status synchronization complete!");
+      fetchBookings();
+    } catch (err: any) {
+      alert(err.message || "PayU Sync Error");
+    } finally {
+      setSyncingPayU(false);
     }
   };
 
@@ -134,7 +164,8 @@ export default function AdminBookingsPage() {
       "Travelers",
       "Amount Paid",
       "Status",
-      "Payment Method",
+      "Payment Mode",
+      "Bank Ref / UTR",
       "Booking Date"
     ];
 
@@ -152,7 +183,8 @@ export default function AdminBookingsPage() {
       `"${b.travelers || 1}"`,
       `"${b.amount || 0}"`,
       `"${b.status || ""}"`,
-      `"${b.paymentMethod || "PAYU"}"`,
+      `"${b.paymentMode || b.paymentMethod || "PAYU"}"`,
+      `"${b.bankRefNum || ""}"`,
       `"${new Date(b.createdAt).toLocaleString()}"`
     ]);
 
@@ -178,7 +210,8 @@ export default function AdminBookingsPage() {
       (b.customerMobile && b.customerMobile.includes(term)) ||
       (b.tripTitle && b.tripTitle.toLowerCase().includes(term)) ||
       (b.payuMihpayid && b.payuMihpayid.toLowerCase().includes(term)) ||
-      (b.payuTxnId && b.payuTxnId.toLowerCase().includes(term));
+      (b.payuTxnId && b.payuTxnId.toLowerCase().includes(term)) ||
+      (b.bankRefNum && b.bankRefNum.toLowerCase().includes(term));
 
     return matchesStatus && matchesSearch;
   });
@@ -189,6 +222,7 @@ export default function AdminBookingsPage() {
 
   const paidCount = bookings.filter((b) => b.status === "PAID").length;
   const pendingCount = bookings.filter((b) => b.status === "PENDING").length;
+  const cancelledCount = bookings.filter((b) => b.status === "CANCELLED").length;
   const failedCount = bookings.filter((b) => b.status === "FAILED").length;
 
   return (
@@ -201,11 +235,20 @@ export default function AdminBookingsPage() {
             Bookings & Payments
           </h1>
           <p className="text-xs text-stone-500 mt-1">
-            Real-time traveler bookings, PayU payment transactions, and customer details.
+            Real-time traveler bookings, PayU live status verification, and payment breakdown.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={() => handleSyncPayUStatus()}
+            disabled={syncingPayU}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white h-10 px-3.5 rounded-xl text-xs font-bold shadow-sm"
+          >
+            <Zap className={`w-3.5 h-3.5 mr-1.5 ${syncingPayU ? "animate-spin" : ""}`} />
+            {syncingPayU ? "Syncing PayU..." : "⚡ Sync PayU Live Status"}
+          </Button>
+
           <Button
             variant="ghost"
             onClick={fetchBookings}
@@ -213,6 +256,7 @@ export default function AdminBookingsPage() {
           >
             <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Refresh
           </Button>
+
           <Button
             onClick={exportCSV}
             disabled={bookings.length === 0}
@@ -226,7 +270,7 @@ export default function AdminBookingsPage() {
       {/* Overview Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-sm space-y-1">
-          <span className="text-[10px] uppercase font-extrabold tracking-wider text-stone-400">Total Revenue Paid</span>
+          <span className="text-[10px] uppercase font-extrabold tracking-wider text-stone-400">Total Verified Revenue</span>
           <div className="text-2xl font-extrabold text-emerald-600 font-display">₹{totalPaidRevenue.toLocaleString("en-IN")}</div>
           <p className="text-[11px] text-stone-500 font-medium">Verified PayU online payments</p>
         </div>
@@ -240,13 +284,13 @@ export default function AdminBookingsPage() {
         <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-sm space-y-1">
           <span className="text-[10px] uppercase font-extrabold tracking-wider text-stone-400">Pending Checkout</span>
           <div className="text-2xl font-extrabold text-amber-600 font-display">{pendingCount}</div>
-          <p className="text-[11px] text-stone-500 font-medium">Form submitted / unverified</p>
+          <p className="text-[11px] text-stone-500 font-medium">Form submitted / awaiting payment</p>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-sm space-y-1">
-          <span className="text-[10px] uppercase font-extrabold tracking-wider text-stone-400">Failed / Cancelled</span>
-          <div className="text-2xl font-extrabold text-rose-600 font-display">{failedCount}</div>
-          <p className="text-[11px] text-stone-500 font-medium">Declined or abandoned</p>
+          <span className="text-[10px] uppercase font-extrabold tracking-wider text-stone-400">Cancelled / Failed</span>
+          <div className="text-2xl font-extrabold text-rose-600 font-display">{cancelledCount + failedCount}</div>
+          <p className="text-[11px] text-stone-500 font-medium">{cancelledCount} User Cancelled | {failedCount} Failed</p>
         </div>
       </div>
 
@@ -259,14 +303,14 @@ export default function AdminBookingsPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search Name, Email, Mobile, Booking ID, PayU Txn..."
+            placeholder="Search Name, Email, Mobile, Booking ID, PayU Txn, UTR..."
             className="w-full pl-9 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-[#ea580c]"
           />
         </div>
 
         {/* Status Filter Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
-          {["ALL", "PAID", "PENDING", "FAILED"].map((st) => (
+          {["ALL", "PAID", "PENDING", "CANCELLED", "FAILED"].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
@@ -305,7 +349,7 @@ export default function AdminBookingsPage() {
                   <th className="py-3.5 px-4">Trip Expedition</th>
                   <th className="py-3.5 px-4">Travelers & Amount</th>
                   <th className="py-3.5 px-4">Payment Status</th>
-                  <th className="py-3.5 px-4">PayU Txn ID</th>
+                  <th className="py-3.5 px-4">PayU Txn / Mode</th>
                   <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -366,6 +410,10 @@ export default function AdminBookingsPage() {
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold uppercase tracking-wider">
                           <Clock className="w-3 h-3 text-amber-600" /> PENDING
                         </span>
+                      ) : b.status === "CANCELLED" ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 text-[10px] font-extrabold uppercase tracking-wider">
+                          <Ban className="w-3 h-3 text-purple-600" /> USER CANCELLED
+                        </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 text-[10px] font-extrabold uppercase tracking-wider">
                           <XCircle className="w-3 h-3 text-rose-600" /> FAILED
@@ -373,13 +421,16 @@ export default function AdminBookingsPage() {
                       )}
                     </td>
 
-                    {/* PayU Txn Details */}
+                    {/* PayU Txn & Mode */}
                     <td className="py-3.5 px-4 font-mono text-[11px]">
                       <div className="text-stone-700 truncate max-w-[130px]" title={b.payuMihpayid || b.payuTxnId || "-"}>
                         {b.payuMihpayid || b.payuTxnId || b.razorpayPaymentId || "-"}
                       </div>
-                      <div className="text-[9px] uppercase font-extrabold text-stone-400 font-sans">
-                        {b.paymentMethod || "PAYU"}
+                      <div className="text-[9.5px] uppercase font-extrabold text-[#ea580c] font-sans mt-0.5 flex items-center gap-1">
+                        <span className="px-1.5 py-0.5 rounded bg-orange-50 border border-orange-200">
+                          {b.paymentMode || b.paymentMethod || "PAYU"}
+                        </span>
+                        {b.bankRefNum && <span className="text-[9px] text-stone-400 font-mono">UTR: {b.bankRefNum.slice(-6)}</span>}
                       </div>
                     </td>
 
@@ -392,6 +443,15 @@ export default function AdminBookingsPage() {
                         >
                           <Eye size={13} className="text-stone-600" />
                           View Details
+                        </button>
+
+                        <button
+                          onClick={() => handleSyncPayUStatus(b.bookingId)}
+                          title="Verify live status directly with PayU servers"
+                          className="px-2 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[11px] inline-flex items-center gap-1 transition-all"
+                        >
+                          <Zap size={13} className="text-emerald-600" />
+                          Sync
                         </button>
 
                         {b.status !== "PAID" ? (
@@ -435,7 +495,7 @@ export default function AdminBookingsPage() {
           <div className="bg-white w-full max-w-xl rounded-3xl p-6 md:p-8 space-y-6 shadow-2xl border border-stone-200 font-sans">
             <div className="flex items-center justify-between border-b border-stone-150 pb-4">
               <div>
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#ea580c]">Booking Details</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#ea580c]">PayU Detailed Booking Receipt</span>
                 <h3 className="font-mono text-lg font-bold text-stone-900">{selectedBooking.bookingId}</h3>
               </div>
               <button
@@ -476,15 +536,36 @@ export default function AdminBookingsPage() {
                 </span>
               </div>
               <div className="space-y-1">
-                <span className="text-stone-400 font-semibold block">PayU Transaction ID</span>
+                <span className="text-stone-400 font-semibold block">PayU MIHPAYID / Txn</span>
                 <span className="font-mono text-stone-800 block truncate">
                   {selectedBooking.payuMihpayid || selectedBooking.payuTxnId || selectedBooking.razorpayPaymentId || "Pending"}
                 </span>
               </div>
               <div className="space-y-1">
-                <span className="text-stone-400 font-semibold block">Payment Status</span>
-                <span className={`font-bold text-xs ${selectedBooking.status === "PAID" ? "text-emerald-600 font-extrabold" : "text-amber-600 font-extrabold"}`}>
-                  {selectedBooking.status}
+                <span className="text-stone-400 font-semibold block">Payment Mode</span>
+                <span className="font-bold text-stone-900 block uppercase">
+                  {selectedBooking.paymentMode || selectedBooking.paymentMethod || "PAYU"}
+                </span>
+              </div>
+
+              {selectedBooking.bankRefNum && (
+                <div className="space-y-1 col-span-2 bg-stone-50 p-2.5 rounded-xl border border-stone-200">
+                  <span className="text-stone-400 font-semibold block text-[11px]">Bank Ref / UTR Number</span>
+                  <span className="font-mono font-bold text-stone-900 text-xs">{selectedBooking.bankRefNum}</span>
+                </div>
+              )}
+
+              {selectedBooking.payuErrorMsg && (
+                <div className="space-y-1 col-span-2 bg-rose-50 p-2.5 rounded-xl border border-rose-200/80 text-rose-900">
+                  <span className="text-rose-600 font-bold block text-[11px]">PayU Gateway Error / Reason:</span>
+                  <span className="text-xs font-semibold">{selectedBooking.payuErrorMsg}</span>
+                </div>
+              )}
+
+              <div className="space-y-1 col-span-2">
+                <span className="text-stone-400 font-semibold block">Overall Status</span>
+                <span className={`font-bold text-xs ${selectedBooking.status === "PAID" ? "text-emerald-600 font-extrabold" : selectedBooking.status === "CANCELLED" ? "text-purple-600 font-extrabold" : "text-amber-600 font-extrabold"}`}>
+                  {selectedBooking.status} {selectedBooking.payuStatus ? `(${selectedBooking.payuStatus})` : ""}
                 </span>
               </div>
             </div>
@@ -513,6 +594,14 @@ export default function AdminBookingsPage() {
               </a>
 
               <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => handleSyncPayUStatus(selectedBooking.bookingId)}
+                  disabled={syncingPayU}
+                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold h-9 px-3 rounded-xl border border-emerald-200"
+                >
+                  <Zap size={13} /> Sync PayU Live
+                </Button>
+
                 {selectedBooking.status !== "PAID" && (
                   <Button
                     onClick={() => handleUpdateStatus(selectedBooking._id, "PAID")}

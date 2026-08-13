@@ -26,6 +26,22 @@ const BookingSchema = new mongoose.Schema(
       type: String,
       default: ""
     },
+    payuUnmappedStatus: {
+      type: String,
+      default: ""
+    },
+    paymentMode: {
+      type: String,
+      default: "PAYU"
+    },
+    bankRefNum: {
+      type: String,
+      default: ""
+    },
+    payuErrorMsg: {
+      type: String,
+      default: ""
+    },
     // Backward compatibility aliases for existing bookings
     razorpayOrderId: {
       type: String,
