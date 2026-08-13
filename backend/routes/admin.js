@@ -498,6 +498,13 @@ router.patch("/:resource/:id", async (req, res) => {
       } else if (record.status === "approved") {
         sendContactApprovalEmail(record).catch(console.error);
       }
+    if (req.params.resource === "trips" && record && record.destination) {
+      const updateData = {};
+      if (req.body.price !== undefined) updateData.price = record.price;
+      if (req.body.batches !== undefined) updateData.batches = record.batches;
+      if (Object.keys(updateData).length > 0) {
+        await Trip.updateMany({ destination: record.destination }, { $set: updateData }).catch(console.error);
+      }
     }
 
     res.json(record);

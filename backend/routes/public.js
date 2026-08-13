@@ -36,8 +36,24 @@ router.get("/trips", async (req, res) => {
 router.get("/trips/:slug", async (req, res) => {
   try {
     await connectDB();
-    const trip = await Trip.findOne({ slug: req.params.slug }).lean();
+    let trip = await Trip.findOne({ slug: req.params.slug }).lean();
+
+    if (!trip) {
+      const rawName = req.params.slug.replace(/-\d{4}-\d{2}-\d{2}.*$/, "").replace(/-/g, " ");
+      trip = await Trip.findOne({ destination: { $regex: new RegExp(rawName, "i") } }).sort({ updatedAt: -1 }).lean();
+    }
+
     if (!trip) return res.status(404).json({ error: "Trip not found" });
+
+    // Sync latest price and batches from destination's most recently updated record
+    const latestTrip = await Trip.findOne({ destination: trip.destination }).sort({ updatedAt: -1 }).lean();
+    if (latestTrip && latestTrip.price) {
+      trip.price = latestTrip.price;
+      if (latestTrip.batches && latestTrip.batches.length > 0) {
+        trip.batches = latestTrip.batches;
+      }
+    }
+
     res.json(trip);
   } catch (e) {
     res.status(500).json({ error: e.message });
