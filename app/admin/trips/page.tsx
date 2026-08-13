@@ -817,41 +817,85 @@ export default function AdminTripsPage() {
   };
 
   // Render a single trip card to avoid code duplication
-  const renderTripCard = (trip: TripData) => (
-    <div
-      key={trip._id}
-      className="rounded-xl border border-white/10 bg-[#14110d] overflow-hidden flex flex-col justify-between"
-    >
-      <div>
-        <div className="relative aspect-video w-full">
-          <img src={trip.image} alt={trip.destination} className="h-full w-full object-cover" />
-          <div className="absolute right-3 top-3 flex gap-2">
-            <span className="bg-orange-500/90 text-white rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-              {trip.state || "Andhra Pradesh"}
-            </span>
-            <span
-              className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                trip.status === "published" ? "bg-emerald-500/80 text-white" : "bg-white/20 text-white"
-              }`}
-            >
-              {trip.status}
-            </span>
+  const renderTripCard = (trip: TripData) => {
+    const todayMidnight = new Date().setHours(0, 0, 0, 0);
+    const batches = (trip.batches || []).filter((b: any) => b && (b.startDate || b.endDate));
+
+    const isAllBatchesCompleted = batches.length > 0
+      ? batches.every((b: any) => new Date(b.endDate || b.startDate).getTime() < todayMidnight)
+      : trip.date && new Date(trip.date).getTime() < todayMidnight;
+
+    const activeUpcomingBatches = batches.filter((b: any) => new Date(b.endDate || b.startDate).getTime() >= todayMidnight);
+
+    return (
+      <div
+        key={trip._id}
+        className="rounded-xl border border-white/10 bg-[#14110d] overflow-hidden flex flex-col justify-between"
+      >
+        <div>
+          <div className="relative aspect-video w-full">
+            <img src={trip.image} alt={trip.destination} className="h-full w-full object-cover" />
+            <div className="absolute right-3 top-3 flex gap-2">
+              <span className="bg-orange-500/90 text-white rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                {trip.state || "Andhra Pradesh"}
+              </span>
+              {isAllBatchesCompleted ? (
+                <span className="bg-red-600/90 text-white rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                  COMPLETED
+                </span>
+              ) : (
+                <span
+                  className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                    trip.status === "published" ? "bg-emerald-500/80 text-white" : "bg-white/20 text-white"
+                  }`}
+                >
+                  {trip.status}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="p-5 space-y-3">
+            <h3 className="font-display text-lg font-bold text-white leading-tight">{trip.destination}</h3>
+
+            {batches.length > 0 ? (
+              <div className="space-y-1.5 pt-1">
+                <div className="text-[10px] uppercase tracking-wider text-soloz-amber font-extrabold flex items-center justify-between">
+                  <span>Configured Batches ({batches.length})</span>
+                  <span>{activeUpcomingBatches.length} Active</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {batches.map((b: any, idx: number) => {
+                    const isDone = new Date(b.endDate || b.startDate).getTime() < todayMidnight;
+                    const dateText = b.label || (b.startDate ? `${b.startDate}` : `Batch ${idx + 1}`);
+                    return (
+                      <span
+                        key={idx}
+                        className={`text-[10px] px-2 py-0.5 rounded font-mono ${
+                          isDone
+                            ? "bg-red-950/60 text-red-300 border border-red-800/50 line-through"
+                            : "bg-orange-950/60 text-orange-300 border border-orange-800/50 font-bold"
+                        }`}
+                      >
+                        {dateText} {isDone ? "(Completed)" : ""}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 text-xs text-soloz-ash/70">
+                <div className="flex items-center gap-1.5">
+                  <Calendar size={13} />
+                  {new Date(trip.date).toLocaleDateString()}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Users size={13} />
+                  {trip.seats} seats
+                </div>
+              </div>
+            )}
           </div>
         </div>
-        <div className="p-5 space-y-3">
-          <h3 className="font-display text-lg font-bold text-white leading-tight">{trip.destination}</h3>
-          <div className="grid grid-cols-2 gap-2 text-xs text-soloz-ash/70">
-            <div className="flex items-center gap-1.5">
-              <Calendar size={13} />
-              {new Date(trip.date).toLocaleDateString()}
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Users size={13} />
-              {trip.seats} seats
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div className="p-5 pt-0 border-t border-white/5 mt-4 flex items-center justify-between">
         <span className="text-base font-bold text-soloz-amber">{trip.price}</span>
@@ -879,6 +923,7 @@ export default function AdminTripsPage() {
       </div>
     </div>
   );
+};
 
   return (
     <main className="space-y-8">

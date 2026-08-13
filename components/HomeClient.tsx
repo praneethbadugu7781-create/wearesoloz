@@ -808,7 +808,12 @@ export default function HomeClient({
 
 export function TripCard({ trip, showDate = false }: { trip: any; showDate?: boolean }) {
   const tripSlug = trip.slug || trip.destination?.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-  const isTripCompleted = trip.date && new Date(trip.date).getTime() < new Date().setHours(0, 0, 0, 0);
+  const todayMidnight = new Date().setHours(0, 0, 0, 0);
+  const isTripCompleted =
+    trip.isCompleted ||
+    (trip.endDate && new Date(trip.endDate).getTime() < todayMidnight) ||
+    (trip.startDate && new Date(trip.startDate).getTime() < todayMidnight) ||
+    (trip.date && new Date(trip.date).getTime() < todayMidnight);
   
   return (
     <Link href={`/upcoming-trips/${tripSlug}`} data-testid={`trip-card-${trip.id || trip._id}`} className="block group h-full">
