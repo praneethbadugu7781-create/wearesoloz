@@ -338,7 +338,7 @@ router.post("/payu-callback", async (req, res) => {
       { new: true }
     );
 
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const frontendUrl = process.env.FRONTEND_URL || "https://wearesoloz.com";
 
     if (targetStatus === "PAID") {
       if (isJsonRequest) {
@@ -349,11 +349,12 @@ router.post("/payu-callback", async (req, res) => {
       if (isJsonRequest) {
         return res.status(400).json({ success: false, error: error_Message || `Payment ${targetStatus.toLowerCase()}` });
       }
-      return res.redirect(302, `${frontendUrl}/booking-failed?error=${encodeURIComponent(error_Message || `Payment ${targetStatus.toLowerCase()}`)}&slug=${encodeURIComponent(booking?.tripSlug || "")}`);
+      const cancelOrFailedMsg = targetStatus === "CANCELLED" ? "Payment was cancelled by user." : (error_Message || `Payment ${targetStatus.toLowerCase()}`);
+      return res.redirect(302, `${frontendUrl}/booking-failed?bookingId=${encodeURIComponent(booking?.bookingId || bookingId)}&error=${encodeURIComponent(cancelOrFailedMsg)}&slug=${encodeURIComponent(booking?.tripSlug || "")}`);
     }
   } catch (error) {
     console.error("Error processing PayU callback:", error);
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const frontendUrl = process.env.FRONTEND_URL || "https://wearesoloz.com";
     return res.redirect(302, `${frontendUrl}/booking-failed?error=${encodeURIComponent("Server payment processing error")}`);
   }
 });
