@@ -21,12 +21,14 @@ import {
   Video,
   Camera,
   ClipboardCheck,
-  Star
+  Star,
+  CreditCard
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/bookings", label: "Bookings & Payments", icon: CreditCard },
   { href: "/admin/trips", label: "Trips", icon: Compass },
   { href: "/admin/waivers", label: "Waivers", icon: ClipboardCheck },
   { href: "/admin/feedbacks", label: "Feedbacks", icon: Star },
