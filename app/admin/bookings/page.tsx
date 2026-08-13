@@ -383,33 +383,43 @@ export default function AdminBookingsPage() {
                       </div>
                     </td>
 
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 text-right space-x-1">
-                      <button
-                        onClick={() => setSelectedBooking(b)}
-                        title="View Full Booking Details"
-                        className="p-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition"
-                      >
-                        <Eye size={14} />
-                      </button>
-
-                      {b.status !== "PAID" && (
+                    {/* Actions Column */}
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                         <button
-                          onClick={() => handleUpdateStatus(b._id, "PAID")}
-                          title="Manually Mark as Paid"
-                          className="p-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 transition"
+                          onClick={() => setSelectedBooking(b)}
+                          className="px-2.5 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-[11px] inline-flex items-center gap-1 transition-all border border-stone-200/80 shadow-2xs"
                         >
-                          <Check size={14} />
+                          <Eye size={13} className="text-stone-600" />
+                          View Details
                         </button>
-                      )}
 
-                      <button
-                        onClick={() => handleDeleteBooking(b._id)}
-                        title="Delete Record"
-                        className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                        {b.status !== "PAID" ? (
+                          <button
+                            onClick={() => handleUpdateStatus(b._id, "PAID")}
+                            className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] inline-flex items-center gap-1 transition-all shadow-xs"
+                          >
+                            <Check size={13} />
+                            Mark Paid
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleUpdateStatus(b._id, "PENDING")}
+                            className="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 font-bold text-[11px] inline-flex items-center gap-1 transition-all"
+                          >
+                            <Clock size={13} className="text-amber-600" />
+                            Mark Pending
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => handleDeleteBooking(b._id)}
+                          className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[11px] inline-flex items-center gap-1 transition-all border border-rose-200/60"
+                        >
+                          <Trash2 size={13} />
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -462,7 +472,7 @@ export default function AdminBookingsPage() {
               <div className="space-y-1">
                 <span className="text-stone-400 font-semibold block">Travelers & Amount</span>
                 <span className="font-bold text-emerald-700 block text-sm">
-                  ₹{selectedBooking.amount?.toLocaleString("en-IN")} ({selectedBooking.travelers} Traveler)
+                  ₹{selectedBooking.amount?.toLocaleString("en-IN")} ({selectedBooking.travelers} Traveler{selectedBooking.travelers > 1 ? "s" : ""})
                 </span>
               </div>
               <div className="space-y-1">
@@ -473,27 +483,57 @@ export default function AdminBookingsPage() {
               </div>
               <div className="space-y-1">
                 <span className="text-stone-400 font-semibold block">Payment Status</span>
-                <span className={`font-bold text-xs ${selectedBooking.status === "PAID" ? "text-emerald-600" : "text-amber-600"}`}>
+                <span className={`font-bold text-xs ${selectedBooking.status === "PAID" ? "text-emerald-600 font-extrabold" : "text-amber-600 font-extrabold"}`}>
                   {selectedBooking.status}
                 </span>
               </div>
             </div>
 
             {selectedBooking.selectedBatch && (
-              <div className="p-3 bg-orange-50 border border-orange-200/80 rounded-xl text-xs space-y-1">
-                <span className="text-stone-500 font-bold block">Selected Batch:</span>
-                <span className="font-bold text-[#ea580c]">
+              <div className="p-3.5 bg-orange-50 border border-orange-200/80 rounded-xl text-xs space-y-1">
+                <span className="text-stone-500 font-bold block">Selected Batch Date:</span>
+                <span className="font-bold text-[#ea580c] text-sm">
                   {typeof selectedBooking.selectedBatch === "string"
                     ? selectedBooking.selectedBatch
-                    : selectedBooking.selectedBatch.label || `${selectedBooking.selectedBatch.startDate}`}
+                    : selectedBooking.selectedBatch.label || `${selectedBooking.selectedBatch.startDate} to ${selectedBooking.selectedBatch.endDate || ""}`}
                 </span>
               </div>
             )}
 
-            <div className="flex justify-end gap-3 pt-2 border-t border-stone-150">
-              <Button variant="ghost" onClick={() => setSelectedBooking(null)} className="h-10 px-4 rounded-xl text-xs font-semibold">
-                Close
-              </Button>
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-stone-150">
+              <a
+                href={`https://wa.me/91${selectedBooking.customerMobile.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                  `Hi ${selectedBooking.customerName}, regarding your WeAreSoloz booking (${selectedBooking.bookingId}) for ${selectedBooking.tripTitle}:`
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs inline-flex items-center gap-1.5 transition-all shadow-xs"
+              >
+                💬 Chat on WhatsApp
+              </a>
+
+              <div className="flex items-center gap-2">
+                {selectedBooking.status !== "PAID" && (
+                  <Button
+                    onClick={() => handleUpdateStatus(selectedBooking._id, "PAID")}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-9 px-3.5 rounded-xl"
+                  >
+                    Mark Paid
+                  </Button>
+                )}
+
+                <Button
+                  variant="ghost"
+                  onClick={() => handleDeleteBooking(selectedBooking._id)}
+                  className="text-rose-600 hover:bg-rose-50 text-xs font-bold h-9 px-3 rounded-xl"
+                >
+                  Delete
+                </Button>
+
+                <Button variant="ghost" onClick={() => setSelectedBooking(null)} className="h-9 px-4 rounded-xl text-xs font-semibold border border-stone-200">
+                  Close
+                </Button>
+              </div>
             </div>
           </div>
         </div>
