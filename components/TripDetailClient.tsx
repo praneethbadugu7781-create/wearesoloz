@@ -436,7 +436,9 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
   const handlePayUCheckout = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-      const unitPrice = parseFloat(trip.price?.toString().replace(/[^0-9.]/g, "")) || 2999;
+      const rawPrice = selectedBatch?.price || trip.price || "1";
+      const parsed = parseFloat(rawPrice.toString().replace(/[^0-9.]/g, ""));
+      const unitPrice = (!isNaN(parsed) && parsed > 0) ? parsed : 1;
 
       // 1. Create PayU payment order & hash on backend
       const orderRes = await fetch(`${API_URL}/payment/create-order`, {
@@ -800,8 +802,13 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="text-[10px] uppercase tracking-widest text-[#ea580c] font-bold">{locale === "te" ? "ఈ ట్రిప్ కోసం విచారించండి" : locale === "hi" ? "इस यात्रा के लिए पूछताछ करें" : "Inquire for this Trip"}</div>
-                    <div className="font-display text-xl font-medium text-stone-900 mt-1">
-                      {locale === "te" ? "ధర కోసం సంప్రదించండి" : locale === "hi" ? "कीमत के लिए संपर्क करें" : "Contact for Price"}
+                    <div className="font-display text-2xl font-bold text-stone-900 mt-1">
+                      {(() => {
+                        const rawP = selectedBatch?.price || trip.price;
+                        if (!rawP) return locale === "te" ? "ధర కోసం సంప్రదించండి" : locale === "hi" ? "कीमत के लिए संपर्क करें" : "Contact for Price";
+                        const num = parseFloat(rawP.toString().replace(/[^0-9.]/g, ""));
+                        return !isNaN(num) ? `₹${num.toLocaleString("en-IN")}` : (rawP.toString().startsWith("₹") ? rawP : `₹${rawP}`);
+                      })()}
                     </div>
                   </div>
                   

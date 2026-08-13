@@ -867,7 +867,16 @@ export function TripCard({ trip, showDate = false }: { trip: any; showDate?: boo
         </div>
         <div className="p-3 md:p-6 pt-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-3 pt-3 md:mt-5 md:pt-4 border-t border-stone-100 gap-1 sm:gap-2">
-            <div className="text-[10px] md:text-sm font-semibold text-stone-500">Contact for Price</div>
+            <div className="text-xs md:text-base font-extrabold text-stone-900 font-display">
+              {trip.price ? (
+                (() => {
+                  const num = parseFloat(trip.price.toString().replace(/[^0-9.]/g, ""));
+                  return !isNaN(num) ? `₹${num.toLocaleString("en-IN")}` : (trip.price.toString().startsWith("₹") ? trip.price : `₹${trip.price}`);
+                })()
+              ) : (
+                "Contact for Price"
+              )}
+            </div>
             <div className="text-[10px] md:text-xs text-soloz-primary inline-flex items-center gap-0.5 md:gap-1 font-bold group-hover:text-orange-600 transition-colors">Join trip <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" /></div>
           </div>
         </div>
