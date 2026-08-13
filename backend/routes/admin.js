@@ -506,6 +506,104 @@ router.patch("/:resource/:id", async (req, res) => {
   }
 });
 
+// PayU Live Status Sync Endpoint for Admin Bookings Panel
+router.post("/bookings/sync-payu", async (req, res) => {
+  try {
+    await connectDB();
+    const { txnid, bookingId } = req.body || {};
+    const key = process.env.PAYU_MERCHANT_KEY || "";
+    const salt = process.env.PAYU_SALT || "";
+
+    if (!key || !salt) {
+      return res.status(500).json({ error: "PayU Merchant Key and Salt must be configured on server." });
+    }
+
+    let query = {};
+    if (txnid || bookingId) {
+      query = { $or: [{ payuTxnId: txnid || bookingId }, { bookingId: bookingId || txnid }] };
+    } else {
+      query = { status: "PENDING" };
+    }
+
+    const bookingsToSync = await Booking.find(query).limit(50);
+    if (bookingsToSync.length === 0) {
+      return res.json({ success: true, message: "No bookings available to sync.", updatedCount: 0 });
+    }
+
+    const txnIdsArray = bookingsToSync.map((b) => b.payuTxnId).filter(Boolean);
+    if (txnIdsArray.length === 0) {
+      return res.json({ success: true, message: "No valid PayU transaction IDs found.", updatedCount: 0 });
+    }
+
+    const var1Str = txnIdsArray.join("|");
+    const command = "verify_payment";
+    const crypto = require("crypto");
+    const hashSeq = `${key}|${command}|${var1Str}|${salt}`;
+    const hash = crypto.createHash("sha512").update(hashSeq).digest("hex");
+
+    const params = new URLSearchParams();
+    params.append("key", key);
+    params.append("command", command);
+    params.append("var1", var1Str);
+    params.append("hash", hash);
+
+    const payuRes = await fetch("https://info.payu.in/merchant/postfinalpage.php?form=2", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString()
+    });
+
+    const payuData = await payuRes.json();
+    let updatedCount = 0;
+    const results = [];
+
+    if (payuData && payuData.transaction_details) {
+      for (const b of bookingsToSync) {
+        const details = payuData.transaction_details[b.payuTxnId];
+        if (details) {
+          const statusStr = (details.status || "").toLowerCase();
+          const unmapped = (details.unmappedstatus || "").toLowerCase();
+
+          let newStatus = b.status;
+          if (statusStr === "success" || unmapped === "captured") {
+            newStatus = "PAID";
+          } else if (statusStr === "usercancelled" || unmapped === "usercancelled" || statusStr === "cancelled") {
+            newStatus = "CANCELLED";
+          } else if (statusStr === "failure" || statusStr === "failed" || unmapped === "failed") {
+            newStatus = "FAILED";
+          }
+
+          b.payuStatus = details.status || b.payuStatus;
+          b.payuUnmappedStatus = details.unmappedstatus || b.payuUnmappedStatus;
+          b.paymentMode = details.mode || details.card_type || details.bankcode || b.paymentMode;
+          b.bankRefNum = details.bank_ref_num || b.bankRefNum;
+          b.payuErrorMsg = details.error_Message || details.field9 || b.payuErrorMsg;
+          if (details.mihpayid) b.payuMihpayid = details.mihpayid;
+
+          if (newStatus !== b.status) {
+            b.status = newStatus;
+            if (newStatus === "PAID" && !b.paidAt) b.paidAt = new Date();
+            updatedCount++;
+          }
+
+          await b.save();
+          results.push({ bookingId: b.bookingId, status: b.status, mode: b.paymentMode, bankRefNum: b.bankRefNum });
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Checked ${bookingsToSync.length} booking(s) with PayU servers. Updated ${updatedCount} status(es).`,
+      updatedCount,
+      results
+    });
+  } catch (error) {
+    console.error("Error syncing PayU status in admin:", error);
+    res.status(500).json({ error: error.message || "Failed to sync status with PayU" });
+  }
+});
+
 // DELETE /api/admin/:resource/:id
 router.delete("/:resource/:id", async (req, res) => {
   try {

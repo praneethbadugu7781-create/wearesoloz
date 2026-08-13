@@ -91,18 +91,26 @@ export default function AdminBookingsPage() {
   const handleSyncPayUStatus = async (bookingId?: string) => {
     setSyncingPayU(true);
     try {
-      const res = await fetch(`${API_URL}/payment/sync-payu-status`, {
+      let res = await fetch(`${API_URL}/admin/bookings/sync-payu`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({ bookingId: bookingId || "" })
       });
+
+      if (!res.ok) {
+        res = await fetch(`${API_URL}/payment/sync-payu-status`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+          body: JSON.stringify({ bookingId: bookingId || "" })
+        });
+      }
 
       const responseText = await res.text();
       let data: any = {};
       try {
         data = JSON.parse(responseText);
       } catch (parseErr) {
-        throw new Error(`Server returned HTML response (${res.status} ${res.statusText}). The backend server may be restarting or updating. Please try again in a few seconds.`);
+        throw new Error(`PayU sync response could not be parsed as JSON (${res.status} ${res.statusText}).`);
       }
 
       if (!res.ok || !data.success) {
