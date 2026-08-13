@@ -22,13 +22,25 @@ import {
   HelpCircle,
   FileSpreadsheet,
   Mail,
-  Award
+  Award,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Filter,
+  Ban
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Participant {
   name: string;
   phone: string;
+}
+
+interface BatchData {
+  startDate?: string;
+  endDate?: string;
+  label?: string;
+  seats?: number;
 }
 
 interface TripData {
@@ -51,14 +63,27 @@ interface TripData {
   confirmationCode?: string;
   confirmationLinkEnabled?: boolean;
   pickupLocation?: string;
+  batches?: BatchData[];
+}
+
+interface ExpandedWaiverItem {
+  id: string;
+  trip: TripData;
+  batch?: BatchData;
+  batchLabel?: string;
+  date: string;
+  isCompleted: boolean;
+  isLinkEnabled: boolean;
 }
 
 export default function AdminWaiversPage() {
   const [trips, setTrips] = useState<TripData[]>([]);
   const [loadingTrips, setLoadingTrips] = useState(true);
   const [tripsSearch, setTripsSearch] = useState("");
+  const [activeTab, setActiveTab] = useState<"active" | "completed" | "all">("active");
 
   const [selectedTrip, setSelectedTrip] = useState<TripData | null>(null);
+  const [selectedItem, setSelectedItem] = useState<ExpandedWaiverItem | null>(null);
   const [waiverSubmissions, setWaiverSubmissions] = useState<any[]>([]);
   const [loadingWaivers, setLoadingWaivers] = useState(false);
   const [waiversSearch, setWaiversSearch] = useState("");
@@ -75,7 +100,6 @@ export default function AdminWaiversPage() {
       const res = await fetch(`${API_URL}/admin/trips`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to load trips");
       const data = await res.json();
-      // Only show published trips or trips with a confirmation code
       setTrips(data.filter((t: TripData) => t.status === "published" || t.confirmationCode));
     } catch (err) {
       console.error(err);
@@ -101,137 +125,82 @@ export default function AdminWaiversPage() {
     }
   };
 
-  const handleDeleteWaiver = async (submissionId: string) => {
-    if (!confirm("Are you sure you want to delete this waiver submission? This action cannot be undone.")) return;
-    try {
-      const res = await fetch(`${API_URL}/admin/waivers/${submissionId}`, {
-        method: "DELETE",
-        headers: getAuthHeaders()
-      });
-      if (!res.ok) throw new Error("Failed to delete waiver submission");
-      alert("Waiver submission deleted successfully.");
-      setWaiverSubmissions(prev => prev.filter(w => w._id !== submissionId));
-    } catch (err: any) {
-      alert(err.message || "Failed to delete waiver submission.");
+  const handleOpenWaivers = (item: ExpandedWaiverItem) => {
+    setSelectedTrip(item.trip);
+    setSelectedItem(item);
+    if (item.trip._id) {
+      fetchWaivers(item.trip._id);
     }
   };
 
-  const handleSelectTrip = (trip: TripData) => {
-    setSelectedTrip(trip);
-    setWaiverSubmissions([]);
-    setWaiversSearch("");
-    fetchWaivers(trip._id!);
-  };
-
-  const handleToggleWaiverLink = async (trip: TripData) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const isPast = trip.date ? new Date(trip.date) < today : false;
-    if (isPast) {
-      alert("This trip has already completed. Past trip waiver links are automatically disabled and expired.");
-      return;
-    }
-
-    const currentStatus = trip.confirmationLinkEnabled !== false;
-    const newStatus = !currentStatus;
-
+  const handleToggleWaiverLink = async (trip: TripData, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const newStatus = trip.confirmationLinkEnabled === false ? true : false;
     try {
       const res = await fetch(`${API_URL}/admin/trips/${trip._id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-        body: JSON.stringify({ confirmationLinkEnabled: newStatus })
+        body: JSON.stringify({ ...trip, confirmationLinkEnabled: newStatus })
       });
-
-      if (!res.ok) throw new Error("Failed to update status");
-
+      if (!res.ok) throw new Error("Failed to toggle link status");
+      
       setTrips(prev => prev.map(t => t._id === trip._id ? { ...t, confirmationLinkEnabled: newStatus } : t));
+      if (selectedTrip && selectedTrip._id === trip._id) {
+        setSelectedTrip(prev => prev ? { ...prev, confirmationLinkEnabled: newStatus } : null);
+      }
     } catch (err: any) {
-      alert(err.message || "Failed to toggle waiver link status.");
+      alert(err.message || "Failed to update link status");
     }
   };
 
-  const handleResendInvoice = async (w: any) => {
-    if (!w.email) {
-      alert(`Passenger ${w.fullName} has no email registered on file.\n\nMobile: ${w.mobile}`);
-      return;
-    }
-
-    if (!confirm(`Resend tax invoice & receipt to ${w.fullName} (${w.email})?`)) return;
-
-    try {
-      const res = await fetch(`${API_URL}/admin/waivers/${w._id}/resend-invoice`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...getAuthHeaders() }
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to resend invoice.");
-
-      alert(data.message || `Invoice resent successfully to ${w.email}!`);
-    } catch (err: any) {
-      alert(err.message || "Failed to resend invoice.");
-    }
+  const handleCopyLink = (trip: TripData, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const link = `${window.location.origin}/trip-confirmation/${trip.slug}`;
+    navigator.clipboard.writeText(link);
+    alert("Waiver & Confirmation link copied to clipboard!");
   };
 
-  const handleIssueCertificate = async (w: any) => {
+  const handleToggleCertificate = async (submissionId: string, currentStatus: boolean) => {
     try {
-      const res = await fetch(`${API_URL}/admin/waivers/${w._id}/issue-certificate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...getAuthHeaders() }
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to issue certificate.");
-
-      alert(data.message || `E-Certificate issued successfully for ${w.fullName}!`);
-      if (selectedTrip) fetchWaivers(selectedTrip._id!);
-    } catch (err: any) {
-      alert(err.message || "Failed to issue certificate.");
-    }
-  };
-
-  const handleIssueAllCertificates = async () => {
-    if (!selectedTrip) return;
-    if (!confirm(`Issue E-Certificates for ALL travelers on ${selectedTrip.destination}?`)) return;
-
-    try {
-      const res = await fetch(`${API_URL}/admin/trips/${selectedTrip._id}/issue-all-certificates`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...getAuthHeaders() }
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to issue certificates.");
-
-      alert(data.message || "E-Certificates issued successfully for all travelers!");
-      fetchWaivers(selectedTrip._id!);
-    } catch (err: any) {
-      alert(err.message || "Failed to issue certificates.");
-    }
-  };
-
-
-  const handleUpdateWaiverInDetail = async (updatedFields: Partial<TripData>) => {
-    if (!selectedTrip) return;
-    try {
-      const res = await fetch(`${API_URL}/admin/trips/${selectedTrip._id}`, {
+      const res = await fetch(`${API_URL}/admin/waivers/${submissionId}/certificate`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-        body: JSON.stringify(updatedFields)
+        body: JSON.stringify({ isCertificateIssued: !currentStatus })
       });
-
-      if (!res.ok) throw new Error("Failed to update confirmation link settings.");
-
-      const newTrip = { ...selectedTrip, ...updatedFields };
-      setSelectedTrip(newTrip);
-      setTrips(prev => prev.map(t => t._id === selectedTrip._id ? newTrip : t));
+      if (!res.ok) throw new Error("Failed to update certificate status");
+      const updated = await res.json();
+      
+      setWaiverSubmissions(prev => prev.map(w => w._id === submissionId ? updated : w));
+      if (selectedWaiverDetail && selectedWaiverDetail._id === submissionId) {
+        setSelectedWaiverDetail(updated);
+      }
     } catch (err: any) {
-      alert(err.message || "Failed to update confirmation settings.");
+      alert(err.message || "Failed to update certificate");
     }
   };
 
-  // CSV download helper
-  const downloadWaiversCSV = () => {
+  const handleSendCertificateEmail = async (submissionId: string) => {
+    try {
+      const res = await fetch(`${API_URL}/admin/waivers/${submissionId}/send-certificate`, {
+        method: "POST",
+        headers: getAuthHeaders()
+      });
+      if (!res.ok) throw new Error("Failed to send certificate email");
+      const updated = await res.json();
+      
+      setWaiverSubmissions(prev => prev.map(w => w._id === submissionId ? updated : w));
+      if (selectedWaiverDetail && selectedWaiverDetail._id === submissionId) {
+        setSelectedWaiverDetail(updated);
+      }
+      alert("Certificate email sent successfully!");
+    } catch (err: any) {
+      alert(err.message || "Failed to send certificate email");
+    }
+  };
+
+  const exportCSV = () => {
     if (!selectedTrip || waiverSubmissions.length === 0) return;
-    
+
     const headers = [
       "Submission ID",
       "Full Name",
@@ -290,7 +259,6 @@ export default function AdminWaiversPage() {
     document.body.removeChild(link);
   };
 
-  // Print helper
   const handlePrint = () => {
     if (!selectedTrip) return;
     const printWindow = window.open("", "_blank");
@@ -347,14 +315,109 @@ export default function AdminWaiversPage() {
     printWindow.document.close();
   };
 
-  // Filtered trips
-  const filteredTrips = trips.filter(t => 
-    t.destination.toLowerCase().includes(tripsSearch.toLowerCase())
-  );
+  // Expand trips into batch items
+  const expandedItems: ExpandedWaiverItem[] = [];
+  const todayMidnight = new Date().setHours(0, 0, 0, 0);
+
+  trips.forEach((trip) => {
+    const batches = (trip.batches || []).filter((b: any) => b && (b.startDate || b.endDate));
+
+    if (batches.length > 0) {
+      batches.forEach((b: any, index: number) => {
+        const startDateStr = b.startDate || b.endDate || trip.date;
+        const endDateStr = b.endDate || b.startDate || trip.date;
+
+        const startDateObj = new Date(startDateStr);
+        const endDateObj = new Date(endDateStr);
+
+        const isCompleted = !isNaN(endDateObj.getTime())
+          ? endDateObj.getTime() < todayMidnight
+          : startDateObj.getTime() < todayMidnight;
+
+        let batchLabelText = "";
+        if (b.label) {
+          batchLabelText = b.label;
+        } else if (b.startDate && b.endDate) {
+          const s = new Date(b.startDate);
+          const e = new Date(b.endDate);
+          if (!isNaN(s.getTime()) && !isNaN(e.getTime())) {
+            batchLabelText = `${s.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${e.getDate()}`;
+          } else {
+            batchLabelText = `${b.startDate} to ${b.endDate}`;
+          }
+        } else {
+          batchLabelText = new Date(startDateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        }
+
+        expandedItems.push({
+          id: `${trip._id}_batch_${index}`,
+          trip,
+          batch: b,
+          batchLabel: batchLabelText,
+          date: startDateStr,
+          isCompleted,
+          isLinkEnabled: trip.confirmationLinkEnabled !== false
+        });
+      });
+    } else {
+      const tripDateStr = trip.date;
+      const tripDateObj = new Date(tripDateStr);
+      const isCompleted = !isNaN(tripDateObj.getTime()) ? tripDateObj.getTime() < todayMidnight : false;
+
+      expandedItems.push({
+        id: `${trip._id}_main`,
+        trip,
+        date: tripDateStr,
+        isCompleted,
+        isLinkEnabled: trip.confirmationLinkEnabled !== false
+      });
+    }
+  });
+
+  // Filter items based on search query
+  const searchFilteredItems = expandedItems.filter(item => {
+    const query = tripsSearch.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      item.trip.destination.toLowerCase().includes(query) ||
+      (item.batchLabel && item.batchLabel.toLowerCase().includes(query)) ||
+      (item.trip.state && item.trip.state.toLowerCase().includes(query))
+    );
+  });
+
+  // Partition searchFilteredItems into Month groups & Tab filter
+  const partitionByMonth = (tab: "active" | "completed" | "all") => {
+    const items = searchFilteredItems.filter(item => {
+      if (tab === "active") return !item.isCompleted;
+      if (tab === "completed") return item.isCompleted;
+      return true;
+    });
+
+    const groups: Record<string, ExpandedWaiverItem[]> = {};
+
+    items.forEach(item => {
+      const itemDate = new Date(item.date);
+      const monthLabel = !isNaN(itemDate.getTime())
+        ? itemDate.toLocaleString("en-US", { month: "long", year: "numeric" })
+        : "Unscheduled";
+
+      if (!groups[monthLabel]) groups[monthLabel] = [];
+      groups[monthLabel].push(item);
+    });
+
+    return Object.entries(groups).sort(([mA, itemsA], [mB, itemsB]) => {
+      const timeA = itemsA[0] ? new Date(itemsA[0].date).getTime() : 0;
+      const timeB = itemsB[0] ? new Date(itemsB[0].date).getTime() : 0;
+      return tab === "completed" ? timeB - timeA : timeA - timeB;
+    });
+  };
+
+  const activeCount = expandedItems.filter(i => !i.isCompleted).length;
+  const completedCount = expandedItems.filter(i => i.isCompleted).length;
 
   return (
-    <main className="space-y-8">
-      {/* Title */}
+    <main className="space-y-8 font-sans">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-4">
         <div>
           <h1 className="font-display text-3xl font-bold text-white flex items-center gap-2">
@@ -362,12 +425,12 @@ export default function AdminWaiversPage() {
             Waivers & Confirmations
           </h1>
           <p className="text-xs text-soloz-ash/75 mt-1">
-            Manage passenger liability disclosures, emergency contacts, and identity documents.
+            Manage passenger liability disclosures, emergency contacts, and identity documents batch-by-batch.
           </p>
         </div>
 
         {selectedTrip && (
-          <Button onClick={() => setSelectedTrip(null)} variant="secondary" className="pt-0.5">
+          <Button onClick={() => { setSelectedTrip(null); setSelectedItem(null); }} variant="secondary" className="pt-0.5">
             <ChevronLeft size={16} className="mr-1.5" /> Back to Trip Selector
           </Button>
         )}
@@ -375,16 +438,65 @@ export default function AdminWaiversPage() {
 
       {/* TRIP SELECTOR GRID */}
       {!selectedTrip && (
-        <div className="space-y-6">
-          <div className="flex items-center gap-2 max-w-sm">
-            <Search className="text-soloz-ash/40" size={16} />
-            <input
-              type="text"
-              placeholder="Search trips..."
-              value={tripsSearch}
-              onChange={(e) => setTripsSearch(e.target.value)}
-              className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none"
-            />
+        <div className="space-y-8">
+          {/* Controls Bar */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
+            {/* Search Input */}
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-soloz-ash/40" size={15} />
+              <input
+                type="text"
+                placeholder="Search trip destination, batch date, state..."
+                value={tripsSearch}
+                onChange={(e) => setTripsSearch(e.target.value)}
+                className="h-10 w-full rounded-xl border border-white/10 bg-black/40 pl-10 pr-4 text-xs text-white focus:border-soloz-ember focus:outline-none placeholder:text-stone-500"
+              />
+            </div>
+
+            {/* Tab Filter Switches */}
+            <div className="flex bg-stone-900/80 p-1 rounded-xl border border-white/10 w-full md:w-auto">
+              <button
+                onClick={() => setActiveTab("active")}
+                className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                  activeTab === "active"
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "text-stone-400 hover:text-white"
+                }`}
+              >
+                <span>🟢 Active & Upcoming</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${activeTab === "active" ? "bg-white/20 text-white" : "bg-white/10 text-stone-300"}`}>
+                  {activeCount}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("completed")}
+                className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                  activeTab === "completed"
+                    ? "bg-rose-600 text-white shadow-sm"
+                    : "text-stone-400 hover:text-white"
+                }`}
+              >
+                <span>🏁 Completed & Past</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${activeTab === "completed" ? "bg-white/20 text-white" : "bg-white/10 text-stone-300"}`}>
+                  {completedCount}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("all")}
+                className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                  activeTab === "all"
+                    ? "bg-stone-800 text-white shadow-sm"
+                    : "text-stone-400 hover:text-white"
+                }`}
+              >
+                <span>All Batches</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${activeTab === "all" ? "bg-white/20 text-white" : "bg-white/10 text-stone-300"}`}>
+                  {expandedItems.length}
+                </span>
+              </button>
+            </div>
           </div>
 
           {loadingTrips ? (
@@ -392,69 +504,94 @@ export default function AdminWaiversPage() {
               <Loader2 className="animate-spin text-soloz-ember mb-3" size={32} />
               <p className="text-xs">Loading passenger waiver lists...</p>
             </div>
-          ) : filteredTrips.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-white/10 p-12 text-center text-soloz-ash/60">
-              No matching published trips found.
+          ) : searchFilteredItems.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-white/10 p-12 text-center text-soloz-ash/60">
+              No matching trip waivers found.
             </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredTrips.map((trip) => (
-                <div
-                  key={trip._id}
-                  className="rounded-xl border border-white/10 bg-[#14110d] p-5 flex flex-col justify-between hover:border-white/20 transition-all space-y-4"
-                >
-                  <div className="space-y-2">
-                    <h3 className="font-display text-lg font-bold text-white leading-tight">
-                      {trip.destination}
-                    </h3>
-                    <div className="flex flex-col gap-1 text-xs text-soloz-ash/70">
-                      <span className="flex items-center gap-1.5">
-                        <Calendar size={13} className="text-soloz-ember" />
-                        Date: {new Date(trip.date).toLocaleDateString()}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <Users size={13} className="text-soloz-ember" />
-                        Expected: {trip.participants?.length || 0} Travelers
-                      </span>
-                    </div>
+            <div className="space-y-12">
+              {partitionByMonth(activeTab).map(([monthLabel, monthItems]) => (
+                <div key={monthLabel} className="space-y-4">
+                  {/* Month Header */}
+                  <div className="flex items-center gap-3 border-b border-white/10 pb-3">
+                    <h2 className="font-display text-xl font-bold text-white tracking-wide uppercase">
+                      {monthLabel}
+                    </h2>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-soloz-ember/20 text-soloz-ember font-bold">
+                      {monthItems.length} {monthItems.length === 1 ? "Batch Waiver" : "Batch Waivers"}
+                    </span>
+                    <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
                   </div>
 
-                  <div className="pt-4 border-t border-white/5 flex items-center justify-between gap-4">
-                    {(() => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      const isPast = trip.date ? new Date(trip.date) < today : false;
-                      const isLinkEnabled = trip.confirmationLinkEnabled !== false;
+                  {/* Month Grid Cards */}
+                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {monthItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className={`rounded-2xl border bg-[#14110d] p-5 flex flex-col justify-between transition-all space-y-4 ${
+                          item.isCompleted
+                            ? "border-red-900/30 opacity-80 hover:opacity-100"
+                            : "border-white/10 hover:border-white/20"
+                        }`}
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <h3 className="font-display text-lg font-bold text-white leading-tight">
+                              {item.trip.destination}
+                            </h3>
+                            {item.isCompleted && (
+                              <span className="text-[9px] uppercase tracking-widest font-extrabold px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800/50 shrink-0">
+                                COMPLETED
+                              </span>
+                            )}
+                          </div>
 
-                      if (isPast) {
-                        return (
-                          <span className="text-[10px] px-2.5 py-1 rounded font-bold uppercase tracking-wider bg-red-500/10 text-red-450 border border-red-500/15 select-none" title="This trip is in the past. Waivers are closed.">
-                            Expired (Disabled)
-                          </span>
-                        );
-                      }
+                          {item.batchLabel && (
+                            <div className="text-xs font-bold text-[#ea580c] flex items-center gap-1.5">
+                              <span>📅</span> Batch: {item.batchLabel}
+                            </div>
+                          )}
 
-                      return (
-                        <button
-                          onClick={() => handleToggleWaiverLink(trip)}
-                          title="Click to toggle waiver link status"
-                          className={`text-[10px] px-2.5 py-1 rounded font-bold uppercase tracking-wider border transition-all ${
-                            isLinkEnabled
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
-                              : "bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20"
-                          }`}
-                        >
-                          Link: {isLinkEnabled ? "Active" : "Disabled"}
-                        </button>
-                      );
-                    })()}
+                          <div className="flex flex-col gap-1 text-xs text-soloz-ash/70 pt-1">
+                            <span className="flex items-center gap-1.5">
+                              <Calendar size={13} className="text-soloz-ember" />
+                              Date: {new Date(item.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                              <Users size={13} className="text-soloz-ember" />
+                              Expected: {item.trip.participants?.length || 0} Travelers
+                            </span>
+                          </div>
+                        </div>
 
-                    <button
-                      onClick={() => handleSelectTrip(trip)}
-                      className="px-3 py-1.5 rounded bg-soloz-ember/10 border border-soloz-ember/25 text-soloz-ember hover:bg-soloz-ember/20 text-xs font-bold transition-all"
-                    >
-                      Manage Waivers
-                    </button>
+                        <div className="pt-4 border-t border-white/5 flex items-center justify-between gap-3">
+                          {item.isCompleted ? (
+                            <span className="text-[10px] px-2.5 py-1 rounded font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 select-none">
+                              Expired (Disabled)
+                            </span>
+                          ) : (
+                            <button
+                              onClick={(e) => handleToggleWaiverLink(item.trip, e)}
+                              title="Click to toggle waiver link status"
+                              className={`text-[10px] px-2.5 py-1 rounded font-bold uppercase tracking-wider border transition-all ${
+                                item.isLinkEnabled
+                                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
+                                  : "bg-rose-500/10 text-rose-400 border-rose-500/30 hover:bg-rose-500/20"
+                              }`}
+                            >
+                              Link: {item.isLinkEnabled ? "Active" : "Disabled"}
+                            </button>
+                          )}
+
+                          <Button
+                            onClick={() => handleOpenWaivers(item)}
+                            className="gradient-orange text-white hover:opacity-90 h-8 px-3 text-xs font-bold rounded-lg shadow-sm"
+                          >
+                            Manage Waivers
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}
@@ -463,290 +600,161 @@ export default function AdminWaiversPage() {
         </div>
       )}
 
-      {/* DETAILED WAIVERS LIST VIEW */}
+      {/* DETAIL MODAL FOR SELECTED TRIP & BATCH */}
       {selectedTrip && (
-        <div className="space-y-6 animate-in fade-in duration-200">
-          
-          {/* Header Summary Card */}
-          <div className="rounded-xl border border-white/10 bg-[#14110d] p-6 space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-6">
+          <div className="bg-[#14110d] rounded-2xl border border-white/10 p-6 space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <span className="bg-orange-500/10 text-[#ea580c] px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-orange-500/20">
-                  Passenger Confirmations Ledger
-                </span>
-                <h2 className="font-display text-2xl font-bold text-white mt-2">
-                  {selectedTrip.destination}
+                <span className="text-[10px] uppercase font-extrabold tracking-widest text-[#ea580c]">Selected Batch Waiver List</span>
+                <h2 className="font-display text-2xl font-bold text-white mt-0.5">
+                  {selectedTrip.destination} {selectedItem?.batchLabel ? `(${selectedItem.batchLabel})` : ""}
                 </h2>
-                <div className="flex flex-wrap gap-4 text-xs text-soloz-ash/60 mt-1">
-                  <span>Departure Date: {new Date(selectedTrip.date).toLocaleDateString()}</span>
-                  <span>|</span>
-                  <span>Meeting/Pickup Point: {selectedTrip.pickupLocation || "N/A"}</span>
-                </div>
+                <p className="text-xs text-stone-400 mt-1">
+                  Scheduled Departure: {new Date(selectedItem?.date || selectedTrip.date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+                </p>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button 
-                  onClick={handleIssueAllCertificates}
-                  className="h-9 text-xs bg-[#ea580c] hover:bg-[#ea580c]/90 text-white font-bold shadow-md"
-                >
-                  <Award size={14} className="mr-1.5 text-amber-300" /> Issue All E-Certificates
-                </Button>
-                <Button 
-                  onClick={handlePrint}
-                  variant="secondary" 
-                  className="h-9 text-xs border-white/10 text-white hover:bg-white/5"
-                >
-                  <Printer size={14} className="mr-1.5 text-blue-400" /> Print Passenger List
-                </Button>
-                <Button 
-                  onClick={downloadWaiversCSV}
-                  variant="secondary" 
-                  className="h-9 text-xs border-white/10 text-white hover:bg-white/5"
-                >
-                  <Download size={14} className="mr-1.5 text-emerald-400" /> Export CSV
-                </Button>
+              <div className="flex flex-wrap items-center gap-2">
                 <Button
-                  onClick={() => fetchWaivers(selectedTrip._id!)}
+                  onClick={(e) => handleCopyLink(selectedTrip, e)}
                   variant="secondary"
-                  className="h-9 text-xs border-white/10 text-white hover:bg-white/5"
+                  className="border-white/10 text-white hover:bg-white/5 h-9 px-3 text-xs rounded-xl"
                 >
-                  <RefreshCw size={14} className="mr-1.5" /> Refresh List
+                  <Copy size={13} className="mr-1.5" /> Copy Waiver Link
+                </Button>
+
+                <Button
+                  onClick={exportCSV}
+                  disabled={waiverSubmissions.length === 0}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white h-9 px-3 text-xs font-bold rounded-xl"
+                >
+                  <FileSpreadsheet size={13} className="mr-1.5" /> Export CSV
+                </Button>
+
+                <Button
+                  onClick={handlePrint}
+                  disabled={waiverSubmissions.length === 0}
+                  variant="secondary"
+                  className="h-9 px-3 text-xs font-bold rounded-xl"
+                >
+                  <Printer size={13} className="mr-1.5" /> Print Waiver List
                 </Button>
               </div>
             </div>
-
-            {/* Waiver Confirmation Link Container */}
-            <div className="border-t border-white/5 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/[0.01] p-3 rounded-lg border border-white/[0.05]">
-              <div className="space-y-1 flex-1">
-                <div className="text-[10px] uppercase font-bold text-soloz-ash/60">Shareable Trip Confirmation Link</div>
-                {selectedTrip.confirmationCode ? (
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="font-mono text-xs text-soloz-amber break-all">
-                      {`${typeof window !== "undefined" ? window.location.origin : ""}/trip-confirmation/${selectedTrip.confirmationCode}`}
-                    </span>
-                    <button
-                      onClick={() => {
-                        const link = `${window.location.origin}/trip-confirmation/${selectedTrip.confirmationCode}`;
-                        navigator.clipboard.writeText(link);
-                        alert("Confirmation Link Copied!");
-                      }}
-                      className="text-[10px] text-soloz-ember font-bold hover:underline flex items-center gap-1 shrink-0"
-                    >
-                      <Copy size={11} /> Copy URL
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (confirm("Are you sure you want to regenerate the link code? The old link will stop working.")) {
-                          const newCode = Math.random().toString(36).substring(2, 9).toUpperCase();
-                          handleUpdateWaiverInDetail({ confirmationCode: newCode });
-                        }
-                      }}
-                      className="text-[10px] text-red-400 font-bold hover:underline flex items-center gap-1 shrink-0"
-                    >
-                      <RefreshCw size={11} /> Regenerate
-                    </button>
-                  </div>
-                ) : (
-                  <div className="text-xs text-soloz-ash/40 italic">No waiver link has been generated yet for this trip.</div>
-                )}
-              </div>
-
-              <div className="flex items-center gap-3 shrink-0">
-                {selectedTrip.confirmationCode ? (
-                  <>
-                    <span className="text-xs text-soloz-ash/60">Waiver Access:</span>
-                    <button
-                      onClick={() => {
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
-                        const isPast = selectedTrip.date ? new Date(selectedTrip.date) < today : false;
-                        if (isPast) {
-                          alert("This trip is in the past and waivers are closed.");
-                          return;
-                        }
-                        const isEnabled = selectedTrip.confirmationLinkEnabled !== false;
-                        handleUpdateWaiverInDetail({ confirmationLinkEnabled: !isEnabled });
-                      }}
-                      className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border transition-all ${
-                        (selectedTrip.confirmationLinkEnabled !== false)
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
-                          : "bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20"
-                      }`}
-                    >
-                      {selectedTrip.confirmationLinkEnabled !== false ? "Active" : "Disabled"}
-                    </button>
-                  </>
-                ) : (
-                  <Button
-                    onClick={() => {
-                      const newCode = Math.random().toString(36).substring(2, 9).toUpperCase();
-                      handleUpdateWaiverInDetail({ confirmationCode: newCode, confirmationLinkEnabled: true });
-                    }}
-                    className="h-8 text-[10px] font-bold uppercase px-3"
-                  >
-                    Generate Waiver Link
-                  </Button>
-                )}
-              </div>
-            </div>
-
           </div>
 
-          {/* Metrics summary cards */}
-          {(() => {
-            const registeredParticipants = selectedTrip.participants || [];
-            const submissionMobiles = new Set(waiverSubmissions.map(w => w.mobile?.trim().replace(/\s+/g, "")));
-            const submissionNames = new Set(waiverSubmissions.map(w => w.fullName?.trim().toLowerCase()));
-
-            const confirmedCount = waiverSubmissions.length;
-            const pendingParticipants = registeredParticipants.filter(p => {
-              const normalizedPhone = p.phone?.trim().replace(/\s+/g, "");
-              const normalizedName = p.name?.trim().toLowerCase();
-              return !submissionMobiles.has(normalizedPhone) && !submissionNames.has(normalizedName);
-            });
-            const pendingCount = pendingParticipants.length;
-
-            return (
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-xl border border-white/10 bg-[#14110d] p-5 space-y-1">
-                  <span className="text-[10px] uppercase tracking-wider text-soloz-ash/60 font-bold">Forms Submitted</span>
-                  <div className="text-3xl font-bold text-soloz-amber">{waiverSubmissions.length}</div>
-                  <p className="text-[10px] text-soloz-ash/40">Real-time waivers submitted by paid travelers</p>
-                </div>
-                <div className="rounded-xl border border-white/10 bg-[#14110d] p-5 space-y-1">
-                  <span className="text-[10px] uppercase tracking-wider text-soloz-ash/60 font-bold">Confirmed Passengers</span>
-                  <div className="text-3xl font-bold text-emerald-400">{confirmedCount}</div>
-                  <p className="text-[10px] text-soloz-ash/40">Participants who completed verification</p>
-                </div>
-                <div className="rounded-xl border border-white/10 bg-[#14110d] p-5 space-y-1">
-                  <span className="text-[10px] uppercase tracking-wider text-soloz-ash/60 font-bold">Pending Passengers</span>
-                  <div className="text-3xl font-bold text-orange-400">{pendingCount}</div>
-                  <p className="text-[10px] text-soloz-ash/40">Travelers in settings who haven't completed forms</p>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Submissions Table with search */}
-          <div className="rounded-xl border border-white/10 bg-[#14110d] p-6 space-y-4">
-            <div className="flex items-center gap-2 max-w-sm">
-              <Search className="text-soloz-ash/40" size={16} />
+          {/* Submissions Search & Filter */}
+          <div className="flex items-center justify-between gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-soloz-ash/40" size={15} />
               <input
                 type="text"
-                placeholder="Search passenger name, phone, or ID number..."
+                placeholder="Search participant name, phone, email..."
                 value={waiversSearch}
                 onChange={(e) => setWaiversSearch(e.target.value)}
-                className="h-9 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-xs text-white focus:border-soloz-ember/50 focus:outline-none"
+                className="h-9 w-full rounded-xl border border-white/10 bg-black/40 pl-10 pr-4 text-xs text-white focus:border-soloz-ember focus:outline-none placeholder:text-stone-500"
               />
             </div>
 
+            <span className="text-xs text-stone-400 font-medium">
+              Total Submissions: <strong className="text-white">{waiverSubmissions.length}</strong>
+            </span>
+          </div>
+
+          {/* Waiver Submissions Table */}
+          <div className="bg-[#14110d] rounded-2xl border border-white/10 overflow-hidden">
             {loadingWaivers ? (
-              <div className="flex flex-col items-center justify-center py-10 text-soloz-ash/60">
-                <Loader2 className="animate-spin text-soloz-ember mb-2" size={24} />
-                <p className="text-[10px]">Retrieving waivers list...</p>
+              <div className="p-12 text-center text-stone-400 text-xs font-semibold">
+                <Loader2 className="w-6 h-6 animate-spin text-[#ea580c] mx-auto mb-2" />
+                Loading waiver submissions...
               </div>
             ) : waiverSubmissions.length === 0 ? (
-              <div className="text-center py-10 text-xs text-soloz-ash/40 italic">
-                No waivers submitted for this trip yet. Send the trip confirmation link to confirmed buyers.
+              <div className="p-12 text-center text-stone-400 space-y-2">
+                <ClipboardCheck className="w-10 h-10 text-stone-600 mx-auto" />
+                <p className="text-sm font-bold text-stone-300">No passenger waivers submitted for this trip batch yet.</p>
+                <p className="text-xs text-stone-500">Share the waiver link with travelers before departure.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left text-white border-collapse">
+                <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-white/10 text-[10px] uppercase tracking-wider text-soloz-ash/60">
-                      <th className="py-3 px-4 font-bold">Sub ID</th>
-                      <th className="py-3 px-4 font-bold">Full Name</th>
-                      <th className="py-3 px-4 font-bold">Contact</th>
-                      <th className="py-3 px-4 font-bold">Identity Doc</th>
-                      <th className="py-3 px-4 font-bold">Emergency Contact</th>
-                      <th className="py-3 px-4 font-bold">Date Submitted</th>
-                      <th className="py-3 px-4 font-bold text-right">Actions</th>
+                    <tr className="bg-white/5 border-b border-white/10 text-[10.5px] uppercase tracking-wider text-stone-400 font-extrabold">
+                      <th className="py-3 px-4">Sub ID</th>
+                      <th className="py-3 px-4">Participant Name</th>
+                      <th className="py-3 px-4">Contact Info</th>
+                      <th className="py-3 px-4">Identity Doc</th>
+                      <th className="py-3 px-4">Emergency Contact</th>
+                      <th className="py-3 px-4">Certificate</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-white/5">
                     {waiverSubmissions
-                      .filter(w => {
-                        const term = waiversSearch.toLowerCase();
-                        return (
-                          w.fullName?.toLowerCase().includes(term) ||
-                          w.mobile?.includes(term) ||
-                          w.email?.toLowerCase().includes(term) ||
-                          w.submissionId?.toLowerCase().includes(term) ||
-                          w.idNumber?.toLowerCase().includes(term)
-                        );
-                      })
+                      .filter(w => !waiversSearch || w.fullName.toLowerCase().includes(waiversSearch.toLowerCase()) || w.mobile.includes(waiversSearch))
                       .map((w) => (
-                        <tr key={w._id} className="border-b border-white/5 hover:bg-white/[0.02]">
-                          <td className="py-3 px-4 font-mono font-bold text-soloz-amber">{w.submissionId}</td>
-                          <td className="py-3 px-4">
-                            <div className="font-bold">{w.fullName}</div>
-                            <div className="text-[10px] text-soloz-ash/50">Age: {w.age} | {w.gender}</div>
+                        <tr key={w._id} className="hover:bg-white/5 transition-colors">
+                          <td className="py-3.5 px-4 font-mono text-stone-300">{w.submissionId}</td>
+                          <td className="py-3.5 px-4">
+                            <div className="font-bold text-white">{w.fullName}</div>
+                            <div className="text-[10px] text-stone-400">
+                              Age: {w.age} | {w.gender} {w.bloodGroup ? `| ${w.bloodGroup}` : ""}
+                            </div>
                           </td>
-                          <td className="py-3 px-4">
-                            <div>{w.mobile}</div>
-                            <div className="text-[10px] text-soloz-ash/50">{w.email || "No Email"}</div>
+                          <td className="py-3.5 px-4">
+                            <div className="text-stone-300">{w.mobile}</div>
+                            <div className="text-[10px] text-stone-500 truncate max-w-[140px]">{w.email || "-"}</div>
                           </td>
-                          <td className="py-3 px-4">
-                            <div>{w.idType}</div>
-                            <div className="text-[10px] text-soloz-ash/50">{w.idNumber || "N/A"}</div>
+                          <td className="py-3.5 px-4 font-mono">
+                            <div className="text-stone-300">{w.idType}: {w.idNumber}</div>
                             {w.idUpload && (
-                              <a
-                                href={w.idUpload}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-[10px] text-soloz-ember font-bold hover:underline inline-flex items-center gap-1 mt-0.5"
-                              >
-                                View Upload <ExternalLink size={10} />
+                              <a href={w.idUpload} target="_blank" rel="noreferrer" className="text-[10px] text-[#ea580c] hover:underline flex items-center gap-1 mt-0.5">
+                                <ExternalLink size={10} /> View Document
                               </a>
                             )}
                           </td>
-                          <td className="py-3 px-4">
-                            <div className="font-bold">{w.emergencyContactName} ({w.emergencyContactRelationship})</div>
-                            <div className="text-[10px] text-soloz-ash/50">{w.emergencyContactMobile}</div>
+                          <td className="py-3.5 px-4">
+                            <div className="text-stone-300">{w.emergencyContactName} ({w.emergencyContactRelationship})</div>
+                            <div className="text-[10px] text-stone-400">{w.emergencyContactMobile}</div>
                           </td>
-                          <td className="py-3 px-4 text-soloz-ash/60">
-                            {new Date(w.createdAt || w.signedDate).toLocaleString()}
+                          <td className="py-3.5 px-4">
+                            {w.isCertificateIssued ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 text-[10px] font-bold">
+                                <Award size={11} /> Issued
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-stone-900 text-stone-400 border border-white/10 text-[10px] font-semibold">
+                                Pending
+                              </span>
+                            )}
                           </td>
-                          <td className="py-3 px-4 text-right">
-                            <div className="flex justify-end items-center gap-2">
-                              {w.certificateId ? (
-                                <a
-                                  href={`/certificate/${w.certificateId}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 text-[10px] font-semibold transition-all inline-flex items-center gap-1"
-                                  title="View Issued E-Certificate"
-                                >
-                                  <Award size={11} /> View Cert
-                                </a>
-                              ) : (
-                                <button
-                                  onClick={() => handleIssueCertificate(w)}
-                                  className="px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-amber-300 hover:bg-amber-500/20 text-[10px] font-semibold transition-all inline-flex items-center gap-1"
-                                  title="Issue Travel E-Certificate"
-                                >
-                                  <Award size={11} /> Issue Cert
-                                </button>
-                              )}
-                              <button
-                                onClick={() => handleResendInvoice(w)}
-                                className="px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 text-[10px] font-semibold transition-all inline-flex items-center gap-1"
-                                title="Resend Tax Invoice Email"
-                              >
-                                <Mail size={11} /> Resend Invoice
-                              </button>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
                               <button
                                 onClick={() => setSelectedWaiverDetail(w)}
-                                className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-white hover:bg-white/10 text-[10px] font-semibold transition-all"
+                                className="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-white font-bold text-[11px]"
                               >
                                 View Details
                               </button>
                               <button
-                                onClick={() => handleDeleteWaiver(w._id)}
-                                className="px-2.5 py-1 rounded bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-[10px] font-semibold transition-all"
+                                onClick={() => handleToggleCertificate(w._id, w.isCertificateIssued)}
+                                className={`px-2 py-1 rounded font-bold text-[11px] border transition-all ${
+                                  w.isCertificateIssued
+                                    ? "bg-emerald-950 text-emerald-400 border-emerald-800/60"
+                                    : "bg-orange-950 text-orange-400 border-orange-800/60 hover:bg-orange-900/60"
+                                }`}
                               >
-                                Delete
+                                {w.isCertificateIssued ? "Revoke Cert" : "Issue Cert"}
                               </button>
+                              {w.isCertificateIssued && (
+                                <button
+                                  onClick={() => handleSendCertificateEmail(w._id)}
+                                  title="Send Certificate Email"
+                                  className="px-2 py-1 rounded bg-blue-950 text-blue-300 border border-blue-800/60 hover:bg-blue-900/60 font-bold text-[11px]"
+                                >
+                                  <Mail size={12} />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -759,109 +767,77 @@ export default function AdminWaiversPage() {
         </div>
       )}
 
-      {/* Details View Modal */}
+      {/* SINGLE WAIVER DETAILS MODAL */}
       {selectedWaiverDetail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl rounded-xl border border-white/10 bg-[#14110d] p-6 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setSelectedWaiverDetail(null)}
-              className="absolute right-4 top-4 text-soloz-ash/60 hover:text-white transition-colors"
-            >
-              <X size={18} />
-            </button>
-
-            <div className="space-y-1 border-b border-white/5 pb-3">
-              <span className="text-[9px] uppercase tracking-wider text-soloz-amber font-mono font-bold">
-                Submission ID: {selectedWaiverDetail.submissionId}
-              </span>
-              <h3 className="font-display text-lg font-bold text-white">
-                Liability Waiver Disclosure
-              </h3>
-            </div>
-
-            <div className="grid gap-6 sm:grid-cols-2 text-xs">
-              
-              {/* Personal */}
-              <div className="space-y-2 bg-white/[0.02] p-4 rounded-lg border border-white/5">
-                <h4 className="font-bold text-soloz-amber uppercase tracking-wider text-[10px]">Personal Details</h4>
-                <div className="space-y-1 text-soloz-ash/80">
-                  <p><span className="text-white/60">Full Name:</span> {selectedWaiverDetail.fullName}</p>
-                  <p><span className="text-white/60">Age / Gender:</span> {selectedWaiverDetail.age} / {selectedWaiverDetail.gender}</p>
-                  <p><span className="text-white/60">Mobile:</span> {selectedWaiverDetail.mobile}</p>
-                  <p><span className="text-white/60">Email:</span> {selectedWaiverDetail.email || "N/A"}</p>
-                  <p><span className="text-white/60">Address:</span> {selectedWaiverDetail.address || "N/A"}</p>
-                </div>
-              </div>
-
-              {/* Emergency */}
-              <div className="space-y-2 bg-white/[0.02] p-4 rounded-lg border border-white/5">
-                <h4 className="font-bold text-soloz-amber uppercase tracking-wider text-[10px]">Emergency Contact</h4>
-                <div className="space-y-1 text-soloz-ash/80">
-                  <p><span className="text-white/60">Contact Name:</span> {selectedWaiverDetail.emergencyContactName}</p>
-                  <p><span className="text-white/60">Relationship:</span> {selectedWaiverDetail.emergencyContactRelationship}</p>
-                  <p><span className="text-white/60">Mobile:</span> {selectedWaiverDetail.emergencyContactMobile}</p>
-                </div>
-              </div>
-
-              {/* Identity */}
-              <div className="space-y-2 bg-white/[0.02] p-4 rounded-lg border border-white/5">
-                <h4 className="font-bold text-soloz-amber uppercase tracking-wider text-[10px]">Identity Proof</h4>
-                <div className="space-y-1 text-soloz-ash/80">
-                  <p><span className="text-white/60">ID Type:</span> {selectedWaiverDetail.idType}</p>
-                  <p><span className="text-white/60">ID Number:</span> {selectedWaiverDetail.idNumber || "N/A"}</p>
-                  {selectedWaiverDetail.idUpload && (
-                    <div className="mt-2">
-                      <a
-                        href={selectedWaiverDetail.idUpload}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1 rounded text-white font-semibold text-[10px]"
-                      >
-                        Open ID Proof Attachment <ExternalLink size={10} />
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Medical */}
-              <div className="space-y-2 bg-white/[0.02] p-4 rounded-lg border border-white/5">
-                <h4 className="font-bold text-soloz-amber uppercase tracking-wider text-[10px]">Medical Profile</h4>
-                <div className="space-y-1 text-soloz-ash/80">
-                  <p><span className="text-white/60">Blood Group:</span> {selectedWaiverDetail.bloodGroup || "N/A"}</p>
-                  <p><span className="text-white/60">Chronic Conditions:</span> {selectedWaiverDetail.medicalConditions || "None declared"}</p>
-                  <p><span className="text-white/60">Allergies:</span> {selectedWaiverDetail.allergies || "None declared"}</p>
-                  <p><span className="text-white/60">Medications:</span> {selectedWaiverDetail.medications || "None declared"}</p>
-                  <p><span className="text-white/60">Emergency Notes:</span> {selectedWaiverDetail.emergencyNotes || "None declared"}</p>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Signature Block */}
-            <div className="border-t border-white/5 pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs text-soloz-ash/70">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#14110d] w-full max-w-xl rounded-3xl p-6 md:p-8 space-y-6 shadow-2xl border border-white/10 font-sans text-stone-200">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
-                <span className="text-[10px] text-soloz-ash/40 uppercase block mb-1">Participant Digital Signature</span>
-                <span className="font-serif italic text-sm text-white">{selectedWaiverDetail.signedName}</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#ea580c]">Participant Waiver Submission</span>
+                <h3 className="font-display text-xl font-bold text-white">{selectedWaiverDetail.fullName}</h3>
+              </div>
+              <button onClick={() => setSelectedWaiverDetail(null)} className="p-1.5 rounded-full hover:bg-white/10 text-stone-400">
+                ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-xs">
+              <div>
+                <span className="text-stone-500 block">Submission ID</span>
+                <span className="font-mono text-white font-bold">{selectedWaiverDetail.submissionId}</span>
               </div>
               <div>
-                <span className="text-[10px] text-soloz-ash/40 uppercase block mb-1">Date Signed</span>
-                <span className="text-white font-bold">{new Date(selectedWaiverDetail.signedDate || selectedWaiverDetail.createdAt).toLocaleDateString()}</span>
+                <span className="text-stone-500 block">Age / Gender / Blood</span>
+                <span className="font-semibold text-white">
+                  {selectedWaiverDetail.age} yrs | {selectedWaiverDetail.gender} | {selectedWaiverDetail.bloodGroup || "N/A"}
+                </span>
+              </div>
+              <div>
+                <span className="text-stone-500 block">Mobile</span>
+                <span className="font-semibold text-white">{selectedWaiverDetail.mobile}</span>
+              </div>
+              <div>
+                <span className="text-stone-500 block">Email</span>
+                <span className="font-semibold text-white truncate block">{selectedWaiverDetail.email || "N/A"}</span>
+              </div>
+              <div className="col-span-2">
+                <span className="text-stone-500 block">Address</span>
+                <span className="font-semibold text-white">{selectedWaiverDetail.address || "N/A"}</span>
+              </div>
+              <div>
+                <span className="text-stone-500 block">ID Document</span>
+                <span className="font-semibold text-white">{selectedWaiverDetail.idType}: {selectedWaiverDetail.idNumber}</span>
+              </div>
+              <div>
+                <span className="text-stone-500 block">Signed Digital Name</span>
+                <span className="font-semibold text-emerald-400 font-mono">{selectedWaiverDetail.signedName}</span>
+              </div>
+              <div className="col-span-2 bg-white/5 p-3 rounded-xl border border-white/10 space-y-1">
+                <span className="text-soloz-amber font-bold block text-[11px]">Emergency Contact Info</span>
+                <span className="text-white font-semibold block">
+                  {selectedWaiverDetail.emergencyContactName} ({selectedWaiverDetail.emergencyContactRelationship}) - {selectedWaiverDetail.emergencyContactMobile}
+                </span>
+              </div>
+              <div className="col-span-2 space-y-1">
+                <span className="text-stone-500 block">Medical Conditions / Allergies</span>
+                <span className="text-white block font-medium">
+                  {selectedWaiverDetail.medicalConditions || "None reported"}
+                </span>
               </div>
             </div>
 
-            <div className="flex justify-between items-center pt-2">
+            <div className="flex items-center justify-between pt-4 border-t border-white/10">
               <Button
-                onClick={() => handleResendInvoice(selectedWaiverDetail)}
-                className="text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5"
+                onClick={() => handleToggleCertificate(selectedWaiverDetail._id, selectedWaiverDetail.isCertificateIssued)}
+                className={`text-xs font-bold ${selectedWaiverDetail.isCertificateIssued ? "bg-rose-950 text-rose-300 border border-rose-800" : "bg-emerald-600 hover:bg-emerald-700 text-white"}`}
               >
-                <Mail size={14} /> Resend Tax Invoice
+                {selectedWaiverDetail.isCertificateIssued ? "Revoke Certificate" : "Issue Certificate"}
               </Button>
-              <Button onClick={() => setSelectedWaiverDetail(null)} className="text-xs" variant="secondary">
-                Close Details
+
+              <Button onClick={() => setSelectedWaiverDetail(null)} variant="secondary" className="h-9 text-xs">
+                Close
               </Button>
             </div>
-
           </div>
         </div>
       )}
