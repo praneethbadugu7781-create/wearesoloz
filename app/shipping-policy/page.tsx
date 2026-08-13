@@ -38,7 +38,7 @@ export default function ShippingPolicyPage() {
 
           <h3 className="font-display text-lg font-bold text-stone-900">1. Instant Digital Confirmation</h3>
           <p>
-            Upon successful payment completion via Razorpay, your digital Booking Confirmation and Booking ID are immediately generated online and sent via Email / WhatsApp within <strong>15 minutes</strong>.
+            Upon successful payment completion via PayU, your digital Booking Confirmation and Booking ID are immediately generated online and sent via Email / WhatsApp within <strong>15 minutes</strong>.
           </p>
 
           <h3 className="font-display text-lg font-bold text-stone-900">2. Itinerary & Coordination Pass</h3>

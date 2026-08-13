@@ -8,11 +8,28 @@ const BookingSchema = new mongoose.Schema(
       unique: true,
       index: true
     },
-    razorpayOrderId: {
+    payuTxnId: {
       type: String,
       required: true,
       unique: true,
       index: true
+    },
+    payuMihpayid: {
+      type: String,
+      default: ""
+    },
+    payuHash: {
+      type: String,
+      default: ""
+    },
+    payuStatus: {
+      type: String,
+      default: ""
+    },
+    // Backward compatibility aliases for existing bookings
+    razorpayOrderId: {
+      type: String,
+      sparse: true
     },
     razorpayPaymentId: {
       type: String,
@@ -85,7 +102,7 @@ const BookingSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      default: "RAZORPAY"
+      default: "PAYU"
     },
     notes: {
       type: mongoose.Schema.Types.Mixed,

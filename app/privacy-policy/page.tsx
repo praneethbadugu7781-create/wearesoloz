@@ -43,7 +43,7 @@ export default function PrivacyPolicyPage() {
 
           <h3 className="font-display text-lg font-bold text-stone-900">2. Payment Security</h3>
           <p>
-            All online transactions are securely processed through <strong>Razorpay Payment Gateway</strong> using 256-bit SSL encryption. WeAreSoloz does not store your credit/debit card numbers, UPI PINs, or banking passwords on our servers.
+            All online transactions are securely processed through <strong>PayU Payment Gateway</strong> using 256-bit SSL encryption. WeAreSoloz does not store your credit/debit card numbers, UPI PINs, or banking passwords on our servers.
           </p>
 
           <h3 className="font-display text-lg font-bold text-stone-900">3. Use of Information</h3>

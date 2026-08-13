@@ -55,7 +55,7 @@ export default function RefundPolicyPage() {
 
           <h3 className="font-display text-lg font-bold text-stone-900">4. Processing Time for Refunds</h3>
           <p>
-            Eligible refunds are credited back to the original source of payment (bank account/card/UPI via Razorpay) within <strong>5 to 7 business days</strong> from the date of approval.
+            Eligible refunds are credited back to the original source of payment (bank account/card/UPI via PayU) within <strong>5 to 7 business days</strong> from the date of approval.
           </p>
 
           <h3 className="font-display text-lg font-bold text-stone-900">5. How to Request a Refund</h3>

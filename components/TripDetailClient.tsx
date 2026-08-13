@@ -12,7 +12,7 @@ import TermsModal from "./TermsModal";
 import SuccessModal from "./SuccessModal";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
-import { loadRazorpayScript } from "@/lib/razorpay";
+import { submitPayUForm } from "@/lib/payu";
 import { jsPDF } from "jspdf";
 
 interface TripDetailClientProps {
@@ -337,7 +337,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
   const [showTerms, setShowTerms] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [waUrl, setWaUrl] = useState("");
-  const [bookingAction, setBookingAction] = useState<"razorpay" | "whatsapp">("razorpay");
+  const [bookingAction, setBookingAction] = useState<"payu" | "whatsapp">("payu");
 
   const batches = (trip.batches || []).filter((b: any) => b && (b.startDate || b.endDate));
   const [selectedBatch, setSelectedBatch] = useState<any>(() => (batches.length > 0 ? batches[0] : null));
@@ -392,7 +392,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
     setTouchEnd(null);
   };
 
-  const submit = async (e?: React.FormEvent, action: "razorpay" | "whatsapp" = "razorpay") => {
+  const submit = async (e?: React.FormEvent, action: "payu" | "whatsapp" = "payu") => {
     if (e) e.preventDefault();
     setBookingAction(action);
 
@@ -426,26 +426,19 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
     setShowTerms(false);
     setSubmitting(true);
 
-    if (bookingAction === "razorpay") {
-      await handleRazorpayCheckout();
+    if (bookingAction === "payu") {
+      await handlePayUCheckout();
     } else {
       await handleWhatsAppInquirySubmit();
     }
   };
 
-  const handleRazorpayCheckout = async () => {
+  const handlePayUCheckout = async () => {
     try {
-      const isLoaded = await loadRazorpayScript();
-      if (!isLoaded) {
-        toast.error("Razorpay SDK failed to load. Please check your internet connection.");
-        setSubmitting(false);
-        return;
-      }
-
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
       const unitPrice = parseFloat(trip.price?.toString().replace(/[^0-9.]/g, "")) || 2999;
 
-      // 1. Create Razorpay order on backend
+      // 1. Create PayU payment order & hash on backend
       const orderRes = await fetch(`${API_URL}/payment/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -466,76 +459,15 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
       });
 
       const orderData = await orderRes.json();
-      if (!orderRes.ok || !orderData.orderId) {
-        throw new Error(orderData.error || "Could not generate Razorpay order");
+      if (!orderRes.ok || !orderData.hash) {
+        throw new Error(orderData.error || "Could not generate PayU payment order");
       }
 
-      // 2. Configure Razorpay Standard Checkout Options
-      const options = {
-        key: orderData.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_YourKeyIdHere",
-        amount: orderData.amount,
-        currency: orderData.currency || "INR",
-        name: "WeAreSoloz",
-        description: `${trip.title || trip.destination} (${form.travelers} Traveler${form.travelers > 1 ? "s" : ""})`,
-        image: "https://wearesoloz.com/logo.png",
-        order_id: orderData.orderId,
-        prefill: {
-          name: form.full_name.trim(),
-          email: form.email.trim(),
-          contact: form.mobile.trim()
-        },
-        theme: {
-          color: "#ea580c"
-        },
-        handler: async function (response: any) {
-          try {
-            // 3. Verify payment signature on backend
-            const verifyRes = await fetch(`${API_URL}/payment/verify`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                bookingId: orderData.bookingId
-              })
-            });
-
-            const verifyData = await verifyRes.json();
-            if (verifyRes.ok && verifyData.success) {
-              toast.success("Payment verified successfully! Redirecting...");
-              router.push(`/booking-success?bookingId=${orderData.bookingId}&paymentId=${response.razorpay_payment_id}`);
-            } else {
-              toast.error(verifyData.error || "Payment verification failed");
-              router.push(`/booking-failed?error=${encodeURIComponent(verifyData.error || "Verification failed")}&slug=${trip.slug || ""}`);
-            }
-          } catch (err: any) {
-            console.error("Verification error:", err);
-            toast.error("Payment verification error");
-            router.push(`/booking-failed?error=${encodeURIComponent("Server verification failed")}&slug=${trip.slug || ""}`);
-          } finally {
-            setSubmitting(false);
-          }
-        },
-        modal: {
-          ondismiss: function () {
-            setSubmitting(false);
-            toast.info("Payment process cancelled.");
-          }
-        }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.on("payment.failed", function (response: any) {
-        setSubmitting(false);
-        toast.error(response.error?.description || "Payment failed");
-        router.push(`/booking-failed?error=${encodeURIComponent(response.error?.description || "Payment failed")}&slug=${trip.slug || ""}`);
-      });
-
-      rzp.open();
+      // 2. Submit PayU Hosted Checkout Form
+      submitPayUForm(orderData);
     } catch (error: any) {
       setSubmitting(false);
-      console.error("Razorpay Checkout Error:", error);
+      console.error("PayU Checkout Error:", error);
       toast.error(error.message || "Failed to initiate payment");
     }
   };
@@ -1036,19 +968,19 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                 <Button
                   type="button"
                   disabled={submitting}
-                  onClick={(e) => submit(e, "razorpay")}
-                  data-testid="join-submit-razorpay"
+                  onClick={(e) => submit(e, "payu")}
+                  data-testid="join-submit-payu"
                   className="w-full gradient-orange text-white hover:opacity-95 rounded-full h-12 font-medium flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
                 >
-                  {submitting && bookingAction === "razorpay" ? (
+                  {submitting && bookingAction === "payu" ? (
                     <span className="flex items-center gap-2">
                       <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Initiating Razorpay...
+                      Initiating PayU Checkout...
                     </span>
                   ) : (
                     <>
                       <CreditCard className="w-4 h-4" />
-                      {locale === "te" ? "ఆన్‌లైన్ చెల్లించి సీటు పొందండి (Razorpay)" : locale === "hi" ? "ऑनलाइन भुगतान करें और सीट बुक करें (Razorpay)" : "Book & Pay Online (Razorpay)"}
+                      {locale === "te" ? "ఆన్‌లైన్ చెల్లించి సీటు పొందండి (PayU)" : locale === "hi" ? "ऑनलाइन भुगतान करें और सीट बुक करें (PayU)" : "Book & Pay Online (PayU)"}
                     </>
                   )}
                 </Button>

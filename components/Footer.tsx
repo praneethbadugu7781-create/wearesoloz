@@ -217,7 +217,7 @@ export default function Footer() {
           </span>
         </div>
 
-        {/* Razorpay Compliance Legal Links */}
+        {/* PayU Merchant Compliance Legal Links */}
         <div className="relative border-t border-stone-100 pt-6 pb-4 flex flex-wrap items-center justify-center gap-4 md:gap-6 text-[11px] text-stone-500 font-medium z-10">
           <Link href="/terms-and-conditions" className="hover:text-[#ea580c] transition-colors">
             Terms & Conditions

@@ -52,18 +52,20 @@ function BookingSuccessContent() {
     );
   }
 
+  const paymentId = searchParams.get("paymentId") || booking?.payuMihpayid || booking?.payuTxnId || booking?.razorpayPaymentId || "PAYU-VERIFIED";
+
   const details = booking || {
     bookingId: bookingId || "WS-BOOKING-SUCCESS",
     tripTitle: searchParams.get("trip") || "WeAreSoloz Expedition",
     amount: searchParams.get("amount") ? Number(searchParams.get("amount")) : null,
     customerName: searchParams.get("name") || "Valued Explorer",
-    razorpayPaymentId: searchParams.get("paymentId") || "PAY-VERIFIED",
+    paymentId: paymentId,
     status: "PAID",
     createdAt: new Date().toISOString()
   };
 
   const waText = encodeURIComponent(
-    `Hi WeAreSoloz, my payment was successful!\nBooking ID: ${details.bookingId}\nTrip: ${details.tripTitle}\nName: ${details.customerName}\nPayment ID: ${details.razorpayPaymentId || ""}`
+    `Hi WeAreSoloz, my payment was successful!\nBooking ID: ${details.bookingId}\nTrip: ${details.tripTitle}\nName: ${details.customerName}\nPayment ID: ${details.payuMihpayid || details.payuTxnId || details.paymentId || ""}`
   );
 
   return (
@@ -112,10 +114,10 @@ function BookingSuccessContent() {
               </div>
             )}
 
-            {details.razorpayPaymentId && (
+            {(details.payuMihpayid || details.payuTxnId || details.paymentId) && (
               <div>
-                <span className="text-stone-500 block font-semibold mb-0.5">Razorpay Payment ID</span>
-                <span className="font-mono text-xs text-stone-700 block truncate">{details.razorpayPaymentId}</span>
+                <span className="text-stone-500 block font-semibold mb-0.5">PayU Transaction ID</span>
+                <span className="font-mono text-xs text-stone-700 block truncate">{details.payuMihpayid || details.payuTxnId || details.paymentId}</span>
               </div>
             )}
 

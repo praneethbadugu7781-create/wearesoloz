@@ -38,7 +38,7 @@ export default function TermsAndConditionsPage() {
 
           <h3 className="font-display text-lg font-bold text-stone-900">1. Booking & Payments</h3>
           <p>
-            All bookings are confirmed upon receipt of valid payment through our authorized payment gateway (Razorpay) or official booking channels. Full payment or the stipulated advance amount must be cleared before the trip departure.
+            All bookings are confirmed upon receipt of valid payment through our authorized payment gateway (PayU) or official booking channels. Full payment or the stipulated advance amount must be cleared before the trip departure.
           </p>
 
           <h3 className="font-display text-lg font-bold text-stone-900">2. Travel Responsibility & Health</h3>
