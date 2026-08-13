@@ -42,10 +42,10 @@ const BookingSchema = new mongoose.Schema(
       type: String,
       default: ""
     },
-    // Backward compatibility aliases for existing bookings
+    // Backward compatibility aliases for existing legacy bookings
     razorpayOrderId: {
       type: String,
-      sparse: true
+      default: undefined
     },
     razorpayPaymentId: {
       type: String,
@@ -133,4 +133,17 @@ const BookingSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Booking", BookingSchema);
+const Booking = mongoose.model("Booking", BookingSchema);
+
+// Auto-clean legacy Razorpay unique indexes from MongoDB collection if present
+mongoose.connection.on("open", async () => {
+  try {
+    const collection = mongoose.connection.db.collection("bookings");
+    await collection.dropIndex("razorpayOrderId_1").catch(() => {});
+    await collection.dropIndex("razorpayPaymentId_1").catch(() => {});
+  } catch (e) {
+    // Ignore index drop error if not present
+  }
+});
+
+module.exports = Booking;

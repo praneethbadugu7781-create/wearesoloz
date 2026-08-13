@@ -129,7 +129,22 @@ router.post("/create-order", async (req, res) => {
       }
     });
 
-    await booking.save();
+    try {
+      await booking.save();
+    } catch (saveErr) {
+      if (saveErr.code === 11000 && (saveErr.message.includes("razorpayOrderId") || saveErr.message.includes("razorpayPaymentId"))) {
+        console.warn("⚠️ Auto-dropping legacy Razorpay unique index from MongoDB collection...");
+        try {
+          await Booking.collection.dropIndex("razorpayOrderId_1").catch(() => {});
+          await Booking.collection.dropIndex("razorpayPaymentId_1").catch(() => {});
+          await booking.save();
+        } catch (retryErr) {
+          throw saveErr;
+        }
+      } else {
+        throw saveErr;
+      }
+    }
 
     res.json({
       success: true,
