@@ -860,22 +860,50 @@ General Rules & Details:
 // --- Public Trip Confirmation & Liability Waiver ---
 router.get("/trip-confirmation/:code", async (req, res) => {
   try {
+    const mongoose = require("mongoose");
     await connectDB();
-    const trip = await Trip.findOne({ confirmationCode: req.params.code }).lean();
+
+    const codeParam = req.params.code;
+    const queryConditions = [
+      { confirmationCode: codeParam },
+      { slug: codeParam }
+    ];
+
+    if (mongoose.Types.ObjectId.isValid(codeParam)) {
+      queryConditions.push({ _id: codeParam });
+    }
+
+    // Fallback: match by destination slug prefix if contains hyphen
+    const cleanDestName = codeParam.replace(/-\d{4}-\d{2}-\d{2}$/, "").replace(/-/g, " ").trim();
+    if (cleanDestName) {
+      queryConditions.push({ destination: new RegExp(`^${cleanDestName}`, "i") });
+    }
+
+    const trip = await Trip.findOne({ $or: queryConditions }).sort({ createdAt: -1 }).lean();
     if (!trip) {
       return res.status(404).json({ error: "Trip confirmation link not found or expired." });
-    }
-    
-    // Auto-disable if the trip date is in the past
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (trip.date && new Date(trip.date) < today) {
-      return res.status(400).json({ error: "This trip is already completed. The confirmation link has expired." });
     }
 
     if (trip.confirmationLinkEnabled === false) {
       return res.status(400).json({ error: "This confirmation link has been disabled by the administrator." });
     }
+
+    // Check if trip has active future batches or valid trip date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const hasFutureBatches = (trip.batches || []).some((b) => {
+      const bDate = b.endDate || b.startDate;
+      return bDate && new Date(bDate) >= today;
+    });
+
+    const isTripFuture = trip.date && new Date(trip.date) >= today;
+
+    // Allow link if confirmationLinkEnabled is explicitly true or has active batches
+    if (!isTripFuture && !hasFutureBatches && trip.confirmationLinkEnabled !== true) {
+      return res.status(400).json({ error: "This trip batch is already completed. The confirmation link has expired." });
+    }
+
     res.json({
       _id: trip._id,
       destination: trip.destination,
@@ -891,18 +919,28 @@ router.get("/trip-confirmation/:code", async (req, res) => {
 
 router.post("/trip-confirmation/:code", async (req, res) => {
   try {
+    const mongoose = require("mongoose");
     const WaiverSubmission = require("../models/WaiverSubmission");
     await connectDB();
-    const trip = await Trip.findOne({ confirmationCode: req.params.code });
-    if (!trip) {
-      return res.status(404).json({ error: "Trip not found." });
+
+    const codeParam = req.params.code;
+    const queryConditions = [
+      { confirmationCode: codeParam },
+      { slug: codeParam }
+    ];
+
+    if (mongoose.Types.ObjectId.isValid(codeParam)) {
+      queryConditions.push({ _id: codeParam });
     }
 
-    // Auto-disable if the trip date is in the past
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (trip.date && new Date(trip.date) < today) {
-      return res.status(400).json({ error: "This trip is already completed. The confirmation link has expired." });
+    const cleanDestName = codeParam.replace(/-\d{4}-\d{2}-\d{2}$/, "").replace(/-/g, " ").trim();
+    if (cleanDestName) {
+      queryConditions.push({ destination: new RegExp(`^${cleanDestName}`, "i") });
+    }
+
+    const trip = await Trip.findOne({ $or: queryConditions }).sort({ createdAt: -1 });
+    if (!trip) {
+      return res.status(404).json({ error: "Trip not found." });
     }
 
     if (trip.confirmationLinkEnabled === false) {
