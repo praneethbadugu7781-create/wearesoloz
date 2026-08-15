@@ -137,15 +137,22 @@ export default function AdminWaiversPage() {
     if (e) e.stopPropagation();
     const newStatus = trip.confirmationLinkEnabled === false ? true : false;
     try {
-      const res = await fetch(`${API_URL}/admin/trips/${trip._id}`, {
-        method: "PUT",
+      let res = await fetch(`${API_URL}/admin/trips/${trip._id}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-        body: JSON.stringify({ ...trip, confirmationLinkEnabled: newStatus })
+        body: JSON.stringify({ confirmationLinkEnabled: newStatus })
       });
+      if (!res.ok) {
+        res = await fetch(`${API_URL}/admin/trips/${trip._id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+          body: JSON.stringify({ confirmationLinkEnabled: newStatus })
+        });
+      }
       if (!res.ok) throw new Error("Failed to toggle link status");
       
-      setTrips(prev => prev.map(t => t._id === trip._id ? { ...t, confirmationLinkEnabled: newStatus } : t));
-      if (selectedTrip && selectedTrip._id === trip._id) {
+      setTrips(prev => prev.map(t => (t._id === trip._id || t.destination === trip.destination) ? { ...t, confirmationLinkEnabled: newStatus } : t));
+      if (selectedTrip && (selectedTrip._id === trip._id || selectedTrip.destination === trip.destination)) {
         setSelectedTrip(prev => prev ? { ...prev, confirmationLinkEnabled: newStatus } : null);
       }
     } catch (err: any) {
@@ -316,7 +323,7 @@ export default function AdminWaiversPage() {
   };
 
   // Expand trips into batch items
-  const expandedItems: ExpandedWaiverItem[] = [];
+  const rawExpandedItems: ExpandedWaiverItem[] = [];
   const todayMidnight = new Date().setHours(0, 0, 0, 0);
 
   trips.forEach((trip) => {
@@ -349,7 +356,7 @@ export default function AdminWaiversPage() {
           batchLabelText = new Date(startDateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
         }
 
-        expandedItems.push({
+        rawExpandedItems.push({
           id: `${trip._id}_batch_${index}`,
           trip,
           batch: b,
@@ -364,7 +371,7 @@ export default function AdminWaiversPage() {
       const tripDateObj = new Date(tripDateStr);
       const isCompleted = !isNaN(tripDateObj.getTime()) ? tripDateObj.getTime() < todayMidnight : false;
 
-      expandedItems.push({
+      rawExpandedItems.push({
         id: `${trip._id}_main`,
         trip,
         date: tripDateStr,
@@ -373,6 +380,16 @@ export default function AdminWaiversPage() {
       });
     }
   });
+
+  // Deduplicate waiver cards by (destination + batchLabel/date) so duplicate cards never appear
+  const uniqueItemsMap = new Map<string, ExpandedWaiverItem>();
+  rawExpandedItems.forEach((item) => {
+    const key = `${item.trip.destination.toLowerCase().trim()}_${item.batchLabel || item.date}`;
+    if (!uniqueItemsMap.has(key)) {
+      uniqueItemsMap.set(key, item);
+    }
+  });
+  const expandedItems = Array.from(uniqueItemsMap.values());
 
   // Filter items based on search query
   const searchFilteredItems = expandedItems.filter(item => {

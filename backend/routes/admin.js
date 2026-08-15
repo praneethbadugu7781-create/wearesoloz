@@ -466,8 +466,8 @@ router.post("/:resource", async (req, res) => {
   }
 });
 
-// PATCH /api/admin/:resource/:id
-router.patch("/:resource/:id", async (req, res) => {
+// PUT & PATCH /api/admin/:resource/:id
+const handleResourceUpdate = async (req, res) => {
   try {
     const Model = models[req.params.resource];
     if (!Model) return res.status(404).json({ error: "Unknown resource" });
@@ -504,6 +504,7 @@ router.patch("/:resource/:id", async (req, res) => {
       const updateData = {};
       if (req.body.price !== undefined) updateData.price = record.price;
       if (req.body.batches !== undefined) updateData.batches = record.batches;
+      if (req.body.confirmationLinkEnabled !== undefined) updateData.confirmationLinkEnabled = record.confirmationLinkEnabled;
       if (Object.keys(updateData).length > 0) {
         await Trip.updateMany({ destination: record.destination }, { $set: updateData }).catch(console.error);
       }
@@ -513,7 +514,10 @@ router.patch("/:resource/:id", async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
-});
+};
+
+router.put("/:resource/:id", handleResourceUpdate);
+router.patch("/:resource/:id", handleResourceUpdate);
 
 // PayU Live Status Sync Endpoint for Admin Bookings Panel
 router.post("/bookings/sync-payu", async (req, res) => {
