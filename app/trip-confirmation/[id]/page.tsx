@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { ShieldAlert, Check, Loader2, Compass, Calendar, MapPin, User, FileText, Heart, CheckCircle2, Download } from "lucide-react";
 import { CloudinaryUpload } from "@/components/cloudinary-upload";
@@ -18,11 +18,48 @@ interface TripDetails {
 
 export default function TripConfirmationPage() {
   const { id } = useParams() as { id: string };
+  const searchParams = useSearchParams();
+  const batchDateParam = searchParams.get("batchDate") || searchParams.get("date");
   
   // States
   const [trip, setTrip] = useState<TripDetails | null>(null);
   const [loadingTrip, setLoadingTrip] = useState(true);
   const [tripError, setTripError] = useState("");
+
+  const getDisplayDate = () => {
+    if (batchDateParam) return batchDateParam;
+    if (!trip) return "";
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const upcomingBatch = (trip as any).batches?.find((b: any) => {
+      const bDate = b.endDate || b.startDate;
+      return bDate && new Date(bDate) >= today;
+    });
+
+    if (upcomingBatch) {
+      if (upcomingBatch.label) return upcomingBatch.label;
+      if (upcomingBatch.startDate && upcomingBatch.endDate) {
+        const s = new Date(upcomingBatch.startDate);
+        const e = new Date(upcomingBatch.endDate);
+        if (!isNaN(s.getTime()) && !isNaN(e.getTime())) {
+          return `${s.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${e.getDate()}, ${e.getFullYear()}`;
+        }
+      }
+      return upcomingBatch.startDate || upcomingBatch.endDate;
+    }
+
+    if (trip.date) {
+      const tripD = new Date(trip.date);
+      if (!isNaN(tripD.getTime())) {
+        return tripD.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+      }
+      return trip.date;
+    }
+
+    return "Upcoming Schedule";
+  };
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [submissionId, setSubmissionId] = useState("");
@@ -935,7 +972,7 @@ export default function TripConfirmationPage() {
               <div className="flex flex-wrap gap-4 text-xs font-semibold text-stone-600 border-t md:border-t-0 md:border-l border-stone-100 pt-4 md:pt-0 md:pl-6 shrink-0">
                 <div className="flex items-center gap-2">
                   <Calendar size={15} className="text-[#ea580c]" />
-                  <span>DATE: {new Date(trip.date).toLocaleDateString()}</span>
+                  <span>DATE: {getDisplayDate()}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin size={15} className="text-[#ea580c]" />

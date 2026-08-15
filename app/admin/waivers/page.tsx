@@ -160,11 +160,13 @@ export default function AdminWaiversPage() {
     }
   };
 
-  const handleCopyLink = (trip: TripData, e?: React.MouseEvent) => {
+  const handleCopyLink = (trip: TripData, batchLabelOrDate?: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    const link = `${window.location.origin}/trip-confirmation/${trip.slug}`;
+    const batchParam = batchLabelOrDate ? `?batchDate=${encodeURIComponent(batchLabelOrDate)}` : "";
+    const baseCode = trip.slug || trip.confirmationCode || trip._id;
+    const link = `${window.location.origin}/trip-confirmation/${baseCode}${batchParam}`;
     navigator.clipboard.writeText(link);
-    alert("Waiver & Confirmation link copied to clipboard!");
+    alert(`Waiver & Confirmation link copied for ${trip.destination}${batchLabelOrDate ? ` (${batchLabelOrDate})` : ""}!`);
   };
 
   const handleToggleCertificate = async (submissionId: string, currentStatus: boolean) => {
@@ -634,7 +636,7 @@ export default function AdminWaiversPage() {
 
               <div className="flex flex-wrap items-center gap-2">
                 <Button
-                  onClick={(e) => handleCopyLink(selectedTrip, e)}
+                  onClick={(e) => handleCopyLink(selectedTrip, selectedItem?.batchLabel || selectedItem?.date, e)}
                   variant="secondary"
                   className="border-white/10 text-white hover:bg-white/5 h-9 px-3 text-xs rounded-xl"
                 >
