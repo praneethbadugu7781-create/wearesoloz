@@ -273,17 +273,7 @@ router.get("/trips/:id/waivers", async (req, res) => {
   try {
     const WaiverSubmission = require("../models/WaiverSubmission");
     await connectDB();
-
-    const trip = await Trip.findById(req.params.id).lean();
-    let query = { tripId: req.params.id };
-
-    if (trip && trip.destination) {
-      const matchingTrips = await Trip.find({ destination: trip.destination }).select("_id").lean();
-      const tripIds = matchingTrips.map(t => t._id);
-      query = { tripId: { $in: tripIds } };
-    }
-
-    const waivers = await WaiverSubmission.find(query).sort({ createdAt: -1 }).lean();
+    const waivers = await WaiverSubmission.find({ tripId: req.params.id }).sort({ createdAt: -1 }).lean();
     res.json(waivers);
   } catch (e) {
     res.status(500).json({ error: e.message });
