@@ -214,11 +214,11 @@ JSON Schema:
       for (const gModel of groqModelsToTry) {
         try {
           const content = [{ type: "text", text: prompt }];
-          if (imageUrl && base64) {
+          if (imageUrl) {
             content.push({
               type: "image_url",
               image_url: {
-                url: `data:${mimeType};base64,${base64}`
+                url: imageUrl
               }
             });
           }
