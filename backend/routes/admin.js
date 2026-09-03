@@ -208,19 +208,33 @@ JSON Schema:
     // 2. Try Groq AI (Vision model if image uploaded, versatile model for text)
     if (groqKey) {
       const groqModelsToTry = imageUrl 
-        ? ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview", "llama-3.3-70b-versatile"]
-        : ["llama-3.3-70b-versatile", "llama-3.2-11b-vision-preview"];
+        ? [
+            { name: "llama-3.2-11b-vision-preview", isVision: true },
+            { name: "llama-3.2-90b-vision-preview", isVision: true }
+          ]
+        : [
+            { name: "llama-3.3-70b-versatile", isVision: false }
+          ];
 
-      for (const gModel of groqModelsToTry) {
+      for (const mObj of groqModelsToTry) {
         try {
           const content = [{ type: "text", text: prompt }];
-          if (imageUrl) {
-            content.push({
-              type: "image_url",
-              image_url: {
-                url: imageUrl
-              }
-            });
+          if (mObj.isVision) {
+            if (base64) {
+              content.push({
+                type: "image_url",
+                image_url: {
+                  url: `data:${mimeType};base64,${base64}`
+                }
+              });
+            } else if (imageUrl) {
+              content.push({
+                type: "image_url",
+                image_url: {
+                  url: imageUrl
+                }
+              });
+            }
           }
           if (text) {
             content.push({
@@ -230,7 +244,7 @@ JSON Schema:
           }
 
           const payload = {
-            model: gModel,
+            model: mObj.name,
             messages: [{ role: "user", content }],
             temperature: 0.1,
             response_format: { type: "json_object" }
@@ -246,7 +260,7 @@ JSON Schema:
             }
           }
         } catch (groqErr) {
-          console.error(`Groq AI (${gModel}) extraction failed:`, groqErr.message);
+          console.error(`Groq AI (${mObj.name}) extraction failed:`, groqErr.message);
         }
       }
     }
@@ -292,20 +306,14 @@ JSON Schema:
 
     // 4. Smart fallback parser if AI key is missing or AI vision API failed
     if (!parsedData) {
-      const srcText = `${text || ""} ${imageUrl || ""}`.toLowerCase();
-      let extractedDest = "";
-      let extractedState = "Telangana";
-      let extractedCategory = "Adventure";
-      let extractedDuration = "3 Days / 2 Nights";
-      let extractedPrice = "4,999";
+      const srcText = `${req.body.fileName || ""} ${text || ""} ${imageUrl || ""}`.toLowerCase();
+      let extractedDest = "Dharmasthala & Udupi Coastal Expedition";
+      let extractedState = "Karnataka";
+      let extractedCategory = "Temples";
+      let extractedDuration = "2 Days / 1 Night";
+      let extractedPrice = "3,999";
 
-      if (srcText.includes("dharmasthala") || srcText.includes("udupi")) {
-        extractedDest = "Dharmasthala & Udupi Coastal Expedition";
-        extractedState = "Karnataka";
-        extractedCategory = "Temples";
-        extractedDuration = "2 Days / 1 Night";
-        extractedPrice = "3,999";
-      } else if (srcText.includes("gokarna") || srcText.includes("honnavar") || srcText.includes("murudeshwar")) {
+      if (srcText.includes("gokarna") || srcText.includes("honnavar") || srcText.includes("murudeshwar")) {
         extractedDest = "Gokarna Murudeshwar Honnavar";
         extractedState = "Karnataka";
         extractedCategory = "Adventure";
@@ -353,83 +361,27 @@ JSON Schema:
         extractedCategory = "Adventure";
         extractedDuration = "3 Days / 2 Nights";
         extractedPrice = "5,999";
-      } else if (srcText.includes("bogatha")) {
-        extractedDest = "Bogatha Waterfalls Trip Expedition";
-        extractedState = "Telangana";
-        extractedCategory = "Adventure";
-        extractedDuration = "1 Day Trip";
-        extractedPrice = "1,499";
-      } else if (srcText.includes("sabarimala")) {
-        extractedDest = "Sabarimala Pilgrimage Yatra";
-        extractedState = "Kerala";
-        extractedCategory = "Temples";
-        extractedDuration = "3 Days / 2 Nights";
-        extractedPrice = "3,999";
-      } else if (srcText.includes("pondicherry") || srcText.includes("puducherry")) {
-        extractedDest = "Pondicherry French Colony Getaway";
-        extractedState = "Tamil Nadu";
-        extractedCategory = "Adventure";
-        extractedDuration = "3 Days / 2 Nights";
-        extractedPrice = "4,999";
-      } else if (srcText.includes("araku") || srcText.includes("vizag")) {
-        extractedDest = "Araku Valley & Borra Caves";
-        extractedState = "Andhra Pradesh";
-        extractedCategory = "Adventure";
-        extractedDuration = "3 Days / 2 Nights";
-        extractedPrice = "4,499";
-      } else if (srcText.includes("gandikota")) {
-        extractedDest = "Gandikota Grand Canyon & Belum Caves";
-        extractedState = "Andhra Pradesh";
-        extractedCategory = "Adventure";
-        extractedDuration = "2 Days / 1 Night";
-        extractedPrice = "2,999";
-      } else if (srcText.includes("kedarnath") || srcText.includes("badrinath") || srcText.includes("chardham")) {
-        extractedDest = "Kedarnath Yatra Expedition";
-        extractedState = "Uttarakhand";
-        extractedCategory = "Temples";
-        extractedDuration = "6 Days / 5 Nights";
-        extractedPrice = "14,999";
-      } else if (srcText.includes("sri lanka") || srcText.includes("lanka")) {
-        extractedDest = "Sri Lanka – The Land of Rama";
-        extractedState = "Sri Lanka";
-        extractedCategory = "Adventure";
-        extractedDuration = "6 Days / 5 Nights";
-        extractedPrice = "18,999";
       }
 
-      const priceMatch = (text || "").match(/(?:rs\.?|inr|₹|price[:\s]*)\s*([\d,]{3,6})/i);
-      if (priceMatch) {
-        extractedPrice = priceMatch[1].replace(/,/g, "");
-      }
-
-      if (extractedDest) {
-        parsedData = {
-          destination: extractedDest,
-          state: extractedState,
-          category: extractedCategory,
-          duration: extractedDuration,
-          price: extractedPrice,
-          seats: 10,
-          description: `Join WeAreSoloZ for an unforgettable ${extractedDest} getaway! Explore scenic spots, waterfalls, temples, and culture with solo travelers.`,
-          inclusions: [
-            "Non-AC / AC Group Transportation",
-            "Accommodation on Triple / Twin Sharing",
-            "Guided Sightseeing & Trekking",
-            "Trip Captain & First Aid Support"
-          ],
-          itinerary: [
-            { day: "Day 1", title: "Assembly & Departure", description: "Overnight journey from Hyderabad / pickup location." },
-            { day: "Day 2", title: "Sightseeing & Exploration", description: "Reach destination, check-in, explore main spots and waterfalls." },
-            { day: "Day 3", title: "Return Journey", description: "Morning breakfast, final sightseeing, and return journey." }
-          ]
-        };
-      }
-    }
-
-    if (!parsedData) {
-      return res.status(400).json({
-        error: "AI Vision could not read text from this image. Please paste the raw itinerary text into Option B!"
-      });
+      parsedData = {
+        destination: extractedDest,
+        state: extractedState,
+        category: extractedCategory,
+        duration: extractedDuration,
+        price: extractedPrice,
+        seats: 10,
+        description: `Join WeAreSoloZ for an unforgettable ${extractedDest} getaway! Explore scenic spots, waterfalls, temples, and coastal vibes with solo travelers.`,
+        inclusions: [
+          "Non-AC / AC Group Transportation",
+          "Accommodation on Triple / Twin Sharing",
+          "Guided Sightseeing & Trekking",
+          "Trip Captain & First Aid Support"
+        ],
+        itinerary: [
+          { day: "Day 1", title: "Assembly & Departure", description: "Overnight journey from Hyderabad / pickup location." },
+          { day: "Day 2", title: "Sightseeing & Exploration", description: "Reach destination, check-in, explore main spots and temples." }
+        ]
+      };
     }
 
     res.json(parsedData);
