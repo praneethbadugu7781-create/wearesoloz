@@ -70,24 +70,33 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
 
   const tripSlug = activeTrip.slug || activeTrip.destination?.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
-  // Helper to split destination into clean lines based on structure
-  const getTitleLines = (dest: string) => {
+  // Helper to cleanly break title into primary destination & subtitle/tagline
+  const getTitleParts = (dest: string) => {
+    let main = dest;
+    let subtitle = "";
+
     if (dest.includes(" - ")) {
-      return dest.split(" - ").map(s => s.trim().toUpperCase());
-    }
-    if (dest.toLowerCase().includes(" to ")) {
+      const parts = dest.split(" - ");
+      main = parts[0].trim();
+      subtitle = parts.slice(1).join(" - ").trim();
+    } else if (dest.includes(" – ")) {
+      const parts = dest.split(" – ");
+      main = parts[0].trim();
+      subtitle = parts.slice(1).join(" – ").trim();
+    } else if (dest.toLowerCase().includes(" to ")) {
       const parts = dest.split(/ to /i);
-      return [parts[0].trim().toUpperCase(), `TO ${parts.slice(1).join(" TO ").trim().toUpperCase()}`];
-    }
-    if (dest.includes(" & ")) {
+      main = parts[0].trim();
+      subtitle = `TO ${parts.slice(1).join(" TO ").trim()}`;
+    } else if (dest.includes(" & ")) {
       const parts = dest.split(" & ");
-      return [parts[0].trim().toUpperCase(), `& ${parts.slice(1).join(" & ").trim().toUpperCase()}`];
+      main = parts[0].trim();
+      subtitle = `& ${parts.slice(1).join(" & ").trim()}`;
     }
-    const wordsList = dest.split(" ");
-    if (wordsList.length > 1) {
-      return [wordsList[0].toUpperCase(), wordsList.slice(1).join(" ").toUpperCase()];
-    }
-    return [dest.toUpperCase()];
+
+    return {
+      main: main.toUpperCase(),
+      subtitle: subtitle ? subtitle.toUpperCase() : ""
+    };
   };
 
   // Animation variants for text reveal crop transition
@@ -207,19 +216,27 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
                 </motion.div>
               </div>
 
-              {/* Split Title (Cropped Reveal) - resized to prevent height overflow on wrapping */}
-              <div className="trips-slider-title font-display leading-[1.3] tracking-[0.02em] font-black text-3xl sm:text-4xl md:text-[52px] lg:text-[62px] uppercase select-text mb-4 md:mb-5">
-                {getTitleLines(activeTrip.destination).map((line, idx) => (
-                  <div key={idx} className={`overflow-hidden py-1.5 ${idx > 0 ? "mt-3 md:mt-4" : ""}`}>
-                    <motion.div
-                      variants={textRevealVariants}
-                      className={idx === 0 ? "text-white/95" : "text-[#ea580c]"}
-                      style={{ paddingBottom: "2px" }}
-                    >
-                      {line}
-                    </motion.div>
-                  </div>
-                ))}
+              {/* Destination Title Block with Modern Typography & Clean Line Height */}
+              <div className="trips-slider-title font-sans font-extrabold tracking-tight uppercase select-text mb-4 md:mb-6 text-3xl sm:text-4xl md:text-5xl lg:text-6xl drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
+                {(() => {
+                  const { main, subtitle } = getTitleParts(activeTrip.destination);
+                  return (
+                    <div className="flex flex-col space-y-1 sm:space-y-2">
+                      <div className="overflow-hidden py-1">
+                        <motion.div variants={textRevealVariants} className="text-white leading-[1.08]">
+                          {main}
+                        </motion.div>
+                      </div>
+                      {subtitle && (
+                        <div className="overflow-hidden py-1">
+                          <motion.div variants={textRevealVariants} className="text-[#ea580c] leading-[1.08]">
+                            {subtitle}
+                          </motion.div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Trip Specs (Cropped Reveal) */}
