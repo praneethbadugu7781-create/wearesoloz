@@ -41,23 +41,82 @@ export function CloudinaryUpload({ value, onChange, label = "Upload Image", acce
     );
   };
 
+  const compressImageIfNeeded = async (file: File): Promise<Blob | File> => {
+    // Only compress images, leave PDFs and Videos untouched
+    if (!file.type.startsWith("image/") || file.type.includes("gif")) {
+      return file;
+    }
+
+    // If file is already smaller than 800KB, no compression needed
+    if (file.size < 800 * 1024) {
+      return file;
+    }
+
+    return new Promise((resolve) => {
+      const img = document.createElement("img");
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+        const maxDimension = 1920;
+
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                resolve(file);
+              }
+            },
+            "image/jpeg",
+            0.82
+          );
+        } else {
+          resolve(file);
+        }
+      };
+      img.onerror = () => resolve(file);
+      img.src = url;
+    });
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const originalFile = e.target.files?.[0];
+    if (!originalFile) return;
 
     setLoading(true);
     setProgress(0);
 
     try {
-      // 1. Read file as base64 string
+      // 1. Compress image client-side if it's large
+      const processedFile = await compressImageIfNeeded(originalFile);
+
+      // 2. Read file as base64 string
       const base64File = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(processedFile);
         reader.onload = () => resolve(reader.result as string);
         reader.onerror = (error) => reject(error);
       });
 
-      // 2. Prepare request URL and headers
+      // 3. Prepare request URL and headers
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
       const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
       const isPublic = !token || window.location.pathname.includes("/trip-memories");
@@ -68,7 +127,7 @@ export function CloudinaryUpload({ value, onChange, label = "Upload Image", acce
         ...(isPublic ? {} : (token ? { Authorization: `Bearer ${token}` } : {}))
       };
 
-      // 3. Upload via Express API proxy using XHR to track progress
+      // 4. Upload via Express API proxy using XHR to track progress
       const xhr = new XMLHttpRequest();
       xhr.open("POST", uploadUrl);
       Object.keys(headersObj).forEach(key => {
@@ -94,7 +153,7 @@ export function CloudinaryUpload({ value, onChange, label = "Upload Image", acce
               }
             } else {
               const response = JSON.parse(xhr.responseText || "{}");
-              reject(new Error(response.error || "Upload failed"));
+              reject(new Error(response.error || `Upload failed (${xhr.status})`));
             }
           } catch (e) {
             reject(new Error("Upload failed"));
@@ -105,7 +164,7 @@ export function CloudinaryUpload({ value, onChange, label = "Upload Image", acce
 
       xhr.send(JSON.stringify({
         file: base64File,
-        fileName: file.name,
+        fileName: originalFile.name,
         folder: "/wearesoloz"
       }));
 

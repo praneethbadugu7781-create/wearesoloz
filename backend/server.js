@@ -49,13 +49,13 @@ app.use(
 
 app.use(
   express.json({
-    limit: "10mb",
+    limit: "50mb",
     verify: (req, res, buf) => {
       req.rawBody = buf;
     }
   })
 );
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // Routes
 app.use("/api/auth", authRoutes);
