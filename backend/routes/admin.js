@@ -576,12 +576,53 @@ router.get("/:resource", async (req, res) => {
   }
 });
 
+// Helper for flexible date parsing (e.g. DD-MM-YYYY "01-09-2026" -> Date object)
+function parseFlexibleDate(dateStr) {
+  if (!dateStr) return new Date();
+  if (typeof dateStr === "object" && dateStr instanceof Date) return dateStr;
+  
+  if (typeof dateStr === "string" && /^\d{2}-\d{2}-\d{4}$/.test(dateStr.trim())) {
+    const [day, month, year] = dateStr.trim().split("-");
+    const d = new Date(`${year}-${month}-${day}`);
+    if (!isNaN(d.getTime())) return d;
+  }
+  
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? new Date() : d;
+}
+
 // POST /api/admin/:resource
 router.post("/:resource", async (req, res) => {
   try {
     const Model = models[req.params.resource];
     if (!Model) return res.status(404).json({ error: "Unknown resource" });
     await connectDB();
+
+    if (req.params.resource === "trips") {
+      req.body.date = parseFlexibleDate(req.body.startDate || req.body.date);
+      req.body.startDate = parseFlexibleDate(req.body.startDate || req.body.date);
+      req.body.endDate = parseFlexibleDate(req.body.endDate || req.body.startDate || req.body.date);
+
+      if (!req.body.slug && req.body.destination) {
+        req.body.slug = req.body.destination.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-");
+      }
+
+      if (req.body.slug) {
+        let baseSlug = req.body.slug;
+        let uniqueSlug = baseSlug;
+        let counter = 1;
+        while (await Model.findOne({ slug: uniqueSlug })) {
+          uniqueSlug = `${baseSlug}-${counter}`;
+          counter++;
+        }
+        req.body.slug = uniqueSlug;
+      }
+
+      if (!req.body.confirmationCode) {
+        req.body.confirmationCode = req.body.slug;
+      }
+    }
+
     const record = await Model.create(req.body);
     res.status(201).json(record);
   } catch (e) {
@@ -595,6 +636,27 @@ const handleResourceUpdate = async (req, res) => {
     const Model = models[req.params.resource];
     if (!Model) return res.status(404).json({ error: "Unknown resource" });
     await connectDB();
+
+    if (req.params.resource === "trips") {
+      if (req.body.startDate || req.body.date) {
+        req.body.date = parseFlexibleDate(req.body.startDate || req.body.date);
+        req.body.startDate = parseFlexibleDate(req.body.startDate || req.body.date);
+      }
+      if (req.body.endDate) {
+        req.body.endDate = parseFlexibleDate(req.body.endDate);
+      }
+
+      if (req.body.slug) {
+        let baseSlug = req.body.slug;
+        let uniqueSlug = baseSlug;
+        let counter = 1;
+        while (await Model.findOne({ _id: { $ne: req.params.id }, slug: uniqueSlug })) {
+          uniqueSlug = `${baseSlug}-${counter}`;
+          counter++;
+        }
+        req.body.slug = uniqueSlug;
+      }
+    }
 
     const prevRecord = await Model.findById(req.params.id).lean();
     if (!prevRecord) return res.status(404).json({ error: "Not found" });

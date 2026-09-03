@@ -582,7 +582,10 @@ export default function AdminTripsPage() {
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error("Failed to save trip settings");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || errData.message || "Failed to save trip settings");
+      }
 
       setView("list");
       setFormData(emptyForm);
