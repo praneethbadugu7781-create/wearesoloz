@@ -225,8 +225,11 @@ JSON Schema:
         };
 
         const groqRes = await callGroqApi(groqKey, payload);
-        const choiceText = groqRes.choices[0].message.content;
-        parsedData = JSON.parse(choiceText.trim());
+        if (groqRes && groqRes.choices && groqRes.choices[0] && groqRes.choices[0].message) {
+          const choiceText = groqRes.choices[0].message.content;
+          const cleanChoiceText = choiceText.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
+          parsedData = JSON.parse(cleanChoiceText);
+        }
       } catch (groqErr) {
         console.error("Groq AI extraction failed, falling back to Gemini:", groqErr.message);
       }
@@ -234,31 +237,39 @@ JSON Schema:
 
     // 3. Fallback to Gemini if Groq was not used or failed
     if (!parsedData && geminiKey) {
-      const genAI = new GoogleGenerativeAI(geminiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      try {
+        const genAI = new GoogleGenerativeAI(geminiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      let contentParts = [prompt];
-      if (imageUrl) {
-        contentParts.push({
-          inlineData: {
-            data: base64,
-            mimeType: mimeType
-          }
-        });
+        let contentParts = [prompt];
+        if (imageUrl && base64) {
+          contentParts.push({
+            inlineData: {
+              data: base64,
+              mimeType: mimeType
+            }
+          });
+        }
+        if (text) {
+          contentParts.push(text);
+        }
+
+        const result = await model.generateContent(contentParts);
+        const responseText = await result.response.text();
+
+        const cleanJsonString = responseText
+          .replace(/^```json\s*/i, "")
+          .replace(/```\s*$/, "")
+          .trim();
+
+        parsedData = JSON.parse(cleanJsonString);
+      } catch (geminiErr) {
+        console.error("Gemini AI extraction failed:", geminiErr.message);
       }
-      if (text) {
-        contentParts.push(text);
-      }
+    }
 
-      const result = await model.generateContent(contentParts);
-      const responseText = await result.response.text();
-
-      const cleanJsonString = responseText
-        .replace(/^```json\s*/i, "")
-        .replace(/```\s*$/, "")
-        .trim();
-
-      parsedData = JSON.parse(cleanJsonString);
+    if (!parsedData) {
+      return res.status(500).json({ error: "Failed to extract itinerary details from image. Please ensure GROQ_API_KEY or GEMINI_API_KEY is configured on Render." });
     }
 
     res.json(parsedData);

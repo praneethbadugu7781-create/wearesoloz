@@ -461,6 +461,9 @@ export default function AdminTripsPage() {
       }
 
       const data = await res.json();
+      if (!data || typeof data !== "object") {
+        throw new Error("AI Extractor could not read details from this poster/text. Please try another image or paste raw text.");
+      }
 
       // Populate form data from extracted details!
       setFormData((prev) => ({
@@ -472,8 +475,8 @@ export default function AdminTripsPage() {
         price: data.price || prev.price,
         seats: data.seats || prev.seats,
         description: data.description || prev.description,
-        inclusions: data.inclusions && data.inclusions.length > 0 ? data.inclusions : prev.inclusions,
-        itinerary: data.itinerary && data.itinerary.length > 0 ? data.itinerary : prev.itinerary,
+        inclusions: data.inclusions && Array.isArray(data.inclusions) && data.inclusions.length > 0 ? data.inclusions : prev.inclusions,
+        itinerary: data.itinerary && Array.isArray(data.itinerary) && data.itinerary.length > 0 ? data.itinerary : prev.itinerary,
         slug: data.destination 
           ? data.destination.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-").replace(/^-+|-+$/g, "")
           : prev.slug
