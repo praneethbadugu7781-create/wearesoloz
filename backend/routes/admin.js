@@ -235,45 +235,51 @@ JSON Schema:
 
     // 3. Fallback to Gemini if Groq was not used or failed
     if (!parsedData && geminiKey) {
-      try {
-        const genAI = new GoogleGenerativeAI(geminiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"];
+      for (const mName of modelsToTry) {
+        try {
+          const genAI = new GoogleGenerativeAI(geminiKey);
+          const model = genAI.getGenerativeModel({ model: mName });
 
-        let contentParts = [prompt];
-        if (imageUrl && base64) {
-          contentParts.push({
-            inlineData: {
-              data: base64,
-              mimeType: mimeType
-            }
-          });
+          let contentParts = [prompt];
+          if (imageUrl && base64) {
+            contentParts.push({
+              inlineData: {
+                data: base64,
+                mimeType: mimeType
+              }
+            });
+          }
+          if (text) {
+            contentParts.push(text);
+          }
+
+          const result = await model.generateContent(contentParts);
+          const responseText = await result.response.text();
+
+          const cleanJsonString = responseText
+            .replace(/^```json\s*/i, "")
+            .replace(/```\s*$/, "")
+            .trim();
+
+          parsedData = JSON.parse(cleanJsonString);
+          if (parsedData && (parsedData.destination || parsedData.title)) {
+            break;
+          }
+        } catch (geminiErr) {
+          console.error(`Gemini AI (${mName}) extraction failed:`, geminiErr.message);
         }
-        if (text) {
-          contentParts.push(text);
-        }
-
-        const result = await model.generateContent(contentParts);
-        const responseText = await result.response.text();
-
-        const cleanJsonString = responseText
-          .replace(/^```json\s*/i, "")
-          .replace(/```\s*$/, "")
-          .trim();
-
-        parsedData = JSON.parse(cleanJsonString);
-      } catch (geminiErr) {
-        console.error("Gemini AI extraction failed:", geminiErr.message);
       }
     }
 
     // 4. Smart fallback parser if AI key is missing or AI vision API failed
     if (!parsedData) {
       const srcText = `${text || ""} ${imageUrl || ""}`.toLowerCase();
-      let extractedDest = "Gokarna Murudeshwar Honnavar";
-      let extractedState = "Karnataka";
+      let extractedDest = "";
+      let extractedState = "Telangana";
       let extractedCategory = "Adventure";
       let extractedDuration = "3 Days / 2 Nights";
-      let extractedPrice = "8,999";
+      let extractedPrice = "4,999";
 
       if (srcText.includes("gokarna") || srcText.includes("honnavar") || srcText.includes("murudeshwar")) {
         extractedDest = "Gokarna Murudeshwar Honnavar";
@@ -281,8 +287,14 @@ JSON Schema:
         extractedCategory = "Adventure";
         extractedDuration = "3 Days / 2 Nights";
         extractedPrice = "8,999";
+      } else if (srcText.includes("hampi")) {
+        extractedDest = "Hampi Heritage Expedition";
+        extractedState = "Karnataka";
+        extractedCategory = "Temples";
+        extractedDuration = "3 Days / 2 Nights";
+        extractedPrice = "4,499";
       } else if (srcText.includes("ananthagiri") || srcText.includes("vikarabad")) {
-        extractedDest = "Ananthagiri Hills Adventure";
+        extractedDest = "Ananthagiri Hills Adventure Expedition";
         extractedState = "Telangana";
         extractedCategory = "Adventure";
         extractedDuration = "2 Days / 1 Night";
@@ -305,12 +317,12 @@ JSON Schema:
         extractedCategory = "Adventure";
         extractedDuration = "3 Days / 2 Nights";
         extractedPrice = "4,999";
-      } else if (srcText.includes("hampi")) {
-        extractedDest = "Hampi Heritage & Bouldering";
-        extractedState = "Karnataka";
-        extractedCategory = "Temples";
+      } else if (srcText.includes("munnar") || srcText.includes("kerala")) {
+        extractedDest = "Munnar Tea Hills Expedition";
+        extractedState = "Kerala";
+        extractedCategory = "Adventure";
         extractedDuration = "3 Days / 2 Nights";
-        extractedPrice = "4,499";
+        extractedPrice = "5,499";
       } else if (srcText.includes("dudhsagar") || srcText.includes("goa")) {
         extractedDest = "Goa & Dudhsagar Waterfalls";
         extractedState = "Goa";
@@ -323,6 +335,42 @@ JSON Schema:
         extractedCategory = "Adventure";
         extractedDuration = "1 Day Trip";
         extractedPrice = "1,499";
+      } else if (srcText.includes("sabarimala")) {
+        extractedDest = "Sabarimala Pilgrimage Yatra";
+        extractedState = "Kerala";
+        extractedCategory = "Temples";
+        extractedDuration = "3 Days / 2 Nights";
+        extractedPrice = "3,999";
+      } else if (srcText.includes("pondicherry") || srcText.includes("puducherry")) {
+        extractedDest = "Pondicherry French Colony Getaway";
+        extractedState = "Tamil Nadu";
+        extractedCategory = "Adventure";
+        extractedDuration = "3 Days / 2 Nights";
+        extractedPrice = "4,999";
+      } else if (srcText.includes("araku") || srcText.includes("vizag")) {
+        extractedDest = "Araku Valley & Borra Caves";
+        extractedState = "Andhra Pradesh";
+        extractedCategory = "Adventure";
+        extractedDuration = "3 Days / 2 Nights";
+        extractedPrice = "4,499";
+      } else if (srcText.includes("gandikota")) {
+        extractedDest = "Gandikota Grand Canyon & Belum Caves";
+        extractedState = "Andhra Pradesh";
+        extractedCategory = "Adventure";
+        extractedDuration = "2 Days / 1 Night";
+        extractedPrice = "2,999";
+      } else if (srcText.includes("kedarnath") || srcText.includes("badrinath") || srcText.includes("chardham")) {
+        extractedDest = "Kedarnath Yatra Expedition";
+        extractedState = "Uttarakhand";
+        extractedCategory = "Temples";
+        extractedDuration = "6 Days / 5 Nights";
+        extractedPrice = "14,999";
+      } else if (srcText.includes("sri lanka") || srcText.includes("lanka")) {
+        extractedDest = "Sri Lanka – The Land of Rama";
+        extractedState = "Sri Lanka";
+        extractedCategory = "Adventure";
+        extractedDuration = "6 Days / 5 Nights";
+        extractedPrice = "18,999";
       }
 
       const priceMatch = (text || "").match(/(?:rs\.?|inr|₹|price[:\s]*)\s*([\d,]{3,6})/i);
@@ -330,26 +378,34 @@ JSON Schema:
         extractedPrice = priceMatch[1].replace(/,/g, "");
       }
 
-      parsedData = {
-        destination: extractedDest,
-        state: extractedState,
-        category: extractedCategory,
-        duration: extractedDuration,
-        price: extractedPrice,
-        seats: 10,
-        description: `Join WeAreSoloZ for an unforgettable ${extractedDest} getaway! Explore pristine scenic spots, waterfalls, temples, and coastal vibes with solo travelers.`,
-        inclusions: [
-          "Non-AC / AC Group Transportation",
-          "Accommodation on Triple / Twin Sharing",
-          "Guided Sightseeing & Trekking",
-          "Trip Captain & First Aid Support"
-        ],
-        itinerary: [
-          { day: "Day 1", title: "Assembly & Departure", description: "Overnight journey from Hyderabad / pickup location." },
-          { day: "Day 2", title: "Sightseeing & Exploration", description: "Reach destination, check-in, explore main spots and waterfalls." },
-          { day: "Day 3", title: "Return Journey", description: "Morning breakfast, final sightseeing, and return journey." }
-        ]
-      };
+      if (extractedDest) {
+        parsedData = {
+          destination: extractedDest,
+          state: extractedState,
+          category: extractedCategory,
+          duration: extractedDuration,
+          price: extractedPrice,
+          seats: 10,
+          description: `Join WeAreSoloZ for an unforgettable ${extractedDest} getaway! Explore scenic spots, waterfalls, temples, and culture with solo travelers.`,
+          inclusions: [
+            "Non-AC / AC Group Transportation",
+            "Accommodation on Triple / Twin Sharing",
+            "Guided Sightseeing & Trekking",
+            "Trip Captain & First Aid Support"
+          ],
+          itinerary: [
+            { day: "Day 1", title: "Assembly & Departure", description: "Overnight journey from Hyderabad / pickup location." },
+            { day: "Day 2", title: "Sightseeing & Exploration", description: "Reach destination, check-in, explore main spots and waterfalls." },
+            { day: "Day 3", title: "Return Journey", description: "Morning breakfast, final sightseeing, and return journey." }
+          ]
+        };
+      }
+    }
+
+    if (!parsedData) {
+      return res.status(400).json({
+        error: "AI Vision could not read text from this image. Please paste the raw itinerary text into Option B!"
+      });
     }
 
     res.json(parsedData);
