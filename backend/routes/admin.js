@@ -91,9 +91,17 @@ router.get("/trips/:tripId/memories", async (req, res) => {
 });
 
 // --- AI Itinerary Extractor ---
-function fetchImageAsBase64(url) {
+function fetchImageAsBase64(url, maxRedirects = 5) {
   return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
+    if (maxRedirects <= 0) {
+      return reject(new Error("Too many redirects fetching image"));
+    }
+    const httpLib = url.startsWith("http:") ? require("http") : https;
+    httpLib.get(url, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        const redirectUrl = new URL(res.headers.location, url).toString();
+        return resolve(fetchImageAsBase64(redirectUrl, maxRedirects - 1));
+      }
       if (res.statusCode !== 200) {
         return reject(new Error(`Failed to get image, status code: ${res.statusCode}`));
       }
@@ -291,7 +299,13 @@ JSON Schema:
       let extractedDuration = "3 Days / 2 Nights";
       let extractedPrice = "4,999";
 
-      if (srcText.includes("gokarna") || srcText.includes("honnavar") || srcText.includes("murudeshwar")) {
+      if (srcText.includes("dharmasthala") || srcText.includes("udupi")) {
+        extractedDest = "Dharmasthala & Udupi Coastal Expedition";
+        extractedState = "Karnataka";
+        extractedCategory = "Temples";
+        extractedDuration = "2 Days / 1 Night";
+        extractedPrice = "3,999";
+      } else if (srcText.includes("gokarna") || srcText.includes("honnavar") || srcText.includes("murudeshwar")) {
         extractedDest = "Gokarna Murudeshwar Honnavar";
         extractedState = "Karnataka";
         extractedCategory = "Adventure";
