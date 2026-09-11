@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, X, Flame } from "lucide-react";
+import { ArrowRight, X, Flame, Sparkles } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 const DEFAULT_ANNOUNCEMENTS = [
@@ -118,50 +118,43 @@ export default function AnnouncementTicker() {
     }
   };
 
-  const bgStyle = tickerSettings?.bgStyle || "orange";
-  const bgClasses = bgStyle === "dark"
-    ? "bg-stone-900 border-stone-800 text-stone-200"
-    : bgStyle === "emerald"
-    ? "bg-emerald-900 border-emerald-800 text-emerald-100"
-    : "bg-gradient-to-r from-[#ea580c] via-orange-600 to-[#ff7a1a] text-white";
-
   return (
     <div
       data-testid="announcement-ticker"
-      className={`relative z-[60] py-2.5 px-4 md:px-8 border-b shadow-sm font-sans overflow-hidden ${bgClasses}`}
+      className="relative z-[60] py-2 px-4 md:px-8 border-b border-stone-800/80 bg-[#0e131f] text-stone-100 font-sans overflow-hidden backdrop-blur-md"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* Left Badge */}
-        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-extrabold uppercase tracking-widest shrink-0 shadow-inner">
-          <Flame className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-extrabold uppercase tracking-widest shrink-0 shadow-xs">
+          <Flame className="w-3.5 h-3.5 text-orange-400 animate-pulse" />
           <span>{tickerSettings?.badgeText || "Trending"}</span>
         </div>
 
         {/* Marquee Scrolling Content */}
         <div className="flex-1 overflow-hidden relative group cursor-pointer py-0.5">
-          <div className="inline-flex gap-8 whitespace-nowrap animate-marquee group-hover:[animation-play-state:paused]">
+          <div className="inline-flex gap-10 whitespace-nowrap animate-marquee group-hover:[animation-play-state:paused]">
             {[...items, ...items, ...items, ...items].map((item, idx) => (
               <React.Fragment key={idx}>
                 {item.link ? (
                   <Link
                     href={item.link}
-                    className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold hover:underline transition-all"
+                    className="inline-flex items-center gap-2.5 text-xs md:text-xs font-semibold text-stone-200 hover:text-[#ea580c] transition-colors"
                   >
-                    <span className="bg-white/20 px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase">
+                    <span className="bg-gradient-to-r from-[#ea580c] to-amber-500 text-white px-2.5 py-0.5 rounded-full text-[9px] font-extrabold tracking-wider uppercase shadow-xs">
                       {item.badge || "INFO"}
                     </span>
-                    <span>{item.text}</span>
-                    <ArrowRight className="w-3.5 h-3.5 opacity-80 group-hover:translate-x-1 transition-transform" />
+                    <span className="tracking-tight">{item.text}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-[#ea580c] opacity-80 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 ) : (
-                  <span className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold">
-                    <span className="bg-white/20 px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase">
+                  <span className="inline-flex items-center gap-2.5 text-xs md:text-xs font-semibold text-stone-200">
+                    <span className="bg-gradient-to-r from-[#ea580c] to-amber-500 text-white px-2.5 py-0.5 rounded-full text-[9px] font-extrabold tracking-wider uppercase shadow-xs">
                       {item.badge || "INFO"}
                     </span>
-                    <span>{item.text}</span>
+                    <span className="tracking-tight">{item.text}</span>
                   </span>
                 )}
-                <span className="text-white/40 text-xs">•</span>
+                <span className="text-stone-600 text-xs font-bold">•</span>
               </React.Fragment>
             ))}
           </div>
@@ -172,9 +165,9 @@ export default function AnnouncementTicker() {
           type="button"
           onClick={handleDismiss}
           title="Dismiss Announcement"
-          className="p-1 rounded-full hover:bg-white/20 transition-colors text-white/80 hover:text-white shrink-0"
+          className="p-1 rounded-full hover:bg-stone-800 transition-colors text-stone-400 hover:text-white shrink-0"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
 
@@ -184,7 +177,7 @@ export default function AnnouncementTicker() {
           100% { transform: translateX(-25%); }
         }
         .animate-marquee {
-          animation: marquee ${tickerSettings?.speed || 25}s linear infinite;
+          animation: marquee ${tickerSettings?.speed || 28}s linear infinite;
         }
       `}</style>
     </div>
