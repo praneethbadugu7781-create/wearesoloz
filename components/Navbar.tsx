@@ -44,6 +44,7 @@ export function Navbar() {
 
   const localizedLinks = [
     { href: "/", labelKey: "nav_home" },
+    { href: "/events/badminton-championship", label: "🏸 Badminton Event", isCustom: true },
     { href: "/upcoming-trips", labelKey: "nav_trips" },
     { href: "/reviews", labelKey: "nav_reviews" },
     { href: "/gallery", labelKey: "nav_gallery" },
@@ -98,9 +99,9 @@ export function Navbar() {
         <nav className={`hidden lg:flex items-center gap-0.5 xl:gap-1 backdrop-blur-sm rounded-full px-1.5 py-1 border transition-all duration-300 ${
           showScrolled ? "bg-stone-50/80 border-stone-100" : "bg-white/10 border-white/10"
         }`}>
-          {localizedLinks.map((l) => {
+          {localizedLinks.map((l: any) => {
             const isActive = pathname === l.href;
-            const linkText = t(l.labelKey);
+            const linkText = l.isCustom ? l.label : t(l.labelKey);
             return (
               <Link
                 key={l.href}
@@ -214,9 +215,9 @@ export function Navbar() {
             data-testid="mobile-menu"
             className="lg:hidden mt-3 mx-4 bg-white rounded-2xl p-2 border border-stone-100 shadow-xl shadow-stone-200/50 max-h-[calc(100vh-110px)] overflow-y-auto"
           >
-            {localizedLinks.map((l) => {
+            {localizedLinks.map((l: any) => {
               const isActive = pathname === l.href;
-              const linkText = t(l.labelKey);
+              const linkText = l.isCustom ? l.label : t(l.labelKey);
               return (
                 <Link
                   key={l.href}

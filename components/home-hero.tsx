@@ -131,14 +131,20 @@ export function HomeHero({ title, subheading, heroImage }: HomeHeroProps) {
             className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto"
           >
             <a
+              href="/events/badminton-championship"
+              className="inline-flex items-center justify-center bg-gradient-to-r from-orange-600 to-amber-500 text-white px-7 py-3.5 rounded-full font-extrabold text-xs sm:text-sm uppercase tracking-wider hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-[0_4px_25px_rgba(234,88,12,0.45)] w-full sm:w-auto text-center border border-amber-300/40"
+            >
+              🏸 Badminton Championship
+            </a>
+            <a
               href="/upcoming-trips"
-              className="inline-flex items-center justify-center bg-white text-stone-950 px-8 py-3.5 rounded-full font-bold text-xs sm:text-sm uppercase tracking-widest hover:bg-stone-100 hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.15)] w-full sm:w-auto text-center"
+              className="inline-flex items-center justify-center bg-white text-stone-950 px-7 py-3.5 rounded-full font-bold text-xs sm:text-sm uppercase tracking-widest hover:bg-stone-100 hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.15)] w-full sm:w-auto text-center"
             >
               Explore Trips
             </a>
             <a
               href="/soloz-community"
-              className="inline-flex items-center justify-center bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-md px-8 py-3.5 rounded-full font-bold text-xs sm:text-sm uppercase tracking-widest hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.05)] w-full sm:w-auto text-center"
+              className="inline-flex items-center justify-center bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-md px-7 py-3.5 rounded-full font-bold text-xs sm:text-sm uppercase tracking-widest hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.05)] w-full sm:w-auto text-center"
             >
               Join Community
             </a>

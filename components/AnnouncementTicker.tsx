@@ -100,6 +100,17 @@ export default function AnnouncementTicker() {
     items = DEFAULT_ANNOUNCEMENTS;
   }
 
+  // Ensure Badminton Championship Season 1 is always prepended to ticker items
+  const badmintonTickerItem = {
+    text: "🏸 WEARESOLOZ BADMINTON CHAMPIONSHIP (SEASON 1) — Sep 20 at Manikonda! Prize Pool ₹10,000! Register Team (₹500)",
+    link: "/events/badminton-championship",
+    badge: "SPORTS EVENT"
+  };
+
+  if (!items.some((i) => i.link?.includes("badminton-championship"))) {
+    items.unshift(badmintonTickerItem);
+  }
+
   const handleDismiss = () => {
     setIsDismissed(true);
     if (typeof window !== "undefined") {
