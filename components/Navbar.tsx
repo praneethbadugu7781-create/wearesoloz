@@ -32,8 +32,10 @@ export function Navbar() {
   }, [pathname]);
 
   const isPlainPage = 
+    pathname !== "/" ||
     pathname.startsWith("/about-akhil") ||
     pathname.startsWith("/careers") ||
+    pathname.startsWith("/events") ||
     pathname.startsWith("/farmer-registration") ||
     pathname.startsWith("/gallery") ||
     pathname.startsWith("/contact") ||
@@ -179,7 +181,7 @@ export function Navbar() {
 
           <Link
             href="/events/badminton-championship"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11.5px] font-extrabold bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-xs hover:shadow-orange-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11.5px] font-extrabold bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-xs hover:shadow-orange-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all whitespace-nowrap shrink-0"
           >
             🏸 Badminton Event
           </Link>
