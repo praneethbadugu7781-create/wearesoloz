@@ -44,7 +44,6 @@ export function Navbar() {
 
   const localizedLinks = [
     { href: "/", labelKey: "nav_home" },
-    { href: "/events/badminton-championship", label: "🏸 Badminton Event", isCustom: true },
     { href: "/upcoming-trips", labelKey: "nav_trips" },
     { href: "/reviews", labelKey: "nav_reviews" },
     { href: "/gallery", labelKey: "nav_gallery" },
@@ -179,6 +178,13 @@ export function Navbar() {
           </div>
 
           <Link
+            href="/events/badminton-championship"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11.5px] font-extrabold bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-xs hover:shadow-orange-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+          >
+            🏸 Badminton Event
+          </Link>
+
+          <Link
             href="/soloz-community"
             data-testid="nav-join-community"
             className={`hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full text-[12.5px] font-semibold transition-all duration-300 hover:shadow-lg ${
@@ -215,6 +221,13 @@ export function Navbar() {
             data-testid="mobile-menu"
             className="lg:hidden mt-3 mx-4 bg-white rounded-2xl p-2 border border-stone-100 shadow-xl shadow-stone-200/50 max-h-[calc(100vh-110px)] overflow-y-auto"
           >
+            <Link
+              href="/events/badminton-championship"
+              className="block px-4 py-3 rounded-xl text-base font-extrabold bg-gradient-to-r from-orange-500 to-amber-500 text-white mb-2 text-center shadow-xs"
+            >
+              🏸 Badminton Championship (Season 1)
+            </Link>
+
             {localizedLinks.map((l: any) => {
               const isActive = pathname === l.href;
               const linkText = l.isCustom ? l.label : t(l.labelKey);

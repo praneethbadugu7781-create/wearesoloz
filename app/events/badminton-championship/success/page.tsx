@@ -23,7 +23,7 @@ function SuccessContent() {
 
     const fetchRegistration = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://wearesoloz.com/api";
         const res = await fetch(`${API_URL}/payment/event-registration/${bookingId}`);
         if (!res.ok) throw new Error("Could not find registration details");
         const data = await res.json();

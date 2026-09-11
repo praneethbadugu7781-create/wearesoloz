@@ -175,6 +175,107 @@ router.post("/create-order", async (req, res) => {
   }
 });
 
+// 1.5. CREATE PAYU BADMINTON EVENT PAYMENT ORDER & GENERATE REQUEST HASH
+router.post("/create-event-order", async (req, res) => {
+  try {
+    await connectDB();
+    const {
+      teamName,
+      player1Name,
+      player1Phone,
+      player1Email,
+      player2Name,
+      player2Phone,
+      amount = 500
+    } = req.body;
+
+    if (!teamName || !teamName.trim()) {
+      return res.status(400).json({ error: "Team Name is required" });
+    }
+    if (!player1Name || !player1Name.trim()) {
+      return res.status(400).json({ error: "Player 1 (Captain) Name is required" });
+    }
+    if (!player1Phone || !player1Phone.trim()) {
+      return res.status(400).json({ error: "Player 1 Phone is required" });
+    }
+    if (!player1Email || !player1Email.includes("@")) {
+      return res.status(400).json({ error: "Valid Player 1 Email is required" });
+    }
+    if (!player2Name || !player2Name.trim()) {
+      return res.status(400).json({ error: "Player 2 (Partner) Name is required" });
+    }
+
+    const { key, salt, actionUrl } = getPayUCredentials();
+    if (!key || !salt) {
+      return res.status(500).json({ error: "PayU Merchant Key and Salt must be configured on the server." });
+    }
+
+    const totalAmount = Number(amount) || 500;
+    const amountStr = totalAmount.toFixed(2);
+    const txnid = `BAD-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const bookingId = txnid;
+
+    const firstname = player1Name.trim().split(" ")[0].replace(/[^a-zA-Z0-9]/g, "") || "Player";
+    const email = player1Email.trim().toLowerCase();
+    const phone = player1Phone.trim().replace(/[^0-9+]/g, "");
+    const productinfo = "WeAreSoloZ Badminton Championship Season 1".slice(0, 100);
+
+    const backendHost = process.env.BACKEND_URL || `${req.protocol}://${req.get("host")}`;
+    const defaultCallback = `${backendHost}/api/payment/payu-callback`;
+    const surl = process.env.PAYU_SUCCESS_URL || defaultCallback;
+    const furl = process.env.PAYU_FAILURE_URL || defaultCallback;
+
+    const udf1 = bookingId;
+    const udf2 = "badminton-championship";
+    const udf3 = teamName.trim();
+    const udf4 = "2";
+    const udf5 = "";
+
+    const hashSequence = `${key}|${txnid}|${amountStr}|${productinfo}|${firstname}|${email}|${udf1}|${udf2}|${udf3}|${udf4}|${udf5}||||||${salt}`;
+    const hash = crypto.createHash("sha512").update(hashSequence).digest("hex");
+
+    const eventRegistration = new EventRegistration({
+      bookingId,
+      payuTxnId: txnid,
+      teamName: teamName.trim(),
+      player1Name: player1Name.trim(),
+      player1Phone: phone,
+      player1Email: email,
+      player2Name: player2Name.trim(),
+      player2Phone: player2Phone ? player2Phone.trim().replace(/[^0-9+]/g, "") : "",
+      amount: totalAmount,
+      paymentStatus: "PENDING"
+    });
+
+    await eventRegistration.save();
+
+    res.json({
+      success: true,
+      actionUrl,
+      key,
+      txnid,
+      amount: amountStr,
+      productinfo,
+      firstname,
+      email,
+      phone,
+      surl,
+      furl,
+      hash,
+      udf1,
+      udf2,
+      udf3,
+      udf4,
+      udf5,
+      bookingId,
+      orderId: txnid
+    });
+  } catch (error) {
+    console.error("Error creating Badminton PayU payment order:", error);
+    res.status(500).json({ error: error.message || "Failed to generate Badminton payment request" });
+  }
+});
+
 // 2. VERIFY PAYU PAYMENT RESPONSE & HASH
 router.post("/verify", async (req, res) => {
   try {
@@ -585,6 +686,29 @@ router.get("/booking/:id", async (req, res) => {
     }
 
     res.json(booking);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 6.5. FETCH EVENT REGISTRATION DETAILS FOR CONFIRMATION PAGE
+router.get("/event-registration/:id", async (req, res) => {
+  try {
+    await connectDB();
+    const id = req.params.id;
+    const registration = await EventRegistration.findOne({
+      $or: [
+        { bookingId: id },
+        { payuTxnId: id },
+        { payuMoneyId: id }
+      ]
+    }).lean();
+
+    if (!registration) {
+      return res.status(404).json({ error: "Event registration not found" });
+    }
+
+    res.json(registration);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
