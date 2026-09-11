@@ -1,8 +1,9 @@
 const express = require("express");
 const crypto = require("crypto");
 const Booking = require("../models/Booking");
+const EventRegistration = require("../models/EventRegistration");
 const { connectDB } = require("../lib/db");
-const { sendBookingPaymentInvoiceEmail } = require("../lib/mailer");
+const { sendBookingPaymentInvoiceEmail, sendBadmintonRegistrationEmail } = require("../lib/mailer");
 
 const router = express.Router();
 
@@ -180,41 +181,41 @@ router.post("/verify", async (req, res) => {
     await connectDB();
     const payuData = req.body;
     const { key, salt } = getPayUCredentials();
+    if (!salt) {
+      return res.status(500).json({ error: "PayU Salt is not configured on the server." });
+    }
 
     const {
+      mihpayid = "",
       status = "",
       unmappedstatus = "",
-      firstname = "",
-      amount = "",
       txnid = "",
+      amount = "",
+      productinfo = "",
+      firstname = "",
+      email = "",
       posted_hash,
       hash: bodyHash,
-      productinfo = "",
-      email = "",
-      mihpayid = "",
+      udf1 = "",
+      udf2 = "",
+      udf3 = "",
+      udf4 = "",
+      udf5 = "",
       mode = "",
       bank_ref_num = "",
       error_Message = "",
-      additionalCharges = "",
-      udf1 = ""
+      additionalCharges = ""
     } = payuData;
 
     const receivedHash = posted_hash || bodyHash;
+
     const bookingId = udf1 || txnid;
-
-    if (!txnid || !status) {
-      return res.status(400).json({ error: "Missing required payment verification parameters" });
-    }
-
-    if (!salt) {
-      return res.status(500).json({ error: "PayU Salt is not configured on server" });
-    }
 
     let reverseSequence = "";
     if (additionalCharges) {
-      reverseSequence = `${additionalCharges}|${salt}|${status}||||||${payuData.udf5 || ""}|${payuData.udf4 || ""}|${payuData.udf3 || ""}|${payuData.udf2 || ""}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
+      reverseSequence = `${additionalCharges}|${salt}|${status}||||||${udf5 || ""}|${udf4 || ""}|${udf3 || ""}|${udf2 || ""}|${udf1 || ""}|${email || ""}|${firstname || ""}|${productinfo || ""}|${amount || ""}|${txnid || ""}|${key}`;
     } else {
-      reverseSequence = `${salt}|${status}||||||${payuData.udf5 || ""}|${payuData.udf4 || ""}|${payuData.udf3 || ""}|${payuData.udf2 || ""}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
+      reverseSequence = `${salt}|${status}||||||${udf5 || ""}|${udf4 || ""}|${udf3 || ""}|${udf2 || ""}|${udf1 || ""}|${email || ""}|${firstname || ""}|${productinfo || ""}|${amount || ""}|${txnid || ""}|${key}`;
     }
 
     const calculatedHash = crypto.createHash("sha512").update(reverseSequence).digest("hex");
@@ -223,7 +224,7 @@ router.post("/verify", async (req, res) => {
       : true;
 
     const statusLower = status.toLowerCase();
-    const unmappedLower = unmappedstatus.toLowerCase();
+    const unmappedLower = (unmappedstatus || "").toLowerCase();
 
     let targetStatus = "PENDING";
     if (statusLower === "success" && isHashValid) {
@@ -234,30 +235,50 @@ router.post("/verify", async (req, res) => {
       targetStatus = "FAILED";
     }
 
-    const booking = await Booking.findOneAndUpdate(
-      { $or: [{ payuTxnId: txnid }, { bookingId }] },
-      {
-        status: targetStatus,
-        payuMihpayid: mihpayid || txnid,
-        payuHash: receivedHash || calculatedHash,
-        payuStatus: status,
-        payuUnmappedStatus: unmappedstatus,
-        paymentMode: mode || "PAYU",
-        bankRefNum: bank_ref_num,
-        payuErrorMsg: error_Message,
-        ...(targetStatus === "PAID" ? { paidAt: new Date() } : {})
-      },
-      { new: true }
-    );
+    const isBadminton = (bookingId && bookingId.startsWith("BAD-")) || (txnid && txnid.startsWith("BAD-")) || (productinfo && productinfo.toLowerCase().includes("badminton"));
 
-    if (!booking) {
-      return res.status(404).json({ error: "Booking record not found for this transaction" });
+    let booking = null;
+    let eventReg = null;
+
+    if (isBadminton) {
+      eventReg = await EventRegistration.findOneAndUpdate(
+        { $or: [{ payuTxnId: txnid }, { bookingId }] },
+        {
+          paymentStatus: targetStatus,
+          payuMoneyId: mihpayid || txnid,
+          payuDetails: req.body
+        },
+        { new: true }
+      );
+      if (eventReg && targetStatus === "PAID") {
+        sendBadmintonRegistrationEmail(eventReg).catch(console.error);
+      }
+    } else {
+      booking = await Booking.findOneAndUpdate(
+        { $or: [{ payuTxnId: txnid }, { bookingId }] },
+        {
+          status: targetStatus,
+          payuMihpayid: mihpayid || txnid,
+          payuHash: receivedHash || calculatedHash,
+          payuStatus: status,
+          payuUnmappedStatus: unmappedstatus,
+          paymentMode: req.body.mode || "PAYU",
+          bankRefNum: req.body.bank_ref_num,
+          payuErrorMsg: req.body.error_Message,
+          ...(targetStatus === "PAID" ? { paidAt: new Date() } : {})
+        },
+        { new: true }
+      );
+    }
+
+    if (!booking && !eventReg) {
+      return res.status(404).json({ error: "Booking or Event registration record not found for this transaction" });
     }
 
     res.json({
       success: targetStatus === "PAID",
       message: `Payment status updated to ${targetStatus}`,
-      booking
+      booking: booking || eventReg
     });
   } catch (error) {
     console.error("Error verifying PayU signature:", error);
@@ -323,39 +344,61 @@ router.post("/payu-callback", async (req, res) => {
       targetStatus = "FAILED";
     }
 
-    const booking = await Booking.findOneAndUpdate(
-      { $or: [{ payuTxnId: txnid }, { bookingId }] },
-      {
-        status: targetStatus,
-        payuMihpayid: mihpayid || txnid,
-        payuHash: receivedHash,
-        payuStatus: status,
-        payuUnmappedStatus: unmappedstatus,
-        paymentMode: mode || "PAYU",
-        bankRefNum: bank_ref_num,
-        payuErrorMsg: error_Message,
-        ...(targetStatus === "PAID" ? { paidAt: new Date() } : {})
-      },
-      { new: true }
-    );
+    const isBadminton = (bookingId && bookingId.startsWith("BAD-")) || (txnid && txnid.startsWith("BAD-")) || (productinfo && productinfo.toLowerCase().includes("badminton"));
 
-    if (booking && targetStatus === "PAID") {
-      sendBookingPaymentInvoiceEmail(booking).catch(console.error);
+    let booking = null;
+    let eventReg = null;
+
+    if (isBadminton) {
+      eventReg = await EventRegistration.findOneAndUpdate(
+        { $or: [{ payuTxnId: txnid }, { bookingId }] },
+        {
+          paymentStatus: targetStatus,
+          payuMoneyId: mihpayid || txnid,
+          payuDetails: payuData
+        },
+        { new: true }
+      );
+      if (eventReg && targetStatus === "PAID") {
+        sendBadmintonRegistrationEmail(eventReg).catch(console.error);
+      }
+    } else {
+      booking = await Booking.findOneAndUpdate(
+        { $or: [{ payuTxnId: txnid }, { bookingId }] },
+        {
+          status: targetStatus,
+          payuMihpayid: mihpayid || txnid,
+          payuHash: receivedHash,
+          payuStatus: status,
+          payuUnmappedStatus: unmappedstatus,
+          paymentMode: mode || "PAYU",
+          bankRefNum: bank_ref_num,
+          payuErrorMsg: error_Message,
+          ...(targetStatus === "PAID" ? { paidAt: new Date() } : {})
+        },
+        { new: true }
+      );
+
+      if (booking && targetStatus === "PAID") {
+        sendBookingPaymentInvoiceEmail(booking).catch(console.error);
+      }
     }
 
     const frontendUrl = process.env.FRONTEND_URL || "https://wearesoloz.com";
+    const targetBookingId = eventReg?.bookingId || booking?.bookingId || bookingId;
 
     if (targetStatus === "PAID") {
       if (isJsonRequest) {
-        return res.json({ success: true, bookingId: booking?.bookingId || bookingId, paymentId: mihpayid || txnid });
+        return res.json({ success: true, bookingId: targetBookingId, paymentId: mihpayid || txnid });
       }
-      return res.redirect(302, `${frontendUrl}/booking-success?bookingId=${encodeURIComponent(booking?.bookingId || bookingId)}&paymentId=${encodeURIComponent(mihpayid || txnid)}`);
+      const redirectPath = isBadminton ? "/events/badminton-championship/success" : "/booking-success";
+      return res.redirect(302, `${frontendUrl}${redirectPath}?bookingId=${encodeURIComponent(targetBookingId)}&paymentId=${encodeURIComponent(mihpayid || txnid)}`);
     } else {
       if (isJsonRequest) {
         return res.status(400).json({ success: false, error: error_Message || `Payment ${targetStatus.toLowerCase()}` });
       }
       const cancelOrFailedMsg = targetStatus === "CANCELLED" ? "Payment was cancelled by user." : (error_Message || `Payment ${targetStatus.toLowerCase()}`);
-      return res.redirect(302, `${frontendUrl}/booking-failed?bookingId=${encodeURIComponent(booking?.bookingId || bookingId)}&error=${encodeURIComponent(cancelOrFailedMsg)}&slug=${encodeURIComponent(booking?.tripSlug || "")}`);
+      return res.redirect(302, `${frontendUrl}/booking-failed?bookingId=${encodeURIComponent(targetBookingId)}&error=${encodeURIComponent(cancelOrFailedMsg)}&slug=${encodeURIComponent(booking?.tripSlug || "")}`);
     }
   } catch (error) {
     console.error("Error processing PayU callback:", error);
@@ -378,10 +421,28 @@ router.all("/sync-payu-status", async (req, res) => {
     let query = {};
     if (txnid || bookingId) {
       query = { $or: [{ payuTxnId: txnid || bookingId }, { bookingId: bookingId || txnid }] };
-    } else {
-      // Default: Sync all PENDING bookings
-      query = { status: "PENDING" };
     }
+
+    const isBadminton = (bookingId && bookingId.startsWith("BAD-")) || (txnid && txnid.startsWith("BAD-"));
+
+    if (isBadminton) {
+      const reg = await EventRegistration.findOne(query);
+      if (reg && reg.paymentStatus === "PAID") {
+        return res.json({ status: "PAID", message: "Event registration payment is confirmed", reg });
+      }
+    } else {
+      const booking = await Booking.findOne(query);
+      if (booking && booking.status === "PAID") {
+        return res.json({ status: "PAID", message: "Booking payment is confirmed", booking });
+      }
+    }
+
+    if (txnid || bookingId) {
+      return res.json({ status: "PENDING", message: "Transaction pending or not verified" });
+    }
+
+    // Default: Sync all PENDING bookings
+    query = { status: "PENDING" };
 
     const bookingsToSync = await Booking.find(query).limit(50);
     if (bookingsToSync.length === 0) {

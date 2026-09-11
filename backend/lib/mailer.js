@@ -801,10 +801,57 @@ async function sendBookingPaymentInvoiceEmail(booking) {
   // Send Admin copy
   const adminEmail = await getAdminEmail();
   const recipients = Array.from(new Set([adminEmail, "wearesolozindia@gmail.com", "wearesoloz@gmail.com"].filter(Boolean)));
-  const adminSubject = `[NEW PAID BOOKING] ${booking.customerName} - ${tripName} (${formattedAmount})`;
   sendResendEmail({ to: recipients, subject: adminSubject, text, html }).catch(console.error);
 
   return customerSent;
+}
+
+async function sendBadmintonRegistrationEmail(reg) {
+  const adminEmail = await getAdminEmail();
+  const recipients = Array.from(new Set([reg.player1Email, adminEmail, "wearesolozindia@gmail.com", "wearesoloz@gmail.com"].filter(Boolean)));
+  
+  const subject = `[CONFIRMED] WeAreSoloZ Badminton Championship Registration - ${reg.teamName} (${reg.bookingId})`;
+  
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0f172a; color: #f8fafc; border-radius: 16px; overflow: hidden; border: 1px solid #334155;">
+      <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 32px 24px; text-align: center;">
+        <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 800; text-transform: uppercase;">WeAreSoloZ</h1>
+        <p style="margin: 6px 0 0 0; color: #ffedd5; font-weight: 600; letter-spacing: 1px;">BADMINTON CHAMPIONSHIP SEASON 1</p>
+      </div>
+      <div style="padding: 32px 24px;">
+        <h2 style="color: #38bdf8; margin-top: 0;">🎉 Team Registration Confirmed!</h2>
+        <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6;">Hi <strong>${reg.player1Name}</strong>,</p>
+        <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6;">Your team <strong>${reg.teamName}</strong> has been successfully registered for the <strong>WeAreSoloZ Badminton Championship (Season 1)</strong>!</p>
+        
+        <div style="background: #1e293b; border-radius: 12px; padding: 20px; margin: 24px 0; border: 1px solid #334155;">
+          <h3 style="color: #f97316; margin-top: 0; font-size: 16px; border-bottom: 1px solid #334155; padding-bottom: 8px;">Registration Details</h3>
+          <p style="margin: 8px 0; color: #e2e8f0;"><strong>Registration ID:</strong> <span style="color: #38bdf8;">${reg.bookingId}</span></p>
+          <p style="margin: 8px 0; color: #e2e8f0;"><strong>Team Name:</strong> ${reg.teamName}</p>
+          <p style="margin: 8px 0; color: #e2e8f0;"><strong>Player 1 (Captain):</strong> ${reg.player1Name} (${reg.player1Phone})</p>
+          <p style="margin: 8px 0; color: #e2e8f0;"><strong>Player 2 (Partner):</strong> ${reg.player2Name} (${reg.player2Phone})</p>
+          <p style="margin: 8px 0; color: #e2e8f0;"><strong>Entry Fee Paid:</strong> ₹${reg.amount}</p>
+        </div>
+
+        <div style="background: #1e293b; border-radius: 12px; padding: 20px; margin: 24px 0; border: 1px solid #334155;">
+          <h3 style="color: #f97316; margin-top: 0; font-size: 16px; border-bottom: 1px solid #334155; padding-bottom: 8px;">Event & Venue Details</h3>
+          <p style="margin: 8px 0; color: #e2e8f0;"><strong>Date:</strong> Sunday, 20th September 2026</p>
+          <p style="margin: 8px 0; color: #e2e8f0;"><strong>Reporting Time:</strong> 9:15 AM Onwards</p>
+          <p style="margin: 8px 0; color: #e2e8f0;"><strong>Venue:</strong> Indian Badminton Academy, Beside Begonia Homes, Manikonda, Hyderabad</p>
+          <p style="margin: 8px 0; color: #e2e8f0;"><strong>Shuttle Used:</strong> Yonex Mavis 350</p>
+        </div>
+
+        <div style="background: #1e293b; border-radius: 12px; padding: 20px; margin: 24px 0; border: 1px solid #334155;">
+          <h3 style="color: #f97316; margin-top: 0; font-size: 16px; border-bottom: 1px solid #334155; padding-bottom: 8px;">Organizers Contact</h3>
+          <p style="margin: 6px 0; color: #e2e8f0;">📞 Babu Yadav: +91 94920 63442</p>
+          <p style="margin: 6px 0; color: #e2e8f0;">📞 Akhil: +91 99660 85310</p>
+        </div>
+
+        <p style="color: #94a3b8; font-size: 13px; text-align: center; margin-top: 32px;">Play Fair ★ Play Hard ★ Enjoy the Game!<br>&copy; WeAreSoloZ - All rights reserved.</p>
+      </div>
+    </div>
+  `;
+
+  return sendResendEmail({ to: recipients, subject, text: `Badminton Championship registration confirmed for team ${reg.teamName} (${reg.bookingId}). Date: 20th Sep 2026 at Indian Badminton Academy, Manikonda.`, html });
 }
 
 module.exports = {
@@ -827,5 +874,6 @@ module.exports = {
   sendTripMemoryOtpEmail,
   sendWaiverInvoiceEmail,
   sendCertificateIssuedEmail,
-  sendBookingPaymentInvoiceEmail
+  sendBookingPaymentInvoiceEmail,
+  sendBadmintonRegistrationEmail
 };

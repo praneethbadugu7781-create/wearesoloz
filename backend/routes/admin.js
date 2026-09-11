@@ -22,6 +22,7 @@ const Farmer = require("../models/Farmer");
 const Reel = require("../models/Reel");
 const MemoryPost = require("../models/MemoryPost");
 const Booking = require("../models/Booking");
+const EventRegistration = require("../models/EventRegistration");
 
 const { sendFarmerApprovalEmail, sendFarmerRejectionEmail, sendCareerReviewedEmail, sendCareerRejectionEmail, sendContactStatusEmail, sendContactApprovalEmail } = require("../lib/mailer");
 
@@ -38,6 +39,7 @@ const models = {
   reels: Reel,
   memories: MemoryPost,
   bookings: Booking,
+  eventregistrations: EventRegistration,
 };
 
 const router = express.Router();

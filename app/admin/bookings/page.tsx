@@ -60,6 +60,8 @@ interface BookingRecord {
 
 export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
+  const [eventRegistrations, setEventRegistrations] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<"trips" | "badminton">("trips");
   const [loading, setLoading] = useState(true);
   const [syncingPayU, setSyncingPayU] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -73,15 +75,21 @@ export default function AdminBookingsPage() {
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/admin/bookings`, {
-        headers: getAuthHeaders()
-      });
-      if (!res.ok) throw new Error("Failed to fetch bookings");
-      const data = await res.json();
-      setBookings(Array.isArray(data) ? data : []);
+      const [bRes, eRes] = await Promise.all([
+        fetch(`${API_URL}/admin/bookings`, { headers: getAuthHeaders() }),
+        fetch(`${API_URL}/admin/eventregistrations`, { headers: getAuthHeaders() })
+      ]);
+
+      if (bRes.ok) {
+        const bData = await bRes.json();
+        setBookings(Array.isArray(bData) ? bData : []);
+      }
+      if (eRes.ok) {
+        const eData = await eRes.json();
+        setEventRegistrations(Array.isArray(eData) ? eData : []);
+      }
     } catch (err: any) {
       console.error(err);
-      alert(err.message || "Error loading bookings");
     } finally {
       setLoading(false);
     }
@@ -209,7 +217,49 @@ export default function AdminBookingsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `WeAreSoloz_Bookings_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `WeAreSoloZ_Trip_Bookings_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportBadmintonCSV = () => {
+    const headers = [
+      "Registration ID",
+      "PayU Txn ID",
+      "PayU Money ID",
+      "Team Name",
+      "Player 1 (Captain)",
+      "Player 1 Phone",
+      "Player 1 Email",
+      "Player 2 (Partner)",
+      "Player 2 Phone",
+      "Amount Paid",
+      "Payment Status",
+      "Registration Date"
+    ];
+
+    const rows = eventRegistrations.map((e) => [
+      `"${e.bookingId || ""}"`,
+      `"${e.payuTxnId || ""}"`,
+      `"${e.payuMoneyId || ""}"`,
+      `"${e.teamName || ""}"`,
+      `"${e.player1Name || ""}"`,
+      `"${e.player1Phone || ""}"`,
+      `"${e.player1Email || ""}"`,
+      `"${e.player2Name || ""}"`,
+      `"${e.player2Phone || ""}"`,
+      `"${e.amount || 500}"`,
+      `"${e.paymentStatus || "PENDING"}"`,
+      `"${new Date(e.createdAt).toLocaleString()}"`
+    ]);
+
+    const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Badminton_Championship_Teams_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -232,6 +282,22 @@ export default function AdminBookingsPage() {
     return matchesStatus && matchesSearch;
   });
 
+  const filteredEventRegistrations = eventRegistrations.filter((e) => {
+    const matchesStatus = statusFilter === "ALL" || e.paymentStatus === statusFilter;
+    const term = searchQuery.toLowerCase().trim();
+    const matchesSearch =
+      !term ||
+      (e.bookingId && e.bookingId.toLowerCase().includes(term)) ||
+      (e.teamName && e.teamName.toLowerCase().includes(term)) ||
+      (e.player1Name && e.player1Name.toLowerCase().includes(term)) ||
+      (e.player1Email && e.player1Email.toLowerCase().includes(term)) ||
+      (e.player1Phone && e.player1Phone.includes(term)) ||
+      (e.player2Name && e.player2Name.toLowerCase().includes(term)) ||
+      (e.player2Phone && e.player2Phone.includes(term));
+
+    return matchesStatus && matchesSearch;
+  });
+
   const totalPaidRevenue = bookings
     .filter((b) => b.status === "PAID")
     .reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
@@ -248,38 +314,84 @@ export default function AdminBookingsPage() {
         <div>
           <h1 className="font-display text-3xl font-bold text-stone-900 flex items-center gap-2">
             <CreditCard className="text-[#ea580c]" size={28} />
-            Bookings & Payments
+            Bookings & Event Registrations
           </h1>
           <p className="text-xs text-stone-500 mt-1">
-            Real-time traveler bookings, PayU live status verification, and payment breakdown.
+            Real-time traveler trip bookings and Badminton Championship team registrations.
           </p>
+
+          {/* Tab Toggle */}
+          <div className="flex items-center gap-2 mt-4 bg-stone-100 p-1.5 rounded-xl w-fit border border-stone-200">
+            <button
+              onClick={() => setActiveTab("trips")}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                activeTab === "trips"
+                  ? "bg-white text-stone-900 shadow-sm"
+                  : "text-stone-500 hover:text-stone-900"
+              }`}
+            >
+              🧳 Trip Bookings ({bookings.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("badminton")}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                activeTab === "badminton"
+                  ? "bg-orange-600 text-white shadow-sm"
+                  : "text-stone-500 hover:text-orange-600"
+              }`}
+            >
+              🏸 Badminton Championship Teams ({eventRegistrations.length})
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            onClick={() => handleSyncPayUStatus()}
-            disabled={syncingPayU}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white h-10 px-3.5 rounded-xl text-xs font-bold shadow-sm"
-          >
-            <Zap className={`w-3.5 h-3.5 mr-1.5 ${syncingPayU ? "animate-spin" : ""}`} />
-            {syncingPayU ? "Syncing PayU..." : "⚡ Sync PayU Live Status"}
-          </Button>
+          {activeTab === "trips" ? (
+            <>
+              <Button
+                onClick={() => handleSyncPayUStatus()}
+                disabled={syncingPayU}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white h-10 px-3.5 rounded-xl text-xs font-bold shadow-sm"
+              >
+                <Zap className={`w-3.5 h-3.5 mr-1.5 ${syncingPayU ? "animate-spin" : ""}`} />
+                {syncingPayU ? "Syncing PayU..." : "⚡ Sync PayU Live Status"}
+              </Button>
 
-          <Button
-            variant="ghost"
-            onClick={fetchBookings}
-            className="border border-stone-200 text-stone-700 hover:bg-stone-100 h-10 px-3 rounded-xl text-xs font-semibold"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Refresh
-          </Button>
+              <Button
+                variant="ghost"
+                onClick={fetchBookings}
+                className="border border-stone-200 text-stone-700 hover:bg-stone-100 h-10 px-3 rounded-xl text-xs font-semibold"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+              </Button>
 
-          <Button
-            onClick={exportCSV}
-            disabled={bookings.length === 0}
-            className="gradient-orange text-white hover:opacity-95 h-10 px-4 rounded-xl text-xs font-bold shadow-sm"
-          >
-            <Download className="w-3.5 h-3.5 mr-1.5" /> Export CSV
-          </Button>
+              <Button
+                onClick={exportCSV}
+                disabled={bookings.length === 0}
+                className="gradient-orange text-white hover:opacity-95 h-10 px-4 rounded-xl text-xs font-bold shadow-sm"
+              >
+                <Download className="w-3.5 h-3.5 mr-1.5" /> Export Bookings CSV
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                onClick={fetchBookings}
+                className="border border-stone-200 text-stone-700 hover:bg-stone-100 h-10 px-3 rounded-xl text-xs font-semibold"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Refresh Teams
+              </Button>
+
+              <Button
+                onClick={exportBadmintonCSV}
+                disabled={eventRegistrations.length === 0}
+                className="bg-orange-600 hover:bg-orange-700 text-white h-10 px-4 rounded-xl text-xs font-bold shadow-sm"
+              >
+                <Download className="w-3.5 h-3.5 mr-1.5" /> Export Badminton Teams CSV
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -342,166 +454,237 @@ export default function AdminBookingsPage() {
         </div>
       </div>
 
-      {/* Bookings Table */}
+      {/* Bookings / Event Table */}
       <div className="bg-white rounded-2xl border border-stone-200/80 shadow-sm overflow-hidden">
-        {loading ? (
+        {loading && (
           <div className="p-12 text-center text-stone-500 text-xs font-semibold">
             <RefreshCw className="w-6 h-6 animate-spin text-[#ea580c] mx-auto mb-2" />
-            Loading customer bookings...
+            Loading {activeTab === "trips" ? "customer bookings..." : "Badminton Championship team registrations..."}
           </div>
-        ) : filteredBookings.length === 0 ? (
-          <div className="p-12 text-center text-stone-500 space-y-2">
-            <CreditCard className="w-10 h-10 text-stone-300 mx-auto" />
-            <p className="text-sm font-bold text-stone-700">No bookings match your filter criteria.</p>
-            <p className="text-xs text-stone-400">When visitors book trips on the website, their details will automatically appear here.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-stone-50 border-b border-stone-200/80 text-[10.5px] uppercase tracking-wider text-stone-500 font-extrabold">
-                  <th className="py-3.5 px-4">Booking ID / Date</th>
-                  <th className="py-3.5 px-4">Customer Details</th>
-                  <th className="py-3.5 px-4">Trip Expedition</th>
-                  <th className="py-3.5 px-4">Travelers & Amount</th>
-                  <th className="py-3.5 px-4">Payment Status</th>
-                  <th className="py-3.5 px-4">PayU Txn / Mode</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-stone-150">
-                {filteredBookings.map((b) => (
-                  <tr key={b._id} className="hover:bg-stone-50/70 transition-colors">
-                    {/* Booking ID & Date */}
-                    <td className="py-3.5 px-4 font-mono">
-                      <div className="font-bold text-stone-900 text-xs">{b.bookingId}</div>
-                      <div className="text-[10px] text-stone-400 font-sans mt-0.5">
-                        {new Date(b.createdAt).toLocaleString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit"
-                        })}
-                      </div>
-                    </td>
+        )}
 
-                    {/* Customer Info */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-bold text-stone-900">{b.customerName}</div>
-                      <div className="text-[11px] text-stone-500 flex items-center gap-2 mt-0.5">
-                        <span>{b.customerMobile}</span>
-                        <span>•</span>
-                        <span className="truncate max-w-[150px]">{b.customerEmail}</span>
-                      </div>
-                      {(b.age || b.bloodGroup) && (
-                        <div className="text-[10px] text-stone-400 mt-0.5">
-                          {b.age ? `Age: ${b.age}` : ""} {b.bloodGroup ? `| Blood: ${b.bloodGroup}` : ""}
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Trip Info */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-bold text-stone-800 line-clamp-1">{b.tripTitle}</div>
-                      {b.selectedBatch && (
-                        <div className="text-[10px] text-[#ea580c] font-semibold mt-0.5">
-                          Batch: {typeof b.selectedBatch === "string" ? b.selectedBatch : b.selectedBatch.label || `${b.selectedBatch.startDate}`}
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Amount */}
-                    <td className="py-3.5 px-4 font-display">
-                      <div className="font-extrabold text-stone-900 text-sm">₹{b.amount?.toLocaleString("en-IN")}</div>
-                      <div className="text-[10px] text-stone-400 font-sans">{b.travelers} Traveler{b.travelers > 1 ? "s" : ""}</div>
-                    </td>
-
-                    {/* Status Badge */}
-                    <td className="py-3.5 px-4">
-                      {b.status === "PAID" ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase tracking-wider">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600" /> PAID
-                        </span>
-                      ) : b.status === "PENDING" ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold uppercase tracking-wider">
-                          <Clock className="w-3 h-3 text-amber-600" /> PENDING
-                        </span>
-                      ) : b.status === "CANCELLED" ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 text-[10px] font-extrabold uppercase tracking-wider">
-                          <Ban className="w-3 h-3 text-purple-600" /> USER CANCELLED
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 text-[10px] font-extrabold uppercase tracking-wider">
-                          <XCircle className="w-3 h-3 text-rose-600" /> FAILED
-                        </span>
-                      )}
-                    </td>
-
-                    {/* PayU Txn & Mode */}
-                    <td className="py-3.5 px-4 font-mono text-[11px]">
-                      <div className="text-stone-700 truncate max-w-[130px]" title={b.payuMihpayid || b.payuTxnId || "-"}>
-                        {b.payuMihpayid || b.payuTxnId || b.razorpayPaymentId || "-"}
-                      </div>
-                      <div className="text-[9.5px] uppercase font-extrabold text-[#ea580c] font-sans mt-0.5 flex items-center gap-1">
-                        <span className="px-1.5 py-0.5 rounded bg-orange-50 border border-orange-200">
-                          {b.paymentMode || b.paymentMethod || "PAYU"}
-                        </span>
-                        {b.bankRefNum && <span className="text-[9px] text-stone-400 font-mono">UTR: {b.bankRefNum.slice(-6)}</span>}
-                      </div>
-                    </td>
-
-                    {/* Actions Column */}
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
-                        <button
-                          onClick={() => setSelectedBooking(b)}
-                          className="px-2.5 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-[11px] inline-flex items-center gap-1 transition-all border border-stone-200/80 shadow-2xs"
-                        >
-                          <Eye size={13} className="text-stone-600" />
-                          View Details
-                        </button>
-
-                        <button
-                          onClick={() => handleSyncPayUStatus(b.bookingId)}
-                          title="Verify live status directly with PayU servers"
-                          className="px-2 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[11px] inline-flex items-center gap-1 transition-all"
-                        >
-                          <Zap size={13} className="text-emerald-600" />
-                          Sync
-                        </button>
-
-                        {b.status !== "PAID" ? (
-                          <button
-                            onClick={() => handleUpdateStatus(b._id, "PAID")}
-                            className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] inline-flex items-center gap-1 transition-all shadow-xs"
-                          >
-                            <Check size={13} />
-                            Mark Paid
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleUpdateStatus(b._id, "PENDING")}
-                            className="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 font-bold text-[11px] inline-flex items-center gap-1 transition-all"
-                          >
-                            <Clock size={13} className="text-amber-600" />
-                            Mark Pending
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => handleDeleteBooking(b._id)}
-                          className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[11px] inline-flex items-center gap-1 transition-all border border-rose-200/60"
-                        >
-                          <Trash2 size={13} />
-                          Delete
-                        </button>
-                      </div>
-                    </td>
+        {!loading && activeTab === "trips" && (
+          filteredBookings.length === 0 ? (
+            <div className="p-12 text-center text-stone-500 space-y-2">
+              <CreditCard className="w-10 h-10 text-stone-300 mx-auto" />
+              <p className="text-sm font-bold text-stone-700">No bookings match your filter criteria.</p>
+              <p className="text-xs text-stone-400">When visitors book trips on the website, their details will automatically appear here.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-stone-50 border-b border-stone-200/80 text-[10.5px] uppercase tracking-wider text-stone-500 font-extrabold">
+                    <th className="py-3.5 px-4">Booking ID / Date</th>
+                    <th className="py-3.5 px-4">Customer Details</th>
+                    <th className="py-3.5 px-4">Trip Expedition</th>
+                    <th className="py-3.5 px-4">Travelers & Amount</th>
+                    <th className="py-3.5 px-4">Payment Status</th>
+                    <th className="py-3.5 px-4">PayU Txn / Mode</th>
+                    <th className="py-3.5 px-4 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-stone-150">
+                  {filteredBookings.map((b) => (
+                    <tr key={b._id} className="hover:bg-stone-50/70 transition-colors">
+                      {/* Booking ID & Date */}
+                      <td className="py-3.5 px-4 font-mono">
+                        <div className="font-bold text-stone-900 text-xs">{b.bookingId}</div>
+                        <div className="text-[10px] text-stone-400 font-sans mt-0.5">
+                          {new Date(b.createdAt).toLocaleString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
+                        </div>
+                      </td>
+
+                      {/* Customer Info */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-stone-900">{b.customerName}</div>
+                        <div className="text-[11px] text-stone-500 flex items-center gap-2 mt-0.5">
+                          <span>{b.customerMobile}</span>
+                          <span>•</span>
+                          <span className="truncate max-w-[150px]">{b.customerEmail}</span>
+                        </div>
+                        {(b.age || b.bloodGroup) && (
+                          <div className="text-[10px] text-stone-400 mt-0.5">
+                            {b.age ? `Age: ${b.age}` : ""} {b.bloodGroup ? `| Blood: ${b.bloodGroup}` : ""}
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Trip Info */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-stone-800 line-clamp-1">{b.tripTitle}</div>
+                        {b.selectedBatch && (
+                          <div className="text-[10px] text-[#ea580c] font-semibold mt-0.5">
+                            Batch: {typeof b.selectedBatch === "string" ? b.selectedBatch : b.selectedBatch.label || `${b.selectedBatch.startDate}`}
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Amount */}
+                      <td className="py-3.5 px-4 font-display">
+                        <div className="font-extrabold text-stone-900 text-sm">₹{b.amount?.toLocaleString("en-IN")}</div>
+                        <div className="text-[10px] text-stone-400 font-sans">{b.travelers} Traveler{b.travelers > 1 ? "s" : ""}</div>
+                      </td>
+
+                      {/* Status Badge */}
+                      <td className="py-3.5 px-4">
+                        {b.status === "PAID" ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase tracking-wider">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" /> PAID
+                          </span>
+                        ) : b.status === "PENDING" ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold uppercase tracking-wider">
+                            <Clock className="w-3 h-3 text-amber-600" /> PENDING
+                          </span>
+                        ) : b.status === "CANCELLED" ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 text-[10px] font-extrabold uppercase tracking-wider">
+                            <Ban className="w-3 h-3 text-purple-600" /> USER CANCELLED
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 text-[10px] font-extrabold uppercase tracking-wider">
+                            <XCircle className="w-3 h-3 text-rose-600" /> FAILED
+                          </span>
+                        )}
+                      </td>
+
+                      {/* PayU Txn & Mode */}
+                      <td className="py-3.5 px-4 font-mono text-[11px]">
+                        <div className="text-stone-700 truncate max-w-[130px]" title={b.payuMihpayid || b.payuTxnId || "-"}>
+                          {b.payuMihpayid || b.payuTxnId || b.razorpayPaymentId || "-"}
+                        </div>
+                        <div className="text-[9.5px] uppercase font-extrabold text-[#ea580c] font-sans mt-0.5 flex items-center gap-1">
+                          <span className="px-1.5 py-0.5 rounded bg-orange-50 border border-orange-200">
+                            {b.paymentMode || b.paymentMethod || "PAYU"}
+                          </span>
+                          {b.bankRefNum && <span className="text-[9px] text-stone-400 font-mono">UTR: {b.bankRefNum.slice(-6)}</span>}
+                        </div>
+                      </td>
+
+                      {/* Actions Column */}
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
+                          <button
+                            onClick={() => setSelectedBooking(b)}
+                            className="px-2.5 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-[11px] inline-flex items-center gap-1 transition-all border border-stone-200/80 shadow-2xs"
+                          >
+                            <Eye size={13} className="text-stone-600" />
+                            View Details
+                          </button>
+
+                          <button
+                            onClick={() => handleSyncPayUStatus(b.bookingId)}
+                            title="Verify live status directly with PayU servers"
+                            className="px-2 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[11px] inline-flex items-center gap-1 transition-all"
+                          >
+                            <Zap size={13} className="text-emerald-600" />
+                            Sync
+                          </button>
+
+                          {b.status !== "PAID" ? (
+                            <button
+                              onClick={() => handleUpdateStatus(b._id, "PAID")}
+                              className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] inline-flex items-center gap-1 transition-all shadow-xs"
+                            >
+                              <Check size={13} />
+                              Mark Paid
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleUpdateStatus(b._id, "PENDING")}
+                              className="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 font-bold text-[11px] inline-flex items-center gap-1 transition-all"
+                            >
+                              <Clock size={13} className="text-amber-600" />
+                              Mark Pending
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => handleDeleteBooking(b._id)}
+                            className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[11px] inline-flex items-center gap-1 transition-all border border-rose-200/60"
+                          >
+                            <Trash2 size={13} />
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        )}
+
+        {!loading && activeTab === "badminton" && (
+          filteredEventRegistrations.length === 0 ? (
+            <div className="p-12 text-center text-stone-500 space-y-2">
+              <Zap className="w-10 h-10 text-orange-300 mx-auto" />
+              <p className="text-sm font-bold text-stone-700">No Badminton team registrations found.</p>
+              <p className="text-xs text-stone-400">When teams register for Badminton Championship Season 1 on the website, their details will appear here.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-orange-50/60 border-b border-stone-200/80 text-[10.5px] uppercase tracking-wider text-orange-950 font-extrabold">
+                    <th className="py-3.5 px-4">Registration ID / Date</th>
+                    <th className="py-3.5 px-4">Team Name</th>
+                    <th className="py-3.5 px-4">Player 1 (Captain)</th>
+                    <th className="py-3.5 px-4">Player 2 (Partner)</th>
+                    <th className="py-3.5 px-4">Amount Paid</th>
+                    <th className="py-3.5 px-4">Payment Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-150">
+                  {filteredEventRegistrations.map((e) => (
+                    <tr key={e._id} className="hover:bg-orange-50/30 transition-colors">
+                      <td className="py-3.5 px-4 font-mono">
+                        <div className="font-bold text-stone-900 text-xs">{e.bookingId}</div>
+                        <div className="text-[10px] text-stone-400 font-sans mt-0.5">
+                          {new Date(e.createdAt).toLocaleString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 font-bold text-orange-600 text-sm">
+                        {e.teamName}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-stone-900">{e.player1Name}</div>
+                        <div className="text-[11px] text-stone-500">{e.player1Phone} • {e.player1Email}</div>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-stone-900">{e.player2Name}</div>
+                        <div className="text-[11px] text-stone-500">{e.player2Phone}</div>
+                      </td>
+                      <td className="py-3.5 px-4 font-display font-extrabold text-stone-900 text-sm">
+                        ₹{e.amount || 500}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        {e.paymentStatus === "PAID" ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase tracking-wider">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" /> PAID
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold uppercase tracking-wider">
+                            <Clock className="w-3 h-3 text-amber-600" /> {e.paymentStatus || "PENDING"}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
         )}
       </div>
 

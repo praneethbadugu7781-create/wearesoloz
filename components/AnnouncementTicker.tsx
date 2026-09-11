@@ -6,6 +6,7 @@ import { ArrowRight, X, Flame } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 const DEFAULT_ANNOUNCEMENTS = [
+  { text: "🏸 WEARESOLOZ BADMINTON CHAMPIONSHIP (SEASON 1) — Sep 20 at Manikonda! Prize Pool ₹10,000! Register Team (₹500)", link: "/events/badminton-championship", badge: "SPORTS EVENT" },
   { text: "🔥 Upcoming Batch: Ananthagiri Hills Adventure Trek — Limited Seats Left!", link: "/upcoming-trips", badge: "HOT BATCH" },
   { text: "✈️ Special International: Sri Lanka 5D/4N Expedition — Bookings Open!", link: "/upcoming-trips", badge: "FEATURED" },
   { text: "🛕 Sabarimala Monthly Pilgrimage Expedition — Reserved Group Slots Available!", link: "/upcoming-trips", badge: "PILGRIMAGE" },
