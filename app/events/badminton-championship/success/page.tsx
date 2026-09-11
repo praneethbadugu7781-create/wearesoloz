@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { CheckCircle2, Trophy, Calendar, MapPin, Phone, Users, ShieldCheck, Download, Loader2 } from "lucide-react";
+import { CheckCircle2, Trophy, Calendar, MapPin, Phone, Users, ShieldCheck, Download, Loader2, ArrowLeft } from "lucide-react";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
@@ -40,105 +40,108 @@ function SuccessContent() {
   }, [bookingId]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#faf9f6] text-stone-900 flex flex-col font-sans selection:bg-orange-500 selection:text-white antialiased">
       <Navbar />
 
-      <main className="flex-1 pt-32 pb-20 px-4 sm:px-6 max-w-4xl mx-auto w-full">
+      <main className="flex-1 pt-32 pb-24 px-4 sm:px-6 max-w-4xl mx-auto w-full">
         {loading ? (
-          <div className="text-center py-20">
-            <Loader2 className="w-12 h-12 text-orange-400 animate-spin mx-auto mb-4" />
-            <p className="text-slate-400 font-semibold">Confirming team registration details...</p>
+          <div className="text-center py-24 space-y-4">
+            <Loader2 className="w-10 h-10 text-[#ea580c] animate-spin mx-auto" />
+            <p className="text-stone-500 font-semibold text-sm">Verifying team registration details...</p>
           </div>
         ) : error ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center max-w-lg mx-auto shadow-2xl">
-            <CheckCircle2 className="w-16 h-16 text-amber-400 mx-auto mb-4" />
-            <h1 className="text-2xl font-extrabold text-white mb-2 uppercase">Registration Received!</h1>
-            <p className="text-slate-300 text-sm mb-6">Your registration payment has been processed. Registration ID: <strong className="text-orange-400">{bookingId}</strong></p>
+          <div className="bg-white border border-stone-200/90 rounded-[2.5rem] p-8 sm:p-12 text-center max-w-lg mx-auto shadow-sm">
+            <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-200">
+              <CheckCircle2 className="w-8 h-8 text-amber-600" />
+            </div>
+            <h1 className="text-2xl font-extrabold text-stone-900 mb-2 uppercase">Registration Received!</h1>
+            <p className="text-stone-600 text-sm mb-6 leading-relaxed">Your registration payment has been processed successfully. Registration ID: <strong className="text-[#ea580c]">{bookingId}</strong></p>
             <Link
               href="/events/badminton-championship"
-              className="inline-block px-6 py-3 bg-orange-500 hover:bg-orange-600 text-slate-950 font-extrabold text-sm rounded-xl uppercase tracking-wider"
+              className="inline-flex items-center gap-2 px-7 py-3.5 gradient-orange text-white font-extrabold text-xs sm:text-sm rounded-2xl uppercase tracking-wider shadow-md hover:opacity-95"
             >
-              Back to Tournament Page
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Tournament Page</span>
             </Link>
           </div>
         ) : (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
-            {/* Header Glow */}
-            <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500" />
+          <div className="bg-white border border-stone-200/90 rounded-[2.5rem] p-6 sm:p-10 shadow-sm relative overflow-hidden">
+            {/* Top Accent Line */}
+            <div className="absolute top-0 inset-x-0 h-1.5 gradient-orange" />
 
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+            <div className="text-center mb-8 pt-2">
+              <div className="w-20 h-20 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-10 h-10 text-emerald-600" />
               </div>
-              <span className="inline-block px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-extrabold uppercase rounded-full tracking-widest mb-2">
-                Payment Successful • Verified
+              <span className="inline-block px-4 py-1 bg-emerald-100/70 border border-emerald-200 text-emerald-800 text-[11px] font-extrabold uppercase rounded-full tracking-widest mb-3">
+                Payment Verified & Confirmed
               </span>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-white uppercase">Team Registration Confirmed!</h1>
-              <p className="text-slate-400 text-sm mt-1">WeAreSoloZ Badminton Championship (Season 1)</p>
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-stone-900 uppercase tracking-tight">Team Registration Confirmed!</h1>
+              <p className="text-stone-500 text-sm mt-1">WeAreSoloZ Badminton Championship (Season 1)</p>
             </div>
 
             {/* Registration Pass Card */}
-            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 mb-8 space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800 pb-4 gap-2">
+            <div className="bg-stone-50 border border-stone-200/80 rounded-3xl p-6 sm:p-8 mb-8 space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-stone-200/80 pb-4 gap-2">
                 <div>
-                  <div className="text-slate-400 text-xs font-semibold uppercase">Registration ID</div>
-                  <div className="text-amber-400 font-extrabold text-lg sm:text-xl">{registration?.bookingId || bookingId}</div>
+                  <div className="text-stone-400 text-xs font-extrabold uppercase tracking-wider">Registration ID</div>
+                  <div className="text-[#ea580c] font-extrabold text-lg sm:text-xl font-mono mt-0.5">{registration?.bookingId || bookingId}</div>
                 </div>
                 <div className="sm:text-right">
-                  <div className="text-slate-400 text-xs font-semibold uppercase">Entry Fee Paid</div>
-                  <div className="text-emerald-400 font-black text-xl">₹{registration?.amount || 500}</div>
+                  <div className="text-stone-400 text-xs font-extrabold uppercase tracking-wider">Entry Fee Paid</div>
+                  <div className="text-emerald-700 font-black text-xl mt-0.5">₹{registration?.amount || 500}</div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <div className="text-slate-400 text-xs font-bold uppercase mb-1">Team Name</div>
-                  <div className="text-white font-extrabold text-lg">{registration?.teamName}</div>
+                  <div className="text-stone-400 text-xs font-bold uppercase tracking-wider mb-1">Team Name</div>
+                  <div className="text-stone-900 font-extrabold text-lg">{registration?.teamName}</div>
                 </div>
                 <div>
-                  <div className="text-slate-400 text-xs font-bold uppercase mb-1">Status</div>
-                  <div className="text-emerald-400 font-extrabold text-base flex items-center gap-1.5">
+                  <div className="text-stone-400 text-xs font-bold uppercase tracking-wider mb-1">Status</div>
+                  <div className="text-emerald-700 font-extrabold text-sm flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4" />
                     <span>REGISTERED & CONFIRMED</span>
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-800/80">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-stone-200/80">
                 <div>
-                  <div className="text-orange-400 font-bold text-xs uppercase mb-1">Player 1 (Captain)</div>
-                  <div className="text-white font-bold text-base">{registration?.player1Name}</div>
-                  <div className="text-slate-400 text-xs">{registration?.player1Phone} • {registration?.player1Email}</div>
+                  <div className="text-[#ea580c] font-extrabold text-xs uppercase tracking-wider mb-1">Player 1 (Captain)</div>
+                  <div className="text-stone-900 font-bold text-base">{registration?.player1Name}</div>
+                  <div className="text-stone-500 text-xs mt-0.5">{registration?.player1Phone} • {registration?.player1Email}</div>
                 </div>
                 <div>
-                  <div className="text-amber-400 font-bold text-xs uppercase mb-1">Player 2 (Partner)</div>
-                  <div className="text-white font-bold text-base">{registration?.player2Name}</div>
-                  <div className="text-slate-400 text-xs">{registration?.player2Phone}</div>
+                  <div className="text-amber-600 font-extrabold text-xs uppercase tracking-wider mb-1">Player 2 (Partner)</div>
+                  <div className="text-stone-900 font-bold text-base">{registration?.player2Name}</div>
+                  <div className="text-stone-500 text-xs mt-0.5">{registration?.player2Phone}</div>
                 </div>
               </div>
             </div>
 
             {/* Event Summary Card */}
-            <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-6 mb-8 space-y-4">
-              <h3 className="text-white font-extrabold text-base uppercase flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-amber-400" />
-                <span>Tournament Details</span>
+            <div className="bg-orange-50/60 border border-orange-200/80 rounded-3xl p-6 mb-8 space-y-4">
+              <h3 className="text-stone-900 font-bold text-base uppercase flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-[#ea580c]" />
+                <span>Tournament Event Details</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div className="flex items-start gap-3">
-                  <Calendar className="w-5 h-5 text-orange-400 shrink-0 mt-0.5" />
+                  <Calendar className="w-5 h-5 text-[#ea580c] shrink-0 mt-0.5" />
                   <div>
-                    <div className="text-slate-400 text-xs">Date & Time</div>
-                    <div className="text-white font-bold">Sunday, 20th September 2026 | 9:15 AM</div>
+                    <div className="text-stone-500 text-xs font-semibold">Date & Time</div>
+                    <div className="text-stone-900 font-bold">Sunday, 20th September 2026 | 9:15 AM</div>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-orange-400 shrink-0 mt-0.5" />
+                  <MapPin className="w-5 h-5 text-[#ea580c] shrink-0 mt-0.5" />
                   <div>
-                    <div className="text-slate-400 text-xs">Venue</div>
-                    <div className="text-white font-bold">Indian Badminton Academy, Manikonda</div>
+                    <div className="text-stone-500 text-xs font-semibold">Venue</div>
+                    <div className="text-stone-900 font-bold">Indian Badminton Academy, Manikonda</div>
                   </div>
                 </div>
               </div>
@@ -148,16 +151,16 @@ function SuccessContent() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/events/badminton-championship"
-                className="w-full sm:w-auto px-8 py-3.5 bg-orange-500 hover:bg-orange-600 text-slate-950 font-extrabold text-sm rounded-xl uppercase tracking-wider text-center"
+                className="w-full sm:w-auto px-8 py-3.5 gradient-orange text-white font-extrabold text-xs sm:text-sm rounded-2xl uppercase tracking-wider text-center shadow-md hover:opacity-95"
               >
                 Back to Tournament Page
               </Link>
-              <a
-                href="https://wearesoloz.com"
-                className="w-full sm:w-auto px-8 py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm rounded-xl text-center"
+              <Link
+                href="/"
+                className="w-full sm:w-auto px-8 py-3.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs sm:text-sm rounded-2xl text-center transition-colors"
               >
-                Return to WeAreSoloZ Home
-              </a>
+                Return to Home Page
+              </Link>
             </div>
 
           </div>
@@ -171,7 +174,7 @@ function SuccessContent() {
 
 export default function BadmintonSuccessPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">Loading confirmation...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#faf9f6] text-stone-700 flex items-center justify-center">Loading confirmation...</div>}>
       <SuccessContent />
     </Suspense>
   );
