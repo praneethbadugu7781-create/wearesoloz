@@ -71,18 +71,20 @@ export function Navbar() {
 
       <div className="max-w-7xl mx-auto px-4 md:px-10 flex items-center justify-between pt-2">
         {/* Logo */}
-        <Link href="/" data-testid="logo-link" className="flex items-center gap-2 md:gap-3 group">
-          <div className="relative">
+        <Link href="/" data-testid="logo-link" className="flex items-center gap-2 md:gap-3 group shrink-0">
+          <div className="relative shrink-0">
             <img
               src="/logo.png"
               alt="WeAreSoloz"
-              className={`rounded-full object-cover transition-all duration-300 ring-2 ring-orange-500/45 group-hover:ring-orange-500 shadow-[0_0_12px_rgba(234,88,12,0.25)] group-hover:shadow-[0_0_20px_rgba(234,88,12,0.5)] ${
+              width={48}
+              height={48}
+              className={`rounded-full object-cover shrink-0 transition-all duration-300 ring-2 ring-orange-500/45 group-hover:ring-orange-500 shadow-[0_0_12px_rgba(234,88,12,0.25)] group-hover:shadow-[0_0_20px_rgba(234,88,12,0.5)] ${
                 showScrolled ? "h-9 w-9 md:h-10 md:w-10" : "h-11 w-11 md:h-12 md:w-12"
               }`}
             />
             <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white animate-pulse" />
           </div>
-          <div className="leading-none">
+          <div className="leading-none shrink-0">
             <div className={`font-sans font-extrabold tracking-tight transition-all duration-300 ${
               showScrolled ? "text-base md:text-lg text-stone-900" : "text-lg md:text-xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
             }`}>
