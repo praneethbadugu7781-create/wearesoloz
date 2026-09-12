@@ -207,15 +207,39 @@ JSON Schema:
 
     let parsedData = null;
 
-    // 2. Try Groq AI (Vision model if image uploaded, versatile model for text)
+    // Helper to safely extract JSON from AI response
+    const extractJsonFromText = (rawText) => {
+      if (!rawText) return null;
+      let clean = rawText.replace(/^```json\s*/i, "").replace(/```\s*$/g, "").trim();
+      try {
+        return JSON.parse(clean);
+      } catch (e1) {
+        const firstBrace = clean.indexOf("{");
+        const lastBrace = clean.lastIndexOf("}");
+        if (firstBrace !== -1 && lastBrace > firstBrace) {
+          const jsonSub = clean.substring(firstBrace, lastBrace + 1);
+          try {
+            return JSON.parse(jsonSub);
+          } catch (e2) {
+            console.error("Failed to parse JSON substring:", e2.message);
+          }
+        }
+      }
+      return null;
+    };
+
+    // 2. Try Groq AI
     if (groqKey) {
       const groqModelsToTry = imageUrl 
         ? [
-            { name: "llama-3.2-11b-vision-preview", isVision: true },
-            { name: "llama-3.2-90b-vision-preview", isVision: true }
+            { name: "openai/gpt-oss-120b", isVision: false },
+            { name: "qwen/qwen3.6-27b", isVision: false },
+            { name: "openai/gpt-oss-20b", isVision: false }
           ]
         : [
-            { name: "llama-3.3-70b-versatile", isVision: false }
+            { name: "openai/gpt-oss-120b", isVision: false },
+            { name: "qwen/qwen3.6-27b", isVision: false },
+            { name: "openai/gpt-oss-20b", isVision: false }
           ];
 
       for (const mObj of groqModelsToTry) {
@@ -255,9 +279,9 @@ JSON Schema:
           const groqRes = await callGroqApi(groqKey, payload);
           if (groqRes && groqRes.choices && groqRes.choices[0] && groqRes.choices[0].message) {
             const choiceText = groqRes.choices[0].message.content;
-            const cleanChoiceText = choiceText.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
-            parsedData = JSON.parse(cleanChoiceText);
+            parsedData = extractJsonFromText(choiceText);
             if (parsedData && (parsedData.destination || parsedData.title)) {
+              console.log(`✅ Groq AI (${mObj.name}) successfully extracted trip:`, parsedData.destination);
               break;
             }
           }
@@ -290,14 +314,9 @@ JSON Schema:
 
           const result = await model.generateContent(contentParts);
           const responseText = await result.response.text();
-
-          const cleanJsonString = responseText
-            .replace(/^```json\s*/i, "")
-            .replace(/```\s*$/, "")
-            .trim();
-
-          parsedData = JSON.parse(cleanJsonString);
+          parsedData = extractJsonFromText(responseText);
           if (parsedData && (parsedData.destination || parsedData.title)) {
+            console.log(`✅ Gemini AI (${mName}) successfully extracted trip:`, parsedData.destination);
             break;
           }
         } catch (geminiErr) {
@@ -306,63 +325,89 @@ JSON Schema:
       }
     }
 
-    // 4. Smart fallback parser if AI key is missing or AI vision API failed
+    // 4. Smart Regex Fallback Parser if AI key is missing or AI call failed
     if (!parsedData) {
-      const srcText = `${req.body.fileName || ""} ${text || ""} ${imageUrl || ""}`.toLowerCase();
-      let extractedDest = "Dharmasthala & Udupi Coastal Expedition";
-      let extractedState = "Karnataka";
-      let extractedCategory = "Temples";
-      let extractedDuration = "2 Days / 1 Night";
-      let extractedPrice = "3,999";
+      const rawTextStr = `${text || ""} ${req.body.fileName || ""}`;
+      const srcText = rawTextStr.toLowerCase();
+      const lines = rawTextStr.split("\n").map(l => l.trim()).filter(Boolean);
 
-      if (srcText.includes("gokarna") || srcText.includes("honnavar") || srcText.includes("murudeshwar")) {
-        extractedDest = "Gokarna Murudeshwar Honnavar";
-        extractedState = "Karnataka";
-        extractedCategory = "Adventure";
-        extractedDuration = "3 Days / 2 Nights";
-        extractedPrice = "8,999";
-      } else if (srcText.includes("hampi")) {
-        extractedDest = "Hampi Heritage Expedition";
-        extractedState = "Karnataka";
-        extractedCategory = "Temples";
-        extractedDuration = "3 Days / 2 Nights";
-        extractedPrice = "4,499";
-      } else if (srcText.includes("ananthagiri") || srcText.includes("vikarabad")) {
-        extractedDest = "Ananthagiri Hills Adventure Expedition";
+      // Extract Destination
+      let extractedDest = "";
+      const titleLine = lines.find(l => l.includes("–") || l.includes("-") || l.toLowerCase().includes("expedition") || l.toLowerCase().includes("trip"));
+      if (titleLine) {
+        let clean = titleLine.replace(/[^\w\s\–\-]/gi, "").trim();
+        if (clean.includes("–")) clean = clean.split("–").pop().trim();
+        else if (clean.includes("-")) clean = clean.split("-").pop().trim();
+        if (clean) extractedDest = clean;
+      }
+      if (!extractedDest) {
+        if (srcText.includes("gandikota")) extractedDest = "Gandikota Camping Trip";
+        else if (srcText.includes("gokarna")) extractedDest = "Gokarna Murudeshwar Honnavar";
+        else if (srcText.includes("hampi")) extractedDest = "Hampi Heritage Expedition";
+        else if (srcText.includes("ananthagiri")) extractedDest = "Ananthagiri Hills Adventure";
+        else if (srcText.includes("wayanad")) extractedDest = "Wayanad Nature Expedition";
+        else if (srcText.includes("chikmagalur")) extractedDest = "Chikmagalur Peak Trek";
+        else if (srcText.includes("coorg")) extractedDest = "Coorg Coffee & Waterfalls";
+        else if (srcText.includes("munnar")) extractedDest = "Munnar Tea Hills Expedition";
+        else if (srcText.includes("goa")) extractedDest = "Goa & Dudhsagar Waterfalls";
+        else extractedDest = "Group Trip Expedition";
+      }
+
+      // Extract Price
+      let extractedPrice = "";
+      const priceMatch = rawTextStr.match(/(?:price|cost|fee|amount|₹|rs\.?)\s*:?\s*₹?\s*([\d,]+)/i);
+      if (priceMatch) {
+        extractedPrice = priceMatch[1];
+      }
+
+      // Extract Duration
+      let extractedDuration = "2 Days / 1 Night";
+      const durationMatch = rawTextStr.match(/(\d+\s*Days?\s*\/\s*\d+\s*Nights?|\d+D\s*\/\s*\d+N)/i);
+      if (durationMatch) {
+        extractedDuration = durationMatch[1];
+      }
+
+      // Extract State
+      let extractedState = "Karnataka";
+      if (srcText.includes("gandikota") || srcText.includes("belum") || srcText.includes("yaganti") || srcText.includes("ahobilam") || srcText.includes("aruku") || srcText.includes("vanjangi")) {
+        extractedState = "Andhra Pradesh";
+      } else if (srcText.includes("wayanad") || srcText.includes("munnar") || srcText.includes("varkala") || srcText.includes("kerala")) {
+        extractedState = "Kerala";
+      } else if (srcText.includes("ananthagiri") || srcText.includes("vikarabad") || srcText.includes("telangana")) {
         extractedState = "Telangana";
-        extractedCategory = "Adventure";
-        extractedDuration = "2 Days / 1 Night";
-        extractedPrice = "2,599";
-      } else if (srcText.includes("wayanad")) {
-        extractedDest = "Wayanad Nature Expedition";
-        extractedState = "Kerala";
-        extractedCategory = "Treks";
-        extractedDuration = "3 Days / 2 Nights";
-        extractedPrice = "4,999";
-      } else if (srcText.includes("chikmagalur")) {
-        extractedDest = "Chikmagalur Peak Trek";
-        extractedState = "Karnataka";
-        extractedCategory = "Treks";
-        extractedDuration = "3 Days / 2 Nights";
-        extractedPrice = "5,499";
-      } else if (srcText.includes("coorg")) {
-        extractedDest = "Coorg Coffee & Waterfalls";
-        extractedState = "Karnataka";
-        extractedCategory = "Adventure";
-        extractedDuration = "3 Days / 2 Nights";
-        extractedPrice = "4,999";
-      } else if (srcText.includes("munnar") || srcText.includes("kerala")) {
-        extractedDest = "Munnar Tea Hills Expedition";
-        extractedState = "Kerala";
-        extractedCategory = "Adventure";
-        extractedDuration = "3 Days / 2 Nights";
-        extractedPrice = "5,499";
-      } else if (srcText.includes("dudhsagar") || srcText.includes("goa")) {
-        extractedDest = "Goa & Dudhsagar Waterfalls";
+      } else if (srcText.includes("goa") || srcText.includes("dudhsagar")) {
         extractedState = "Goa";
-        extractedCategory = "Adventure";
-        extractedDuration = "3 Days / 2 Nights";
-        extractedPrice = "5,999";
+      }
+
+      // Extract Category
+      let extractedCategory = "Adventure";
+      if (srcText.includes("temple") || srcText.includes("swamy") || srcText.includes("darshan") || srcText.includes("pilgrimage")) {
+        extractedCategory = "Temples";
+      } else if (srcText.includes("trek") || srcText.includes("peak") || srcText.includes("hills")) {
+        extractedCategory = "Treks";
+      }
+
+      // Extract Inclusions & Exclusions
+      const inclusions = [];
+      const exclusions = [];
+      let section = "";
+
+      for (const l of lines) {
+        if (l.toLowerCase().includes("include") && !l.toLowerCase().includes("exclude")) {
+          section = "inclusions";
+          continue;
+        } else if (l.toLowerCase().includes("exclude")) {
+          section = "exclusions";
+          continue;
+        }
+
+        if (section === "inclusions" || section === "exclusions") {
+          const cleanLine = l.replace(/^[\*\-\•\+\✅\❌\🚌\🏕️\🍽️\🏞️\🏰\🌅\🙏\🕳️\🛕\🔥\🎉\📸\👨\🩹\🚤\🎟️\☕\s]+/, "").trim();
+          if (cleanLine.length > 3 && !cleanLine.toLowerCase().includes("limited seats") && !cleanLine.toLowerCase().includes("bookings") && !cleanLine.toLowerCase().includes("www.")) {
+            if (section === "inclusions") inclusions.push(cleanLine);
+            else exclusions.push(cleanLine);
+          }
+        }
       }
 
       parsedData = {
