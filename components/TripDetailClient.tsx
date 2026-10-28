@@ -1,9 +1,31 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Calendar, Clock, Users, MapPin, ArrowRight, Download, CreditCard, MessageCircle, ShieldCheck, CheckCircle2, AlertTriangle } from "lucide-react";
+import { 
+  Calendar, 
+  Clock, 
+  Users, 
+  MapPin, 
+  ArrowRight, 
+  Download, 
+  CreditCard, 
+  MessageCircle, 
+  ShieldCheck, 
+  CheckCircle2, 
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  Share2,
+  Images,
+  Maximize2,
+  X,
+  Sparkles,
+  Check
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -352,8 +374,48 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [copied, setCopied] = useState(false);
 
   const gallery = [trip.image, ...(trip.images || [])].filter(Boolean);
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const handleShare = () => {
+    if (typeof window !== "undefined") {
+      if (navigator.share) {
+        navigator.share({
+          title: trip.title || `${trip.destination} Expedition`,
+          text: `Explore ${trip.title || trip.destination} with WeAreSoloZ!`,
+          url: window.location.href
+        }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(window.location.href);
+        setCopied(true);
+        toast.success(locale === "te" ? "ట్రిప్ లింక్ కాపీ చేయబడింది!" : locale === "hi" ? "ट्रिप लिंक कॉपी हो गया!" : "Trip link copied to clipboard!");
+        setTimeout(() => setCopied(false), 2000);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxOpen(false);
+      if (e.key === "ArrowRight") setLightboxIndex((prev) => (prev + 1) % gallery.length);
+      if (e.key === "ArrowLeft") setLightboxIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "auto";
+    };
+  }, [lightboxOpen, gallery.length]);
 
   useEffect(() => {
     if (gallery.length <= 1) return;
@@ -548,75 +610,240 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
 
   return (
     <div data-testid="trip-detail-page" className="bg-white min-h-screen text-[#1c1917]">
-      <section className="relative h-[60vh] min-h-[480px] overflow-hidden bg-stone-950">
-        {gallery.length <= 1 ? (
-          <img
-            src={getOptimizedImageUrl(trip.image || "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=2400&q=85", 1200)}
-            alt={trip.title}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div 
-            className="relative h-full w-full overflow-hidden bg-stone-950"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            {/* Sliding Flex Container */}
-            <div 
-              className="flex h-full w-full transition-transform duration-700 ease-in-out"
-              style={{ transform: `translateX(-${activeImageIndex * 100}%)` }}
+      {/* Editorial Luxury Header & Visual Showcase */}
+      <header className="max-w-7xl mx-auto px-6 md:px-10 pt-28 sm:pt-32 pb-4">
+        {/* Navigation Breadcrumb & Social Share */}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <Link
+              href="/upcoming-trips"
+              className="font-medium text-stone-500 hover:text-stone-900 transition-colors flex items-center gap-1"
             >
-              {gallery.map((imgSrc, index) => (
-                <div
-                  key={index}
-                  className="relative h-full w-full shrink-0"
-                >
-                  <img
-                    src={getOptimizedImageUrl(imgSrc, 1200)}
-                    alt={`${trip.title} Gallery ${index + 1}`}
-                    loading={index === 0 ? "eager" : "lazy"}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </div>
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>{locale === "te" ? "అన్ని ట్రిప్పులు" : locale === "hi" ? "सभी यात्राएं" : "Upcoming Trips"}</span>
+            </Link>
+            <span className="text-stone-300">/</span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200/90 text-[#ea580c] text-[10.5px] font-bold uppercase tracking-[0.18em]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c]" />
+              <span>{trip.destination}</span>
+            </span>
+            {trip.category && (
+              <span className="px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-600 text-[10.5px] font-medium tracking-wide">
+                {trip.category}
+              </span>
+            )}
+          </div>
 
-            {/* Slider Dots indicators */}
-            <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-20 flex gap-2 bg-black/30 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/5">
-              {gallery.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setActiveImageIndex(index)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    activeImageIndex === index ? "w-5 bg-[#ea580c]" : "w-1.5 bg-white/40 hover:bg-white"
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent pointer-events-none" />
-        <div className="absolute bottom-12 left-0 right-0 max-w-7xl mx-auto px-6 md:px-10 pointer-events-none">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-50 border border-orange-200/90 text-[#ea580c] text-[10.5px] font-bold uppercase tracking-[0.2em] shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c]" />
-            <span>{trip.destination}</span>
-          </div>
-          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-[4.75rem] font-medium tracking-[-0.02em] leading-[1.08] mt-3 max-w-4xl text-stone-900">
-            {trip.title || `${trip.destination} Expedition`}
-          </h1>
+          <button
+            type="button"
+            onClick={handleShare}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-stone-200/90 text-stone-700 text-xs font-semibold hover:bg-stone-50 hover:border-stone-300 transition-all shadow-2xs active:scale-95 cursor-pointer"
+            title="Share this trip"
+          >
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 text-stone-500" />}
+            <span>{copied ? "Copied Link!" : "Share Trip"}</span>
+          </button>
         </div>
-        {gallery.length > 1 && (
-          <div className="absolute right-6 bottom-12 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-3.5 py-1.5 border border-white/10 select-none pointer-events-none flex items-center gap-1.5">
-            <span>{activeImageIndex + 1} / {gallery.length} {locale === "te" ? "ఫోటోలు" : locale === "hi" ? "तस्वीरें" : "Photos"}</span>
-            <span className="text-[#ea580c] font-black">•</span>
-            <span>{locale === "te" ? "స్వైప్ ➜" : locale === "hi" ? "स्वाइप करें ➜" : "Swipe ➜"}</span>
+
+        {/* Majestic Playfair Editorial Title */}
+        <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-medium tracking-[-0.02em] leading-[1.08] text-stone-900 max-w-5xl">
+          {trip.title || `${trip.destination} Expedition`}
+        </h1>
+
+        {/* Quick Meta Stats Chips */}
+        <div className="flex flex-wrap items-center gap-3 sm:gap-6 mt-4 text-xs sm:text-sm text-stone-600 font-sans font-medium">
+          <span className="flex items-center gap-1.5 text-stone-900 font-semibold">
+            <Star className="w-4 h-4 fill-amber-400 text-amber-500" />
+            4.9 <span className="text-stone-500 font-normal">(Community Verified)</span>
+          </span>
+          <span className="text-stone-300">•</span>
+          <span className="flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-[#ea580c]" />
+            <span>{trip.duration || "5 Days / 4 Nights"}</span>
+          </span>
+          <span className="text-stone-300">•</span>
+          <span className="flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-[#ea580c]" />
+            <span>{trip.state ? `${trip.destination}, ${trip.state}` : trip.destination}</span>
+          </span>
+        </div>
+
+        {/* Curated Bento Visual Showcase */}
+        {gallery.length >= 3 ? (
+          /* Desktop Multi-Photo Bento Showcase */
+          <div className="hidden md:grid grid-cols-12 gap-3.5 h-[480px] lg:h-[540px] rounded-3xl overflow-hidden mt-6 relative shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-stone-200/80 bg-stone-100">
+            {/* Primary Cinematic Shot */}
+            <div
+              onClick={() => openLightbox(0)}
+              className="col-span-8 relative h-full overflow-hidden cursor-pointer group"
+            >
+              <img
+                src={getOptimizedImageUrl(gallery[0], 1400)}
+                alt={`${trip.title} Featured View`}
+                className="w-full h-full object-cover group-hover:scale-[1.025] transition-transform duration-700 ease-out"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+              <div className="absolute bottom-4 left-4 z-10 flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-semibold tracking-wide border border-white/10 flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-[#ea580c]" />
+                  <span>Featured View</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Side Preview Stack */}
+            <div className="col-span-4 grid grid-rows-2 gap-3.5 h-full">
+              <div
+                onClick={() => openLightbox(1)}
+                className="relative h-full overflow-hidden cursor-pointer group rounded-2xl"
+              >
+                <img
+                  src={getOptimizedImageUrl(gallery[1], 800)}
+                  alt={`${trip.title} Preview 1`}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+              </div>
+
+              <div
+                onClick={() => openLightbox(2)}
+                className="relative h-full overflow-hidden cursor-pointer group rounded-2xl"
+              >
+                <img
+                  src={getOptimizedImageUrl(gallery[2], 800)}
+                  alt={`${trip.title} Preview 2`}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+                <div className="absolute inset-0 bg-black/15 group-hover:bg-transparent transition-colors" />
+
+                {/* View All Photos Button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openLightbox(0);
+                  }}
+                  className="absolute bottom-3.5 right-3.5 z-10 inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-stone-900/90 hover:bg-black text-white text-xs font-semibold backdrop-blur-md transition-all border border-white/20 shadow-lg active:scale-95 cursor-pointer"
+                >
+                  <Images className="w-3.5 h-3.5 text-[#ea580c]" />
+                  <span>{gallery.length > 3 ? `+${gallery.length - 3} more • All ${gallery.length} photos` : `All ${gallery.length} photos`}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : gallery.length === 2 ? (
+          <div className="hidden md:grid grid-cols-2 gap-3.5 h-[480px] rounded-3xl overflow-hidden mt-6 relative shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-stone-200/80 bg-stone-100">
+            {gallery.slice(0, 2).map((img, i) => (
+              <div key={i} onClick={() => openLightbox(i)} className="relative h-full overflow-hidden cursor-pointer group">
+                <img src={getOptimizedImageUrl(img, 1200)} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                {i === 1 && (
+                  <button type="button" onClick={(e) => { e.stopPropagation(); openLightbox(0); }} className="absolute bottom-4 right-4 z-10 inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-stone-900/90 hover:bg-black text-white text-xs font-semibold backdrop-blur-md transition-all border border-white/20 shadow-lg cursor-pointer">
+                    <Images className="w-3.5 h-3.5 text-[#ea580c]" />
+                    <span>View both photos</span>
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div
+            onClick={() => openLightbox(0)}
+            className="hidden md:block h-[480px] lg:h-[520px] rounded-3xl overflow-hidden mt-6 relative shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-stone-200/80 cursor-pointer group"
+          >
+            <img
+              src={getOptimizedImageUrl(gallery[0] || trip.image, 1600)}
+              alt={trip.title}
+              className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700"
+            />
+            <div className="absolute bottom-4 right-4 z-10 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-stone-900/85 text-white text-xs font-semibold backdrop-blur-md border border-white/20 shadow-lg">
+              <Maximize2 className="w-3.5 h-3.5 text-[#ea580c]" />
+              <span>Click to view full photo</span>
+            </div>
           </div>
         )}
-      </section>
 
-      <section className="px-6 md:px-10 py-20">
+        {/* Mobile Viewport Carousel */}
+        <div
+          className="md:hidden relative h-[360px] rounded-3xl overflow-hidden mt-5 shadow-md border border-stone-200/80 bg-stone-950 cursor-pointer"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onClick={() => openLightbox(activeImageIndex)}
+        >
+          <div
+            className="flex h-full w-full transition-transform duration-500 ease-out"
+            style={{ transform: `translateX(-${activeImageIndex * 100}%)` }}
+          >
+            {gallery.map((imgSrc, index) => (
+              <div key={index} className="relative h-full w-full shrink-0">
+                <img
+                  src={getOptimizedImageUrl(imgSrc, 1000)}
+                  alt={`${trip.title} ${index + 1}`}
+                  loading={index === 0 ? "eager" : "lazy"}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
+
+          {gallery.length > 1 && (
+            <>
+              <div className="absolute bottom-4 left-4 z-10 bg-black/70 backdrop-blur-md text-white text-[10.5px] font-semibold px-3 py-1 rounded-full border border-white/10 flex items-center gap-1.5 select-none pointer-events-none">
+                <Images className="w-3 h-3 text-[#ea580c]" />
+                <span>{activeImageIndex + 1} / {gallery.length} Photos</span>
+              </div>
+
+              <div className="absolute bottom-4 right-4 z-10 flex gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/10">
+                {gallery.map((_, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveImageIndex(index);
+                    }}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      activeImageIndex === index ? "w-4 bg-[#ea580c]" : "w-1.5 bg-white/50"
+                    }`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Interactive Desktop Thumbnail Rail */}
+        {gallery.length > 1 && (
+          <div className="hidden md:flex items-center gap-2.5 mt-3.5 overflow-x-auto pb-1 no-scrollbar">
+            {gallery.map((imgSrc, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => openLightbox(idx)}
+                className="relative size-16 lg:size-20 rounded-2xl overflow-hidden shrink-0 border-2 border-stone-200 hover:border-[#ea580c] transition-all group shadow-2xs cursor-pointer"
+                title={`View photo ${idx + 1}`}
+              >
+                <img
+                  src={getOptimizedImageUrl(imgSrc, 240)}
+                  alt={`Thumbnail ${idx + 1}`}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                />
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => openLightbox(0)}
+              className="h-16 lg:h-20 px-4 rounded-2xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 text-xs font-semibold shrink-0 flex items-center gap-2 transition-colors shadow-2xs cursor-pointer"
+            >
+              <Images className="w-4 h-4 text-[#ea580c]" />
+              <span>View All ({gallery.length})</span>
+            </button>
+          </div>
+        )}
+      </header>
+
+      <section className="px-6 md:px-10 py-10">
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-12">
           <div className="md:col-span-2">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
@@ -1053,6 +1280,94 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
           </div>
         </div>
       </section>
+
+      {/* High-Resolution Fullscreen Lightbox Modal */}
+      {lightboxOpen && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-4 sm:p-6 animate-in fade-in duration-200"
+          onClick={() => setLightboxOpen(false)}
+        >
+          {/* Lightbox Top Bar */}
+          <div 
+            className="flex items-center justify-between text-white z-10 w-full max-w-7xl mx-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white/10 border border-white/15">
+                {lightboxIndex + 1} / {gallery.length}
+              </span>
+              <span className="text-sm font-medium text-stone-300 hidden sm:inline truncate max-w-md font-sans">
+                {trip.title || trip.destination}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(false)}
+              className="size-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all border border-white/10 active:scale-95 cursor-pointer"
+              aria-label="Close Lightbox"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Active Photo Container with Navigation Arrows */}
+          <div 
+            className="relative flex-1 flex items-center justify-center my-4 overflow-hidden select-none"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {gallery.length > 1 && (
+              <button
+                type="button"
+                onClick={() => setLightboxIndex((prev) => (prev - 1 + gallery.length) % gallery.length)}
+                className="absolute left-2 sm:left-6 z-20 size-11 sm:size-12 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition-all border border-white/20 backdrop-blur-md active:scale-90 cursor-pointer shadow-xl"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            )}
+
+            <img
+              src={getOptimizedImageUrl(gallery[lightboxIndex], 2000)}
+              alt={`${trip.title} Fullscreen ${lightboxIndex + 1}`}
+              className="max-h-[75vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl transition-all duration-300"
+            />
+
+            {gallery.length > 1 && (
+              <button
+                type="button"
+                onClick={() => setLightboxIndex((prev) => (prev + 1) % gallery.length)}
+                className="absolute right-2 sm:right-6 z-20 size-11 sm:size-12 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition-all border border-white/20 backdrop-blur-md active:scale-90 cursor-pointer shadow-xl"
+                aria-label="Next image"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            )}
+          </div>
+
+          {/* Lightbox Bottom Interactive Thumbnail Strip */}
+          {gallery.length > 1 && (
+            <div 
+              className="flex items-center justify-center gap-2 overflow-x-auto py-2 z-10 no-scrollbar max-w-2xl mx-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {gallery.map((imgSrc, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setLightboxIndex(idx)}
+                  className={`relative size-12 sm:size-14 rounded-xl overflow-hidden shrink-0 transition-all cursor-pointer ${
+                    lightboxIndex === idx ? "ring-2 ring-[#ea580c] scale-105" : "opacity-40 hover:opacity-100"
+                  }`}
+                  aria-label={`Jump to image ${idx + 1}`}
+                >
+                  <img src={getOptimizedImageUrl(imgSrc, 200)} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <TermsModal
         isOpen={showTerms}
