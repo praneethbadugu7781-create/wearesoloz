@@ -603,7 +603,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
             <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c]" />
             <span>{trip.destination}</span>
           </div>
-          <h1 className="font-sans text-4xl sm:text-6xl md:text-7xl font-black tracking-tight mt-2.5 max-w-4xl text-stone-900">
+          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-[4.75rem] font-medium tracking-[-0.02em] leading-[1.08] mt-3 max-w-4xl text-stone-900">
             {trip.title || `${trip.destination} Expedition`}
           </h1>
         </div>

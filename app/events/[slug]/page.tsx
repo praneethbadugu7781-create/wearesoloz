@@ -215,7 +215,7 @@ export default function DynamicEventDetailsPage() {
               {event.category} {event.tagline && `• ${event.tagline}`}
             </div>
 
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight">
+            <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-medium tracking-tight leading-tight">
               {event.title}
             </h1>
 

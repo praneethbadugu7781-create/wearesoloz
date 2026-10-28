@@ -91,7 +91,7 @@ export default function EventsDirectoryPage() {
               SoloZ Community Events
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+            <h1 className="font-display text-3xl sm:text-5xl font-medium tracking-tight leading-tight">
               Tournaments, Meetups & <span className="text-[#ea580c]">Sports Events</span>
             </h1>
 
