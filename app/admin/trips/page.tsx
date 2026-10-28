@@ -44,6 +44,8 @@ interface TripData {
   image: string;
   images: string[];
   featured: boolean;
+  showInTicker?: boolean;
+  tickerBadge?: string;
   status: "draft" | "published";
   itinerary: ItineraryItem[];
   inclusions: string[];
@@ -111,6 +113,8 @@ const emptyForm: TripData = {
   image: "",
   images: [],
   featured: false,
+  showInTicker: false,
+  tickerBadge: "UPCOMING",
   status: "published",
   itinerary: [
     { day: "Day 1", title: "Arrival", description: "Arrive at pickup location." }
@@ -822,6 +826,23 @@ export default function AdminTripsPage() {
     setView("form");
   };
 
+  const handleToggleTicker = async (trip: TripData) => {
+    try {
+      const updatedValue = !trip.showInTicker;
+      const res = await fetch(`${API_URL}/admin/trips/${trip._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        body: JSON.stringify({ showInTicker: updatedValue })
+      });
+      if (!res.ok) throw new Error("Failed to update ticker status");
+      setTrips((prev) =>
+        prev.map((t) => (t._id === trip._id ? { ...t, showInTicker: updatedValue } : t))
+      );
+    } catch (err: any) {
+      alert(err.message || "Failed to update ticker status");
+    }
+  };
+
   // Render a single trip card to avoid code duplication
   const renderTripCard = (trip: TripData) => {
     const todayMidnight = new Date().setHours(0, 0, 0, 0);
@@ -841,6 +862,11 @@ export default function AdminTripsPage() {
         <div>
           <div className="relative aspect-video w-full">
             <img src={trip.image} alt={trip.destination} className="h-full w-full object-cover" />
+            {trip.showInTicker && (
+              <div className="absolute left-3 top-3 bg-gradient-to-r from-orange-600 to-amber-500 text-white rounded-full px-2.5 py-0.5 text-[9.5px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-md border border-amber-300/30">
+                <span>🔥</span> Top Ticker
+              </div>
+            )}
             <div className="absolute right-3 top-3 flex gap-2">
               <span className="bg-orange-500/90 text-white rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
                 {trip.state || "Andhra Pradesh"}
@@ -906,6 +932,17 @@ export default function AdminTripsPage() {
       <div className="p-5 pt-0 border-t border-white/5 mt-4 flex items-center justify-between">
         <span className="text-base font-bold text-soloz-amber">{trip.price}</span>
         <div className="flex gap-2">
+          <button
+            onClick={() => handleToggleTicker(trip)}
+            title={trip.showInTicker ? "Remove from top floating ticker" : "Add to top floating ticker"}
+            className={`grid size-8 place-items-center rounded border transition-colors ${
+              trip.showInTicker
+                ? "bg-gradient-to-r from-orange-600 to-amber-500 text-white border-amber-400 shadow-sm"
+                : "bg-white/5 border-white/10 text-stone-400 hover:text-white hover:bg-white/10"
+            }`}
+          >
+            <span className="text-xs">🔥</span>
+          </button>
           <button
             onClick={() => handleOpenWaivers(trip)}
             title="Manage Confirmations & Waivers"
@@ -1408,13 +1445,13 @@ export default function AdminTripsPage() {
 
             <div className="space-y-4">
               <label className="text-[10px] uppercase tracking-wider text-soloz-ash/60 block">Publish Settings</label>
-              <div className="flex gap-6">
+              <div className="flex flex-wrap gap-6 items-center">
                 <label className="flex items-center gap-2 cursor-pointer text-sm">
                   <input
                     type="checkbox"
                     checked={formData.featured}
                     onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                    className="size-4 accent-soloz-ember"
+                    className="size-4 accent-soloz-ember cursor-pointer"
                   />
                   Featured Trip
                 </label>
@@ -1429,6 +1466,36 @@ export default function AdminTripsPage() {
                     <option value="draft">Draft</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Ticker Floating Control */}
+              <div className="p-3 bg-stone-900/80 rounded-xl border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <label className="flex items-center gap-2.5 cursor-pointer text-sm font-bold text-orange-400">
+                  <input
+                    type="checkbox"
+                    checked={!!formData.showInTicker}
+                    onChange={(e) => setFormData({ ...formData, showInTicker: e.target.checked })}
+                    className="size-4 accent-soloz-ember cursor-pointer rounded"
+                  />
+                  <span>🔥 Float in Top Ticker Bar</span>
+                </label>
+
+                {formData.showInTicker && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-stone-400">Ticker Badge:</span>
+                    <select
+                      value={formData.tickerBadge || "UPCOMING"}
+                      onChange={(e) => setFormData({ ...formData, tickerBadge: e.target.value })}
+                      className="h-7 px-2 rounded bg-black border border-white/20 text-xs text-orange-300 font-bold"
+                    >
+                      <option value="UPCOMING">UPCOMING</option>
+                      <option value="HOT BATCH">HOT BATCH</option>
+                      <option value="TRENDING">TRENDING</option>
+                      <option value="FEW SEATS LEFT">FEW SEATS LEFT</option>
+                      <option value="FEATURED">FEATURED</option>
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
           </div>

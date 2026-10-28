@@ -25,6 +25,8 @@ const tripSchema = new mongoose.Schema(
     image: { type: String, required: true },
     images: { type: [String], default: [] },
     featured: { type: Boolean, default: false },
+    showInTicker: { type: Boolean, default: false },
+    tickerBadge: { type: String, default: "UPCOMING" },
     status: { type: String, enum: ["draft", "published"], default: "published" },
     confirmationCode: { type: String, default: "" },
     confirmationLinkEnabled: { type: Boolean, default: true },
