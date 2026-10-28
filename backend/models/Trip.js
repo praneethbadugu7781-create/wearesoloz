@@ -4,7 +4,8 @@ const tripSchema = new mongoose.Schema(
   {
     destination: { type: String, required: true },
     state: { type: String, default: "Telangana" },
-    category: { type: String, enum: ["Temples", "Treks", "Adventure"], default: "Adventure" },
+    category: { type: String, default: "Adventure" },
+    isAyyapaTrip: { type: Boolean, default: false },
     slug: { type: String, required: true, unique: true },
     date: { type: Date, required: true },
     startDate: { type: Date },

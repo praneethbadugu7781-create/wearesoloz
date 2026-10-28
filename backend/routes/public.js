@@ -26,6 +26,14 @@ router.get("/trips", async (req, res) => {
   try {
     await connectDB();
     const filter = req.query.all === "true" ? {} : { status: "published" };
+    if (req.query.ayyapa === "true") {
+      filter.$or = [
+        { isAyyapaTrip: true },
+        { category: "Ayyapa Diksha Devotional Tours" },
+        { destination: /sabarimala/i },
+        { title: /ayyapa|sabarimala/i }
+      ];
+    }
     const trips = await Trip.find(filter).sort({ date: 1 }).lean();
     res.json(trips);
   } catch (e) {

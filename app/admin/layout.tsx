@@ -23,12 +23,14 @@ import {
   ClipboardCheck,
   Star,
   CreditCard,
-  Trophy
+  Trophy,
+  Flame
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/ayyapa-tours", label: "Ayyapa Diksha Tours", icon: Flame },
   { href: "/admin/events", label: "Events & Tournaments", icon: Trophy },
   { href: "/admin/bookings", label: "Bookings & Payments", icon: CreditCard },
   { href: "/admin/trips", label: "Trips", icon: Compass },

@@ -176,7 +176,20 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [subView, setSubView] = useState<"all" | "months">("all");
 
-  const categoriesList = ["All", "Temples", "Treks", "Adventure"];
+  const categoriesList = ["All", "Ayyapa Diksha", "Temples", "Treks", "Adventure"];
+
+  const checkMatchesCategory = (t: any, catName: string) => {
+    if (catName === "All") return true;
+    if (catName === "Ayyapa Diksha") {
+      return Boolean(
+        t.isAyyapaTrip || 
+        (t.category && t.category.toLowerCase().includes("ayyapa")) || 
+        (t.destination && t.destination.toLowerCase().includes("sabarimala")) ||
+        (t.title && t.title.toLowerCase().includes("ayyapa"))
+      );
+    }
+    return (t.category || "Adventure").toLowerCase() === catName.toLowerCase();
+  };
 
   // Filter only upcoming trips (where date or batch date >= today) and sort chronologically
   const upcomingTripsOnly = initialTrips.filter((t) => isUpcomingTrip(t));
@@ -208,7 +221,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
         ? (selectedState === "All" || (t.state || "").toLowerCase() === selectedState.toLowerCase())
         : (selectedState === "All International" || (t.state || "").toLowerCase() === selectedState.toLowerCase());
 
-      const matchesCategory = categoryName === "All" || (t.category || "Adventure").toLowerCase() === categoryName.toLowerCase();
+      const matchesCategory = checkMatchesCategory(t, categoryName);
       return matchesState && matchesCategory;
     }).length;
   };
@@ -217,7 +230,7 @@ export default function TripsClient({ initialTrips = [] }: TripsClientProps) {
     const searchStr = `${t.destination || ""} ${t.title || ""} ${t.state || ""} ${t.category || ""}`.toLowerCase();
     const matchesQuery = searchStr.includes(q.toLowerCase());
     
-    const matchesCategory = selectedCategory === "All" || (t.category || "Adventure").toLowerCase() === selectedCategory.toLowerCase();
+    const matchesCategory = checkMatchesCategory(t, selectedCategory);
     
     if (regionType === "domestic") {
       const isDomestic = !isInternationalTrip(t.state);

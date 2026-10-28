@@ -78,6 +78,7 @@ export function Navbar() {
 
   // Secondary links inside More dropdown
   const secondaryLinks: Array<{ href: string; label: string; badge?: string }> = [
+    { href: "/ayyapa-diksha-devotional-tours", label: "Ayyapa Diksha Tours", badge: "Special" },
     { href: "/events", label: "Community Events", badge: "New" },
     { href: "/farmer-registration", label: "Farmer Trip Registration" },
     { href: "/careers", label: "Careers at SoloZ" },
@@ -85,6 +86,7 @@ export function Navbar() {
 
   const allMobileLinks = [
     ...primaryLinks,
+    { href: "/ayyapa-diksha-devotional-tours", label: "Ayyapa Diksha Tours", isCustom: true },
     { href: "/events", label: "Community Events", isCustom: true },
     { href: "/farmer-registration", labelKey: "nav_farmer_trip", defaultLabel: "Farmer Trips" },
     { href: "/careers", labelKey: "nav_careers", defaultLabel: "Careers" },

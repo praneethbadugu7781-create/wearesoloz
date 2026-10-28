@@ -1235,6 +1235,7 @@ export default function AdminTripsPage() {
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="h-10 w-full rounded-lg border border-white/10 bg-[#14110d] px-3 text-sm text-white focus:border-soloz-ember/50 focus:outline-none"
               >
+                <option value="Ayyapa Diksha Devotional Tours">Ayyapa Diksha Devotional Tours</option>
                 <option value="Temples">Temples</option>
                 <option value="Treks">Treks</option>
                 <option value="Adventure">Adventure</option>
