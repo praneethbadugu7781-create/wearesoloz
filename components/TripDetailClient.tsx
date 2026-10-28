@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Calendar, Clock, Users, MapPin, ArrowRight, Download, CreditCard, MessageCircle, ShieldCheck } from "lucide-react";
+import { Calendar, Clock, Users, MapPin, ArrowRight, Download, CreditCard, MessageCircle, ShieldCheck, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -21,36 +21,42 @@ interface TripDetailClientProps {
 
 function parseItineraryDetails(text: string) {
   if (!text) return [];
-  
-  const timePattern = /(\b\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?\b)/i;
-  const parts = text.split(timePattern);
-  
-  const items: { time: string | null; content: string }[] = [];
-  
-  if (parts.length <= 1) {
-    const bullets = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    return bullets.map(b => {
-      const clean = b.replace(/^[-*•]\s*/, "");
-      return { time: null, content: clean };
-    });
+
+  // Check if text has distinct line breaks
+  let lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  // If entire itinerary description is in one single paragraph without line breaks
+  if (lines.length <= 1) {
+    // Intelligently split by sentence boundaries while preserving times
+    lines = text
+      .split(/(?<=[.!?])\s+(?=[A-Z0-9])/)
+      .map((l) => l.trim())
+      .filter(Boolean);
   }
-  
-  const initialText = parts[0].trim();
-  if (initialText) {
-    items.push({ time: null, content: initialText });
-  }
-  
-  for (let i = 1; i < parts.length; i += 2) {
-    const time = parts[i];
-    const rawContent = parts[i + 1] || "";
-    const cleanContent = rawContent.replace(/^[\s\-–—:]+/, "").replace(/[\s\-–—:]+$/, "").trim();
-    
-    items.push({
-      time: time,
-      content: cleanContent
-    });
-  }
-  return items.filter(item => item.content || item.time);
+
+  return lines
+    .map((line) => {
+      // Remove leading list bullets (- * • > 1. etc.)
+      const clean = line.replace(/^[-*•–—>\d.]+\s*/, "").trim();
+
+      // Check if the line explicitly starts with a timestamp (e.g. "06:00 AM - " or "5:30 PM: ")
+      const timeMatch = clean.match(/^(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)\s*[-:–—]?\s*(.+)$/i);
+      if (timeMatch) {
+        return {
+          time: timeMatch[1].trim(),
+          content: timeMatch[2].trim()
+        };
+      }
+
+      return {
+        time: null,
+        content: clean
+      };
+    })
+    .filter((item) => item.content);
 }
 
 const generateBrochurePdf = async (trip: any, locale: string) => {
@@ -591,10 +597,13 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
             </div>
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/15 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent pointer-events-none" />
         <div className="absolute bottom-12 left-0 right-0 max-w-7xl mx-auto px-6 md:px-10 pointer-events-none">
-          <SectionLabel>{trip.destination}</SectionLabel>
-          <h1 className="font-display text-5xl md:text-7xl font-light tracking-tighter mt-3 max-w-3xl text-stone-900">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-50 border border-orange-200/90 text-[#ea580c] text-[10.5px] font-bold uppercase tracking-[0.2em] shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c]" />
+            <span>{trip.destination}</span>
+          </div>
+          <h1 className="font-sans text-4xl sm:text-6xl md:text-7xl font-black tracking-tight mt-2.5 max-w-4xl text-stone-900">
             {trip.title || `${trip.destination} Expedition`}
           </h1>
         </div>
@@ -624,10 +633,10 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                 { icon: Clock, label: locale === "te" ? "వ్యవధి" : locale === "hi" ? "అవధి" : "Duration", value: trip.duration || "—" },
                 { icon: MapPin, label: locale === "te" ? "ప్రాంతం" : locale === "hi" ? "క్షేత్ర" : "Region", value: trip.destination },
               ].map((s: any) => (
-                <div key={s.label} className="glass rounded-xl p-4 border border-stone-200">
-                  <s.icon className="w-4 h-4 text-soloz-primary mb-2" />
-                  <div className="text-[10px] uppercase tracking-widest text-soloz-textMuted">{s.label}</div>
-                  <div className="font-display text-base md:text-lg mt-1 text-stone-900 truncate" title={s.value}>{s.value}</div>
+                <div key={s.label} className="bg-white rounded-2xl p-5 border border-stone-200/90 shadow-2xs hover:shadow-xs transition-shadow">
+                  <s.icon className="w-4 h-4 text-[#ea580c] mb-2" />
+                  <div className="text-[10px] uppercase tracking-widest font-bold text-stone-400">{s.label}</div>
+                  <div className="font-sans text-base md:text-lg font-bold mt-1 text-stone-900 truncate" title={s.value}>{s.value}</div>
                 </div>
               ))}
             </div>
@@ -712,27 +721,40 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
             )}
 
             <div className="prose prose-stone max-w-none">
-              <h3 className="font-display text-2xl mb-4 text-stone-900">{locale === "te" ? "ఈ ప్రయాణం గురించి" : locale === "hi" ? "इस यात्रा के बारे में" : "About this trip"}</h3>
-              <p className="text-soloz-textSecondary leading-relaxed whitespace-pre-line font-body">{trip.description}</p>
+              <h3 className="font-sans text-2xl font-extrabold tracking-tight mb-4 text-stone-900">
+                {locale === "te" ? "ఈ ప్రయాణం గురించి" : locale === "hi" ? "इस यात्रा के बारे में" : "About this trip"}
+              </h3>
+              <p className="text-stone-700 text-sm sm:text-base leading-relaxed whitespace-pre-line font-sans font-normal">
+                {trip.description}
+              </p>
             </div>
+
             {trip.highlights && trip.highlights.length > 0 && (
-              <div className="mt-10">
-                <h3 className="font-display text-2xl mb-4 text-stone-900">{locale === "te" ? "ముఖ్యాంశాలు" : locale === "hi" ? "मुख्य विशेषताएं" : "Highlights"}</h3>
+              <div className="mt-12">
+                <h3 className="font-sans text-2xl font-extrabold tracking-tight mb-4 text-stone-900">
+                  {locale === "te" ? "ముఖ్యాంశాలు" : locale === "hi" ? "मुख्य विशेषताएं" : "Highlights"}
+                </h3>
                 <ul className="grid md:grid-cols-2 gap-3">
                   {trip.highlights.map((h: string, i: number) => (
-                    <li key={i} className="glass rounded-lg px-4 py-3 text-sm text-soloz-textSecondary font-body border border-stone-200">
-                      {h}
+                    <li key={i} className="bg-white rounded-2xl px-5 py-3.5 text-sm font-sans font-medium text-stone-700 border border-stone-200/90 shadow-2xs flex items-center gap-2.5">
+                      <span className="w-2 h-2 rounded-full bg-[#ea580c] shrink-0" />
+                      <span>{h}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
-            {/* If itinerary exists, let's render it */}
+
+            {/* Detailed Day-by-Day Itinerary */}
             {trip.itinerary && trip.itinerary.length > 0 && (
-              <div className="mt-12 space-y-6">
-                <h3 className="font-display text-2xl mb-4 text-stone-900">
-                  {locale === "te" ? "వివరణాత్మక ప్రయాణ ప్రణాళిక" : locale === "hi" ? "विस्तृत यात्रा कार्यक्रम" : "Detailed Itinerary"}
-                </h3>
+              <div className="mt-14 space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-7 rounded-full bg-[#ea580c]" />
+                  <h3 className="font-sans text-2xl sm:text-3xl font-black tracking-tight text-stone-900">
+                    {locale === "te" ? "వివరణాత్మక ప్రయాణ ప్రణాళిక" : locale === "hi" ? "विस्तृत यात्रा कार्यक्रम" : "Detailed Day-by-Day Itinerary"}
+                  </h3>
+                </div>
+
                 <div className="space-y-6">
                   {trip.itinerary.map((item: any, i: number) => {
                     const parsedLines = parseItineraryDetails(item.description);
@@ -740,33 +762,36 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                     return (
                       <div 
                         key={i} 
-                        className="glass rounded-2xl p-6 border border-stone-200 hover:border-soloz-primary/30 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-500 group"
+                        className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/90 shadow-[0_2px_16px_rgba(0,0,0,0.03)] hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group"
                       >
-                        <div className="flex items-center gap-3 border-b border-stone-100 pb-4 mb-5">
-                          <span className="inline-flex items-center justify-center rounded-full bg-soloz-primary/10 px-3 py-1 text-xs font-semibold text-soloz-primary uppercase tracking-wider">
-                            {item.day || (locale === "te" ? `రోజు ${i + 1}` : locale === "hi" ? `दिन ${i + 1}` : `Day ${i + 1}`)}
-                          </span>
-                          <h4 className="font-display text-lg font-bold text-stone-900 group-hover:text-soloz-primary transition-colors duration-300">
-                            {item.title}
-                          </h4>
+                        {/* Day Header - Highly Prominent & Prestigious */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-5 mb-6">
+                          <div className="flex items-center gap-3.5">
+                            <span className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-orange-600 to-amber-500 px-4 py-2 text-xs font-black text-white uppercase tracking-wider shadow-sm shadow-orange-600/25 shrink-0 select-none">
+                              {item.day || (locale === "te" ? `రోజు ${i + 1}` : locale === "hi" ? `दिन ${i + 1}` : `Day ${i + 1}`)}
+                            </span>
+                            <h4 className="font-sans text-xl sm:text-2xl font-black text-stone-900 group-hover:text-[#ea580c] transition-colors duration-200 tracking-tight">
+                              {item.title}
+                            </h4>
+                          </div>
                         </div>
 
-                        {/* Dotted Vertical Timeline */}
-                        <div className="relative border-l-2 border-dashed border-stone-200/60 pl-6 ml-3 space-y-6">
+                        {/* Architectural Vertical Timeline Spine */}
+                        <div className="relative pl-7 ml-3.5 border-l-2 border-stone-200/80 space-y-5">
                           {parsedLines.map((line: any, idx: number) => (
-                            <div key={idx} className="relative group/item transition-all duration-300">
-                              {/* Hollow hover-fill timeline node */}
-                              <div className="absolute -left-[32px] top-1.5 size-3.5 rounded-full bg-white border-2 border-stone-300 group-hover/item:border-soloz-primary transition-all duration-300 flex items-center justify-center">
-                                <div className="size-1.5 rounded-full bg-stone-300 group-hover/item:bg-soloz-primary transition-colors duration-300" />
+                            <div key={idx} className="relative group/step">
+                              {/* Hollow luxury timeline node */}
+                              <div className="absolute -left-[36px] top-1.5 size-4 rounded-full bg-white border-2 border-stone-300 group-hover/step:border-[#ea580c] transition-all duration-300 flex items-center justify-center shadow-2xs">
+                                <div className="size-1.5 rounded-full bg-stone-400 group-hover/step:bg-[#ea580c] transition-colors duration-300" />
                               </div>
 
-                              <div className="flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-4">
+                              <div className="space-y-1.5">
                                 {line.time && (
-                                  <span className="inline-block shrink-0 bg-soloz-primary/5 border border-soloz-primary/15 rounded px-2 py-0.5 text-[10px] font-bold text-soloz-primary font-mono tracking-wider w-fit select-none">
+                                  <span className="inline-block shrink-0 bg-orange-50 border border-orange-200/90 rounded-md px-2.5 py-0.5 text-[11px] font-bold text-[#ea580c] font-mono tracking-wider w-fit select-none">
                                     {line.time}
                                   </span>
                                 )}
-                                <p className="text-sm text-stone-600 leading-relaxed font-body">
+                                <p className="text-[14.5px] sm:text-base text-stone-700 leading-relaxed font-sans font-normal">
                                   {line.content}
                                 </p>
                               </div>
@@ -779,27 +804,34 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                 </div>
               </div>
             )}
-            {/* If inclusions exist, let's render them */}
+
+            {/* Inclusions */}
             {trip.inclusions && trip.inclusions.length > 0 && (
-              <div className="mt-12">
-                <h3 className="font-display text-2xl mb-4 text-stone-900">{locale === "te" ? "ఏమి చేర్చబడింది" : locale === "hi" ? "क्या शामिल है" : "What's Included"}</h3>
-                <ul className="grid sm:grid-cols-2 gap-3">
+              <div className="mt-14">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-2 h-7 rounded-full bg-emerald-500" />
+                  <h3 className="font-sans text-2xl sm:text-3xl font-black tracking-tight text-stone-900">
+                    {locale === "te" ? "ఏమి చేర్చబడింది" : locale === "hi" ? "क्या शामिल है" : "What's Included"}
+                  </h3>
+                </div>
+                <ul className="grid sm:grid-cols-2 gap-3.5">
                   {trip.inclusions.map((inc: string, i: number) => (
-                    <li key={i} className="flex gap-2.5 items-start text-sm text-soloz-textSecondary font-body">
-                      <span className="w-1.5 h-1.5 rounded-full bg-soloz-primary mt-2 shrink-0" />
-                      {inc}
+                    <li key={i} className="bg-white rounded-2xl p-4 border border-stone-200/90 shadow-2xs flex items-start gap-3 text-sm text-stone-800 font-sans font-medium">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <span>{inc}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
 
-            {/* ⚠️ Travel & Transportation Notice */}
-            <div className="mt-12 p-6 rounded-2xl bg-amber-50 border border-amber-200 text-stone-900 font-body">
-              <h4 className="font-display text-lg font-semibold text-amber-800 flex items-center gap-2 mb-2">
-                {locale === "te" ? "⚠️ ముఖ్యమైన ప్రయాణ విధానం" : locale === "hi" ? "⚠️ महत्वपूर्ण यात्रा नीति" : "⚠️ Important Travel Policy"}
+            {/* Travel & Transportation Policy Notice */}
+            <div className="mt-12 p-6 md:p-8 rounded-3xl bg-amber-50/70 border border-amber-200/90 text-stone-900 font-sans">
+              <h4 className="font-sans text-base sm:text-lg font-bold text-amber-900 flex items-center gap-2.5 mb-2">
+                <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+                <span>{locale === "te" ? "ముఖ్యమైన ప్రయాణ విధానం" : locale === "hi" ? "महत्वपूर्ण यात्रा नीति" : "Important Travel Policy"}</span>
               </h4>
-              <p className="text-sm text-stone-700 leading-relaxed">
+              <p className="text-xs sm:text-sm text-stone-700 leading-relaxed">
                 {locale === "te" ? (
                   <>దయచేసి గమనించండి <strong>ప్రయాణ ఖర్చులో రైలు టిక్కెట్లు మరియు విమాన టిక్కెట్లు చేర్చబడవు</strong>. ప్రయాణీకులందరూ తమంతట తాముగా ప్రారంభ నగరంలో కేటాయించిన సమావేశ స్థానానికి చేరుకోవాలి. ట్రిప్ ప్రారంభానికి ముందే అఖిల్ ఖచ్చితమైన ప్రారంభ ప్రదేశం మరియు సమావేశ వివరాలను తెలియజేస్తారు.</>
                 ) : locale === "hi" ? (
@@ -811,12 +843,12 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
             </div>
           </div>
           <div>
-            <form onSubmit={submit} data-testid="trip-join-form" className="glass rounded-2xl p-6 bg-stone-50 border border-stone-200 sticky top-28 space-y-4">
-              <div className="flex flex-col gap-4 border-b border-stone-200/60 pb-4">
+            <form onSubmit={submit} data-testid="trip-join-form" className="bg-white rounded-3xl p-6 md:p-8 border border-stone-200/90 shadow-xl sticky top-28 space-y-4">
+              <div className="flex flex-col gap-4 border-b border-stone-100 pb-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <div className="text-[10px] uppercase tracking-widest text-[#ea580c] font-bold">{locale === "te" ? "ఈ ట్రిప్ కోసం విచారించండి" : locale === "hi" ? "इस यात्रा के लिए पूछताछ करें" : "Inquire for this Trip"}</div>
-                    <div className="font-display text-2xl font-bold text-stone-900 mt-1">
+                    <div className="text-[10px] uppercase tracking-widest text-[#ea580c] font-black">{locale === "te" ? "ఈ ట్రిప్ కోసం విచారించండి" : locale === "hi" ? "इस यात्रा के लिए पूछताछ करें" : "Inquire for this Trip"}</div>
+                    <div className="font-sans text-3xl font-black text-stone-900 mt-1 tracking-tight">
                       {(() => {
                         const rawP = selectedBatch?.price || trip.price;
                         if (!rawP) return locale === "te" ? "ధర కోసం సంప్రదించండి" : locale === "hi" ? "कीमत के लिए संपर्क करें" : "Contact for Price";
