@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Outfit, Playfair_Display, DM_Sans } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
@@ -15,10 +14,6 @@ import AdSense from "@/components/AdSense";
 import AnnouncementTicker from "@/components/AnnouncementTicker";
 import FeaturedTripModal from "@/components/FeaturedTripModal";
 import { Suspense } from "react";
-
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", weight: ["300", "400", "500", "600", "700"] });
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
-const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://wearesoloz.com"),
@@ -61,7 +56,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
   return (
-    <html lang="en" className={`${outfit.variable} ${playfair.variable} ${dmSans.variable}`}>
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400..700;1,400..700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="font-sans antialiased bg-white text-[#1c1917]">
         <AdSense />
         {gaId && (

@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 :root {
+  --font-outfit: "Outfit", sans-serif;
+  --font-playfair: "Playfair Display", Georgia, serif;
+  --font-dm-sans: "DM Sans", sans-serif;
   color-scheme: light;
   scroll-behavior: smooth;
   --transparent: transparent;
