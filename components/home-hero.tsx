@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useRef } from "react";
+import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { getOptimizedImageUrl } from "@/lib/utils";
+import { ArrowRight, Compass, Users, Sparkles } from "lucide-react";
 
 interface HomeHeroProps {
-  title: string;
-  subheading: string;
+  title?: string;
+  subheading?: string;
   heroImage?: string;
   featuredTrips?: any[];
 }
@@ -19,141 +21,104 @@ export function HomeHero({ title, subheading, heroImage }: HomeHeroProps) {
   });
 
   // Parallax effects
-  const yBg = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
-  const yContent = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+  const yBg = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
+  const yContent = useTransform(scrollYProgress, [0, 1], ["0%", "45%"]);
   const opacityContent = useTransform(scrollYProgress, [0, 1], [1, 0]);
 
-  const displayTitle = (title || "Start Solo. Travel Together.").toUpperCase();
-  const displayTagline = "Discover The Colorful World".toUpperCase();
-  const words = displayTitle.split(" ");
-
   return (
-    <section ref={containerRef} className="relative min-h-screen md:h-screen w-full flex flex-col items-center justify-center pt-24 md:pt-32 pb-12 md:pb-20 overflow-hidden bg-black">
+    <section
+      ref={containerRef}
+      className="relative min-h-[92vh] md:h-screen w-full flex flex-col items-center justify-center pt-28 md:pt-36 pb-16 md:pb-24 overflow-hidden bg-stone-950 font-sans"
+    >
       {/* Background Image - Cinematic Parallax Zoom */}
       <motion.div style={{ y: yBg }} className="absolute inset-0 z-0 overflow-hidden">
         <motion.img
-          initial={{ scale: 1.2, opacity: 0 }}
+          initial={{ scale: 1.15, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
-          src={getOptimizedImageUrl(heroImage || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=75", 1920)}
+          transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
+          src={getOptimizedImageUrl(
+            heroImage || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80",
+            1920
+          )}
           alt="Adventure Background"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover select-none"
         />
-        {/* Soft dark overlay to ensure readability of white text */}
-        <div className="absolute inset-0 bg-black/40" />
+        {/* Cinematic gradient overlay for maximum readability and luxury depth */}
+        <div className="absolute inset-0 bg-gradient-to-b from-stone-950/70 via-stone-950/40 to-stone-950/80" />
       </motion.div>
 
-      {/* Premium ambient light leaks / glow blobs */}
+      {/* Ambient glowing light leaks */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        <motion.div
-          animate={{
-            x: [-30, 30, -30],
-            y: [-20, 30, -20],
-            scale: [1, 1.15, 1],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="absolute -top-1/4 -left-1/4 w-[500px] h-[500px] bg-orange-500/10 blur-[150px] rounded-full"
-        />
-        <motion.div
-          animate={{
-            x: [30, -30, 30],
-            y: [30, -20, 30],
-            scale: [1.1, 0.95, 1.1],
-          }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] bg-emerald-500/5 blur-[160px] rounded-full"
-        />
+        <div className="absolute -top-1/4 left-1/4 w-[550px] h-[550px] bg-orange-600/15 blur-[160px] rounded-full" />
+        <div className="absolute -bottom-1/4 right-1/4 w-[600px] h-[600px] bg-amber-500/10 blur-[170px] rounded-full" />
       </div>
 
-      {/* Hero Content - Staggered Reveals */}
+      {/* Hero Content */}
       <motion.div
         style={{ y: yContent, opacity: opacityContent }}
-        className="relative z-10 max-w-4xl mx-auto px-6 text-center text-white flex flex-col items-center space-y-6"
+        className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center text-white flex flex-col items-center space-y-6"
       >
-        <div className="flex flex-col items-center space-y-4">
-          {/* Small Tagline */}
-          <div className="overflow-hidden py-1">
-            <motion.span
-              initial={{ y: "100%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="inline-block text-[9px] sm:text-xs font-extrabold uppercase tracking-[0.18em] sm:tracking-[0.25em] text-white/95"
-            >
-              {displayTagline}
-            </motion.span>
-          </div>
+        {/* Top Eyebrow Tagline Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10.5px] sm:text-xs font-semibold uppercase tracking-[0.24em] shadow-sm"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-[#ea580c]" />
+          <span>Discover The Colorful World</span>
+        </motion.div>
 
-          {/* Main Title Heading (Split Word Reveal) */}
-          <h1 className="font-sans text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-wide leading-none text-white drop-shadow-sm flex flex-wrap justify-center gap-x-4 gap-y-2 py-2">
-            {words.map((word, idx) => (
-              <span key={idx} className="inline-block overflow-hidden py-1">
-                <motion.span
-                  initial={{ y: "100%" }}
-                  animate={{ y: 0 }}
-                  transition={{ duration: 0.9, delay: 0.2 + idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
-                  className={`inline-block ${
-                    word.toLowerCase().includes("together") || word.toLowerCase().includes("solo")
-                      ? "text-[#ea580c]"
-                      : "text-white"
-                  }`}
-                >
-                  {word}
-                </motion.span>
-              </span>
-            ))}
-          </h1>
+        {/* Main Title Heading - Geist Brand Typography */}
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.85, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          className="font-sans text-4xl sm:text-6xl md:text-7xl lg:text-[82px] font-extrabold tracking-[-0.035em] leading-[1.04] text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.65)] select-none"
+        >
+          Start <span className="text-[#ea580c]">Solo.</span>
+          <br className="hidden sm:inline" />{" "}
+          Travel <span className="text-[#ea580c]">Together.</span>
+        </motion.h1>
 
-          {/* Subtitle Description */}
-          <div className="overflow-hidden">
-            <motion.p
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-white/90 leading-relaxed font-body drop-shadow-sm pt-2"
-            >
-              {subheading || "Join solo travellers, explore new destinations, meet incredible people and create unforgettable memories together."}
-            </motion.p>
-          </div>
+        {/* Subtitle Description */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-stone-200/90 leading-relaxed font-sans font-normal drop-shadow-sm pt-1"
+        >
+          {subheading ||
+            "Join solo travellers, explore new destinations, meet incredible people and create unforgettable memories together."}
+        </motion.p>
 
-          {/* CTA Buttons */}
-          <motion.div
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto"
+        {/* CTA Action Buttons (Badminton removed) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full sm:w-auto"
+        >
+          <Link
+            href="/upcoming-trips"
+            className="inline-flex items-center justify-center gap-2 bg-white text-stone-950 px-8 py-3.5 rounded-full font-bold text-xs sm:text-sm uppercase tracking-wider hover:bg-stone-100 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-[0_4px_24px_rgba(0,0,0,0.25)] w-full sm:w-auto text-center"
           >
-            <a
-              href="/events/badminton-championship"
-              className="inline-flex items-center justify-center bg-gradient-to-r from-orange-600 to-amber-500 text-white px-7 py-3.5 rounded-full font-extrabold text-xs sm:text-sm uppercase tracking-wider hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-[0_4px_25px_rgba(234,88,12,0.45)] w-full sm:w-auto text-center border border-amber-300/40"
-            >
-              🏸 Badminton Championship
-            </a>
-            <a
-              href="/upcoming-trips"
-              className="inline-flex items-center justify-center bg-white text-stone-950 px-7 py-3.5 rounded-full font-bold text-xs sm:text-sm uppercase tracking-widest hover:bg-stone-100 hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.15)] w-full sm:w-auto text-center"
-            >
-              Explore Trips
-            </a>
-            <a
-              href="/soloz-community"
-              className="inline-flex items-center justify-center bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-md px-7 py-3.5 rounded-full font-bold text-xs sm:text-sm uppercase tracking-widest hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.05)] w-full sm:w-auto text-center"
-            >
-              Join Community
-            </a>
-          </motion.div>
-        </div>
+            <Compass className="w-4 h-4 text-[#ea580c]" />
+            <span>Explore Trips</span>
+          </Link>
+
+          <Link
+            href="/soloz-community"
+            className="inline-flex items-center justify-center gap-2 bg-stone-900/85 hover:bg-stone-900 text-white border border-white/20 backdrop-blur-md px-8 py-3.5 rounded-full font-bold text-xs sm:text-sm uppercase tracking-wider hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-[0_4px_20px_rgba(0,0,0,0.2)] w-full sm:w-auto text-center"
+          >
+            <Users className="w-4 h-4 text-orange-400" />
+            <span>Join Community</span>
+          </Link>
+        </motion.div>
       </motion.div>
 
-      {/* Floating ambient glow details */}
-      <div className="absolute -bottom-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-white/5 blur-[120px] rounded-full pointer-events-none" />
+      {/* Subtle bottom edge gradient fade into next section */}
+      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-stone-950/80 to-transparent pointer-events-none" />
     </section>
   );
 }
