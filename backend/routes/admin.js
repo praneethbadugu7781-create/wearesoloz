@@ -23,6 +23,7 @@ const Reel = require("../models/Reel");
 const MemoryPost = require("../models/MemoryPost");
 const Booking = require("../models/Booking");
 const EventRegistration = require("../models/EventRegistration");
+const Event = require("../models/Event");
 
 const { sendFarmerApprovalEmail, sendFarmerRejectionEmail, sendCareerReviewedEmail, sendCareerRejectionEmail, sendContactStatusEmail, sendContactApprovalEmail } = require("../lib/mailer");
 
@@ -40,6 +41,7 @@ const models = {
   memories: MemoryPost,
   bookings: Booking,
   eventregistrations: EventRegistration,
+  events: Event,
 };
 
 const router = express.Router();
@@ -667,6 +669,22 @@ router.post("/:resource", async (req, res) => {
 
       if (!req.body.confirmationCode) {
         req.body.confirmationCode = req.body.slug;
+      }
+    }
+
+    if (req.params.resource === "events") {
+      if (!req.body.slug && req.body.title) {
+        req.body.slug = req.body.title.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-");
+      }
+      if (req.body.slug) {
+        let baseSlug = req.body.slug;
+        let uniqueSlug = baseSlug;
+        let counter = 1;
+        while (await Model.findOne({ slug: uniqueSlug })) {
+          uniqueSlug = `${baseSlug}-${counter}`;
+          counter++;
+        }
+        req.body.slug = uniqueSlug;
       }
     }
 

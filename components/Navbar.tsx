@@ -17,8 +17,33 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [navbarEvent, setNavbarEvent] = useState<any>(null);
 
   if (pathname.startsWith("/admin")) return null;
+
+  useEffect(() => {
+    let mounted = true;
+    async function fetchNavbarEvent() {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+        const res = await fetch(`${API_URL}/events/navbar-active`);
+        if (res.ok) {
+          const data = await res.json();
+          if (mounted && data && data._id && data.showInNavbar) {
+            setNavbarEvent(data);
+          } else if (mounted) {
+            setNavbarEvent(null);
+          }
+        }
+      } catch (e) {
+        // Silently skip if unreachable
+      }
+    }
+    fetchNavbarEvent();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 25);
@@ -52,14 +77,15 @@ export function Navbar() {
   ];
 
   // Secondary links inside More dropdown
-  const secondaryLinks = [
-    { href: "/events/badminton-championship", label: "🏸 Badminton Championship", badge: "Live" },
+  const secondaryLinks: Array<{ href: string; label: string; badge?: string }> = [
+    { href: "/events", label: "🏆 Community Events", badge: "New" },
     { href: "/farmer-registration", label: "🌾 Farmer Trip Registration" },
     { href: "/careers", label: "💼 Careers at SoloZ" },
   ];
 
   const allMobileLinks = [
     ...primaryLinks,
+    { href: "/events", label: "🏆 Community Events", isCustom: true },
     { href: "/farmer-registration", labelKey: "nav_farmer_trip", defaultLabel: "Farmer Trips" },
     { href: "/careers", labelKey: "nav_careers", defaultLabel: "Careers" },
   ];
@@ -182,14 +208,18 @@ export function Navbar() {
         {/* Right: Liquid Metal Shader Button + Language + Mobile Hamburger */}
         <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           
-          {/* Badminton Quick Badge (Tablet / Desktop) */}
-          <Link
-            href="/events/badminton-championship"
-            className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/95 backdrop-blur-md border border-stone-200/90 text-stone-700 hover:bg-stone-100 shadow-2xs transition-all shrink-0"
-          >
-            <span>🏸</span>
-            <span className="font-bold text-stone-800">Badminton</span>
-          </Link>
+          {/* Dynamic Event Badge (Only rendered if an active event has showInNavbar: true) */}
+          {navbarEvent && (
+            <Link
+              href={`/events/${navbarEvent.slug || ""}`}
+              className="hidden xl:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-orange-50 border border-orange-200/90 text-orange-700 hover:bg-orange-100 shadow-2xs transition-all shrink-0"
+            >
+              <span>🏆</span>
+              <span className="font-bold text-stone-900 truncate max-w-[150px]">
+                {navbarEvent.title}
+              </span>
+            </Link>
+          )}
 
           {/* Language Selector Pill */}
           <div className="relative hidden md:block shrink-0">
@@ -271,13 +301,15 @@ export function Navbar() {
             data-testid="mobile-menu"
             className="lg:hidden mx-4 mb-4 bg-white/98 backdrop-blur-2xl rounded-3xl p-3 border border-stone-200/90 shadow-2xl max-h-[calc(100vh-100px)] overflow-y-auto"
           >
-            <Link
-              href="/events/badminton-championship"
-              onClick={() => setOpen(false)}
-              className="block px-4 py-3 rounded-2xl text-xs font-extrabold bg-gradient-to-r from-orange-500 to-amber-500 text-white mb-3 text-center shadow-sm uppercase tracking-wider"
-            >
-              🏸 Badminton Championship (Season 1)
-            </Link>
+            {navbarEvent && (
+              <Link
+                href={`/events/${navbarEvent.slug || ""}`}
+                onClick={() => setOpen(false)}
+                className="block px-4 py-3 rounded-2xl text-xs font-extrabold bg-gradient-to-r from-orange-500 to-amber-500 text-white mb-3 text-center shadow-sm uppercase tracking-wider"
+              >
+                🏆 {navbarEvent.title}
+              </Link>
+            )}
 
             {allMobileLinks.map((l: any) => {
               const isActive = pathname === l.href;

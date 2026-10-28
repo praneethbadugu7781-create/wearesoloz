@@ -1038,4 +1038,45 @@ router.get(["/certificates/:certId", "/public/certificates/:certId"], async (req
   }
 });
 
+// --- Events Public Routes ---
+const Event = require("../models/Event");
+
+// GET /api/events - List events (all=true for full history, otherwise active/upcoming)
+router.get("/events", async (req, res) => {
+  try {
+    await connectDB();
+    const filter = req.query.all === "true" ? {} : { status: { $in: ["upcoming", "ongoing", "completed"] } };
+    const events = await Event.find(filter).sort({ status: 1, createdAt: -1 }).lean();
+    res.json(events);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/events/navbar-active - Returns single featured active event for navbar badge (if any)
+router.get("/events/navbar-active", async (req, res) => {
+  try {
+    await connectDB();
+    const activeEvent = await Event.findOne({
+      showInNavbar: true,
+      status: { $in: ["upcoming", "ongoing"] }
+    }).sort({ createdAt: -1 }).lean();
+    res.json(activeEvent || null);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/events/:slug - Single event details
+router.get("/events/:slug", async (req, res) => {
+  try {
+    await connectDB();
+    const event = await Event.findOne({ slug: req.params.slug }).lean();
+    if (!event) return res.status(404).json({ error: "Event not found" });
+    res.json(event);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

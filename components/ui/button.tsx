@@ -11,7 +11,8 @@ const buttonVariants = cva(
         default: "bg-soloz-ember text-white shadow-glow hover:bg-orange-500",
         secondary: "border border-white/15 bg-white/10 text-white backdrop-blur hover:bg-white/15",
         ghost: "text-white hover:bg-white/10",
-        dark: "bg-white text-black hover:bg-soloz-gold"
+        dark: "bg-white text-black hover:bg-soloz-gold",
+        outline: "border border-stone-300 bg-white text-stone-800 hover:bg-stone-100"
       },
       size: {
         default: "h-11 px-6",
