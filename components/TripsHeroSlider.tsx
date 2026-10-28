@@ -232,7 +232,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               </div>
 
               {/* Destination Title Block with Premium Editorial Typography */}
-              <h1 className="trips-slider-title font-display font-medium tracking-tight select-text mb-4 md:mb-5 text-4xl sm:text-5xl md:text-6xl lg:text-7xl drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]">
+              <h1 className="trips-slider-title font-display font-medium tracking-tight select-text mb-3 sm:mb-4 md:mb-5 text-[30px] sm:text-5xl md:text-6xl lg:text-7xl drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]">
                 {(() => {
                   const { main, subtitle } = getTitleParts(activeTrip.destination);
                   return (
