@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Globe, ChevronDown, Sparkles } from "lucide-react";
+import { Menu, X, Globe, ChevronDown, ChevronRight, Sparkles, Flame, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/LanguageContext";
 import { Locale } from "@/lib/translations";
@@ -57,6 +57,17 @@ export function Navbar() {
     setShowLangMenu(false);
     setShowMoreMenu(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
 
   const hasDarkHero =
     pathname === "/" ||
@@ -293,84 +304,134 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Fullscreen Sheet Navigation */}
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             data-testid="mobile-menu"
-            className="lg:hidden mx-4 mb-4 bg-white/98 backdrop-blur-2xl rounded-3xl p-3 border border-stone-200/90 shadow-2xl max-h-[calc(100vh-100px)] overflow-y-auto"
+            className="fixed inset-0 z-[100] bg-white flex flex-col justify-between overflow-hidden lg:hidden"
           >
-            {navbarEvent && (
+            {/* Top Sheet Header */}
+            <div className="px-5 py-4 border-b border-stone-100 flex items-center justify-between bg-white shrink-0">
               <Link
-                href={`/events/${navbarEvent.slug || ""}`}
+                href="/"
                 onClick={() => setOpen(false)}
-                className="block px-4 py-2.5 rounded-2xl text-xs font-bold bg-stone-900 text-white mb-3 text-center shadow-sm uppercase tracking-wider"
+                className="flex items-center gap-2.5"
               >
-                {navbarEvent.title}
+                <div className="size-10 rounded-2xl bg-white border border-stone-200/90 shadow-2xs flex items-center justify-center p-1.5">
+                  <img src="/logo.png" alt="WeAreSoloZ" className="w-full h-full object-contain rounded-xl" />
+                </div>
+                <div>
+                  <span className="font-sans font-bold text-lg text-stone-900 tracking-tight">
+                    WeAreSoloZ<span className="text-[#ea580c]">.</span>
+                  </span>
+                  <span className="block text-[9.5px] uppercase tracking-[0.2em] font-semibold text-stone-500">
+                    Travel Solo
+                  </span>
+                </div>
               </Link>
-            )}
 
-            {allMobileLinks.map((l: any) => {
-              const isActive = pathname === l.href;
-              const linkText = l.isCustom ? l.label : (t(l.labelKey) || l.defaultLabel);
-              return (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  onClick={() => setOpen(false)}
-                  data-testid={`mobile-nav-${linkText.toLowerCase().replace(/\s+/g, "-")}`}
-                  className={`block px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors whitespace-nowrap ${
-                    isActive
-                      ? "bg-stone-900 text-white font-bold"
-                      : "text-stone-700 hover:text-stone-900 hover:bg-stone-50"
-                  }`}
-                >
-                  {linkText}
-                </Link>
-              );
-            })}
-
-            <div className="mx-3 my-2 h-px bg-stone-100" />
-
-            {/* Mobile Language Selector */}
-            <div className="px-4 py-2.5 flex items-center justify-between">
-              <span className="text-stone-500 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-                <Globe className="w-4 h-4 text-stone-400" /> Language
-              </span>
-              <div className="flex gap-1.5">
-                {[
-                  { code: "en", label: "EN" },
-                  { code: "te", label: "TE" },
-                  { code: "hi", label: "HI" },
-                ].map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => setLocale(lang.code as Locale)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      locale === lang.code
-                        ? "bg-[#ea580c] text-white"
-                        : "bg-stone-100 text-stone-600 hover:bg-stone-200"
-                    }`}
-                  >
-                    {lang.label}
-                  </button>
-                ))}
-              </div>
+              <button
+                onClick={() => setOpen(false)}
+                className="size-10 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center transition-colors active:scale-95"
+                aria-label="Close menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <div className="mx-3 my-2 h-px bg-stone-100" />
+            {/* Scrollable Navigation Items */}
+            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-1.5 no-scrollbar">
+              {navbarEvent && (
+                <Link
+                  href={`/events/${navbarEvent.slug || ""}`}
+                  onClick={() => setOpen(false)}
+                  className="block px-4 py-3 rounded-2xl text-xs font-bold bg-stone-900 text-white mb-3 text-center shadow-sm uppercase tracking-wider"
+                >
+                  🏆 {navbarEvent.title}
+                </Link>
+              )}
 
-            <div className="p-2">
-              <LiquidMetalButton
-                label={t("join_community") || "Join Community"}
+              {allMobileLinks.map((l: any) => {
+                const isActive = pathname === l.href;
+                const linkText = l.isCustom ? l.label : (t(l.labelKey) || l.defaultLabel);
+                const isAyyapa = l.href.includes("ayyapa");
+                const isEvents = l.href === "/events";
+
+                return (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    onClick={() => setOpen(false)}
+                    data-testid={`mobile-nav-${linkText.toLowerCase().replace(/\s+/g, "-")}`}
+                    className={`flex items-center justify-between px-4 py-3 rounded-2xl text-[15px] font-semibold transition-all ${
+                      isActive
+                        ? "bg-stone-900 text-white font-bold shadow-sm"
+                        : "text-stone-800 hover:bg-stone-100 hover:text-stone-950"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      {isAyyapa && <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />}
+                      <span>{linkText}</span>
+                    </span>
+
+                    {isAyyapa ? (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-orange-100 text-orange-800">
+                        Special
+                      </span>
+                    ) : isEvents ? (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800">
+                        New
+                      </span>
+                    ) : (
+                      <ChevronRight className={`w-4 h-4 ${isActive ? "text-white/60" : "text-stone-300"}`} />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Bottom Footer Section */}
+            <div className="px-5 py-4 border-t border-stone-100 bg-stone-50/80 shrink-0 space-y-3.5">
+              {/* Language Selector */}
+              <div className="flex items-center justify-between">
+                <span className="text-stone-500 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <Globe className="w-4 h-4 text-stone-400" /> Language
+                </span>
+                <div className="flex gap-1 bg-stone-200/60 p-1 rounded-xl border border-stone-200/80">
+                  {[
+                    { code: "en", label: "EN" },
+                    { code: "te", label: "TE" },
+                    { code: "hi", label: "HI" },
+                  ].map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => setLocale(lang.code as Locale)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                        locale === lang.code
+                          ? "bg-[#ea580c] text-white shadow-xs"
+                          : "text-stone-600 hover:text-stone-900"
+                      }`}
+                    >
+                      {lang.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Join Community CTA */}
+              <Link
                 href="/soloz-community"
-                width={280}
-                height={46}
-                className="w-full flex justify-center"
-              />
+                onClick={() => setOpen(false)}
+                className="w-full py-3 px-5 rounded-full bg-[#ea580c] hover:bg-orange-700 text-white font-bold text-xs uppercase tracking-wider text-center shadow-md shadow-orange-600/25 flex items-center justify-center gap-2 transition-all active:scale-98"
+              >
+                <Users className="w-4 h-4" />
+                <span>Join Community</span>
+              </Link>
             </div>
           </motion.div>
         )}

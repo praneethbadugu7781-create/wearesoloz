@@ -104,14 +104,6 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
       const parts = dest.split(" – ");
       main = parts[0].trim();
       subtitle = parts.slice(1).join(" – ").trim();
-    } else if (dest.toLowerCase().includes(" to ")) {
-      const parts = dest.split(/ to /i);
-      main = parts[0].trim();
-      subtitle = `to ${parts.slice(1).join(" to ").trim()}`;
-    } else if (dest.includes(" & ")) {
-      const parts = dest.split(" & ");
-      main = parts[0].trim();
-      subtitle = `& ${parts.slice(1).join(" & ").trim()}`;
     }
 
     return {
@@ -205,14 +197,14 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               style={{ backgroundImage: `url(${getOptimizedImageUrl(activeTrip.image, 1200)})` }}
             >
               {/* Dual gradient overlays for mobile */}
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/70 to-black/25" />
-              <div className="absolute inset-0 bg-gradient-to-r from-stone-950/85 via-stone-950/30 to-transparent" />
+              <div className="absolute inset-0 bg-stone-950/65" />
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/80 to-black/40" />
             </motion.div>
           </AnimatePresence>
         </div>
 
         {/* 4. Details Box (Balanced Vertical Center) with stagger text slide reveals */}
-        <div className="trips-slider-details-box absolute left-6 sm:left-12 md:left-16 xl:left-24 top-1/2 -translate-y-[45%] max-w-lg md:max-w-xl xl:max-w-2xl z-20 text-white flex flex-col justify-center">
+        <div className="trips-slider-details-box absolute left-5 sm:left-12 md:left-16 xl:left-24 top-1/2 -translate-y-[45%] max-w-lg md:max-w-xl xl:max-w-2xl z-20 text-white flex flex-col justify-center pr-4 sm:pr-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeIndex}
@@ -303,10 +295,10 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               </div>
 
               {/* Description (Cropped Reveal) */}
-              <div className="trips-slider-description overflow-hidden mb-5 md:mb-6 max-w-xl">
+              <div className="trips-slider-description overflow-hidden mb-4 sm:mb-5 md:mb-6 max-w-xl">
                 <motion.p
                   variants={textRevealVariants}
-                  className="text-stone-200/90 font-body text-xs sm:text-sm md:text-[15px] leading-relaxed select-text font-normal drop-shadow-sm"
+                  className="text-stone-200/90 font-body text-xs sm:text-sm md:text-[15px] leading-relaxed select-text font-normal drop-shadow-sm line-clamp-2 sm:line-clamp-3 md:line-clamp-none"
                 >
                   {activeTrip.description ||
                     `Explore the untouched beauty of ${activeTrip.destination}. This curated solo-friendly journey includes comfortable sharing accommodations, AC or Non-AC transportation, breakfasts and dinners, alongside guidance from Akhil.`}
@@ -317,17 +309,17 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               <div className="trips-slider-actions overflow-hidden py-1">
                 <motion.div
                   variants={textRevealVariants}
-                  className="flex flex-wrap items-center gap-3 sm:gap-4"
+                  className="flex items-center gap-3 sm:gap-4"
                 >
                   <Link
                     href={`/upcoming-trips/${tripSlug}`}
-                    className="inline-flex items-center justify-center bg-gradient-to-r from-[#ea580c] to-amber-500 hover:from-[#ff7a1a] hover:to-amber-400 text-white px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-wider active:scale-95 hover:scale-[1.03] transition-all duration-200 shadow-lg shadow-orange-600/35 pointer-events-auto"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center bg-gradient-to-r from-[#ea580c] to-amber-500 hover:from-[#ff7a1a] hover:to-amber-400 text-white px-6 sm:px-8 py-3 rounded-full font-bold text-xs uppercase tracking-wider active:scale-95 hover:scale-[1.03] transition-all duration-200 shadow-lg shadow-orange-600/35 pointer-events-auto text-center"
                   >
                     Book Now
                   </Link>
                   <Link
                     href="/contact"
-                    className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 text-white border border-white/25 backdrop-blur-md px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-wider active:scale-95 hover:scale-[1.03] transition-all duration-200 shadow-md pointer-events-auto"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center bg-white/10 hover:bg-white/20 text-white border border-white/25 backdrop-blur-md px-6 sm:px-8 py-3 rounded-full font-bold text-xs uppercase tracking-wider active:scale-95 hover:scale-[1.03] transition-all duration-200 shadow-md pointer-events-auto text-center"
                   >
                     Enquire
                   </Link>
@@ -427,7 +419,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
             </div>
 
             {/* Mobile / Tablet Controls (Centered at bottom) */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex xl:hidden items-center gap-6 bg-black/30 backdrop-blur-md px-6 py-3 rounded-full border border-white/10">
+            <div className="absolute bottom-5 sm:bottom-8 left-1/2 -translate-x-1/2 z-30 flex xl:hidden items-center gap-5 bg-black/50 backdrop-blur-md px-5 py-2 rounded-full border border-white/15">
               <button
                 onClick={handlePrev}
                 className="w-10 h-10 rounded-full border border-white/20 text-white flex items-center justify-center active:scale-90 transition-all pointer-events-auto"

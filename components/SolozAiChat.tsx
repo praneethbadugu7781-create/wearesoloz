@@ -138,12 +138,12 @@ export default function SolozAiChat() {
   ];
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] font-sans">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 font-sans">
       {/* Floating Branded Bubble Button */}
       {!isOpen && (
         <div className="relative group">
           {showNotification && (
-            <div className="absolute right-0 bottom-16 bg-stone-900 text-white text-[11px] font-semibold py-1.5 px-3.5 rounded-xl shadow-2xl border border-stone-800 whitespace-nowrap animate-bounce flex items-center gap-1.5 font-sans">
+            <div className="absolute right-0 bottom-14 sm:bottom-16 bg-stone-900 text-white text-[11px] font-semibold py-1.5 px-3.5 rounded-xl shadow-2xl border border-stone-800 whitespace-nowrap animate-bounce flex items-center gap-1.5 font-sans">
               <span>Chat with SoloZ AI</span>
               <button 
                 onClick={(e) => { e.stopPropagation(); setShowNotification(false); }}
@@ -158,7 +158,7 @@ export default function SolozAiChat() {
             onClick={() => setIsOpen(true)}
             aria-label="Open SoloZ AI Chat"
             type="button"
-            className="size-14 rounded-full bg-stone-900 border-2 border-[#ea580c] shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 group-hover:border-[#ea580c] relative overflow-hidden"
+            className="size-12 sm:size-14 rounded-full bg-stone-900 border-2 border-[#ea580c] shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 group-hover:border-[#ea580c] relative overflow-hidden"
           >
             {/* Pulsing Outer Ring */}
             <span className="absolute inset-0 rounded-full border-2 border-[#ea580c]/40 animate-ping pointer-events-none" />
@@ -166,7 +166,7 @@ export default function SolozAiChat() {
             <img 
               src="/logo.png" 
               alt="SoloZ Logo" 
-              className="size-11 object-contain transition-transform duration-300 group-hover:rotate-12"
+              className="size-9 sm:size-11 object-contain transition-transform duration-300 group-hover:rotate-12"
             />
           </button>
         </div>
