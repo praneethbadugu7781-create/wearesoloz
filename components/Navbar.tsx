@@ -78,14 +78,14 @@ export function Navbar() {
 
   // Secondary links inside More dropdown
   const secondaryLinks: Array<{ href: string; label: string; badge?: string }> = [
-    { href: "/events", label: "🏆 Community Events", badge: "New" },
-    { href: "/farmer-registration", label: "🌾 Farmer Trip Registration" },
-    { href: "/careers", label: "💼 Careers at SoloZ" },
+    { href: "/events", label: "Community Events", badge: "New" },
+    { href: "/farmer-registration", label: "Farmer Trip Registration" },
+    { href: "/careers", label: "Careers at SoloZ" },
   ];
 
   const allMobileLinks = [
     ...primaryLinks,
-    { href: "/events", label: "🏆 Community Events", isCustom: true },
+    { href: "/events", label: "Community Events", isCustom: true },
     { href: "/farmer-registration", labelKey: "nav_farmer_trip", defaultLabel: "Farmer Trips" },
     { href: "/careers", labelKey: "nav_careers", defaultLabel: "Careers" },
   ];
@@ -212,9 +212,9 @@ export function Navbar() {
           {navbarEvent && (
             <Link
               href={`/events/${navbarEvent.slug || ""}`}
-              className="hidden xl:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-orange-50 border border-orange-200/90 text-orange-700 hover:bg-orange-100 shadow-2xs transition-all shrink-0"
+              className="hidden xl:inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-stone-100 hover:bg-stone-200 border border-stone-200/90 text-stone-800 shadow-2xs transition-all shrink-0"
             >
-              <span>🏆</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c]" />
               <span className="font-bold text-stone-900 truncate max-w-[150px]">
                 {navbarEvent.title}
               </span>
@@ -305,9 +305,9 @@ export function Navbar() {
               <Link
                 href={`/events/${navbarEvent.slug || ""}`}
                 onClick={() => setOpen(false)}
-                className="block px-4 py-3 rounded-2xl text-xs font-extrabold bg-gradient-to-r from-orange-500 to-amber-500 text-white mb-3 text-center shadow-sm uppercase tracking-wider"
+                className="block px-4 py-2.5 rounded-2xl text-xs font-bold bg-stone-900 text-white mb-3 text-center shadow-sm uppercase tracking-wider"
               >
-                🏆 {navbarEvent.title}
+                {navbarEvent.title}
               </Link>
             )}
 

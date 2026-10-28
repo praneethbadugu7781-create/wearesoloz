@@ -4,7 +4,7 @@ import React, { useRef } from "react";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { getOptimizedImageUrl } from "@/lib/utils";
-import { ArrowRight, Compass, Users, Sparkles } from "lucide-react";
+import { Compass, Users } from "lucide-react";
 
 interface HomeHeroProps {
   title?: string;
@@ -58,14 +58,14 @@ export function HomeHero({ title, subheading, heroImage }: HomeHeroProps) {
         style={{ y: yContent, opacity: opacityContent }}
         className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center text-white flex flex-col items-center space-y-6"
       >
-        {/* Top Eyebrow Tagline Badge */}
+        {/* Top Eyebrow Tagline Badge - Luxury Minimalist Dot */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10.5px] sm:text-xs font-semibold uppercase tracking-[0.24em] shadow-sm"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/[0.14] text-stone-200 text-[10.5px] sm:text-xs font-semibold uppercase tracking-[0.22em] shadow-2xs select-none"
         >
-          <Sparkles className="w-3.5 h-3.5 text-[#ea580c]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c]" />
           <span>Discover The Colorful World</span>
         </motion.div>
 
