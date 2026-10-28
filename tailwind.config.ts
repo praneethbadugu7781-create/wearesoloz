@@ -28,9 +28,10 @@ const config: Config = {
         }
       },
       fontFamily: {
-        sans: ["var(--font-outfit)", "Outfit", "sans-serif"],
+        sans: ["var(--font-outfit)", "Plus Jakarta Sans", "Montserrat", "-apple-system", "sans-serif"],
         display: ["var(--font-playfair)", "Georgia", "serif"],
-        body: ["var(--font-dm-sans)", "DM Sans", "sans-serif"]
+        body: ["var(--font-dm-sans)", "DM Sans", "sans-serif"],
+        brand: ["var(--font-montserrat)", "Montserrat", "sans-serif"]
       },
       boxShadow: {
         glow: "0 20px 70px rgba(255, 122, 26, 0.22)"
