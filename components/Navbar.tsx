@@ -31,18 +31,12 @@ export function Navbar() {
     setShowLangMenu(false);
   }, [pathname]);
 
-  const isPlainPage = 
-    pathname !== "/" ||
-    pathname.startsWith("/about-akhil") ||
-    pathname.startsWith("/careers") ||
-    pathname.startsWith("/events") ||
-    pathname.startsWith("/farmer-registration") ||
-    pathname.startsWith("/gallery") ||
-    pathname.startsWith("/contact") ||
-    pathname.startsWith("/trip-memories") ||
-    pathname.startsWith("/admin");
+  const hasDarkHero = 
+    pathname === "/" || 
+    pathname === "/upcoming-trips" ||
+    pathname.startsWith("/upcoming-trips/");
 
-  const showScrolled = scrolled || isPlainPage;
+  const showScrolled = scrolled || !hasDarkHero;
 
   const localizedLinks = [
     { href: "/", labelKey: "nav_home" },
@@ -61,8 +55,8 @@ export function Navbar() {
       data-testid="navbar"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 font-sans ${
         showScrolled
-          ? "bg-white/90 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.06)] border-b border-stone-100 pb-1.5"
-          : "bg-stone-900/40 backdrop-blur-md border-b border-white/10 shadow-xs pb-2"
+          ? "bg-white/95 backdrop-blur-xl shadow-[0_2px_15px_rgba(0,0,0,0.05)] border-b border-stone-200/70 pb-1.5"
+          : "bg-stone-950/60 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.4)] pb-2"
       }`}
     >
       <AnnouncementTicker />
@@ -73,7 +67,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between pt-2">
         
         {/* Logo */}
-        <Link href="/" data-testid="logo-link" className="flex items-center gap-2 md:gap-3 group shrink-0">
+        <Link href="/" data-testid="logo-link" className="flex items-center gap-2.5 md:gap-3 group shrink-0">
           <div className="relative shrink-0">
             <img
               src="/logo.png"
@@ -92,18 +86,16 @@ export function Navbar() {
             }`}>
               We<span className="text-[#ea580c]">Are</span>Soloz
             </div>
-            <div className={`text-[8px] md:text-[9.5px] uppercase tracking-[0.12em] md:tracking-[0.2em] transition-all duration-300 ${
-              showScrolled ? "text-stone-500" : "text-stone-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]"
+            <div className={`text-[8px] md:text-[9.5px] uppercase tracking-[0.18em] transition-all duration-300 ${
+              showScrolled ? "text-stone-500" : "text-stone-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]"
             } font-semibold mt-0.5 whitespace-nowrap hidden sm:block`}>
               Travel Solo · You're Not Alone
             </div>
           </div>
         </Link>
 
-        {/* Desktop Nav Pills Container */}
-        <nav className={`hidden lg:flex items-center gap-1 xl:gap-1.5 backdrop-blur-md rounded-full px-2 py-1 border transition-all duration-300 shrink-0 ${
-          showScrolled ? "bg-stone-50/90 border-stone-200/70 shadow-2xs" : "bg-white/10 border-white/15"
-        }`}>
+        {/* Desktop Navigation Links */}
+        <nav className="hidden lg:flex items-center gap-1 xl:gap-2 shrink-0">
           {localizedLinks.map((l: any) => {
             const isActive = pathname === l.href;
             const linkText = l.isCustom ? l.label : t(l.labelKey);
@@ -112,18 +104,22 @@ export function Navbar() {
                 key={l.href}
                 href={l.href}
                 data-testid={`nav-${linkText.toLowerCase().replace(/\s+/g, "-")}`}
-                className={`relative px-3 xl:px-3.5 py-1.5 text-[12.5px] xl:text-[13px] font-bold rounded-full transition-all duration-200 whitespace-nowrap shrink-0 ${
+                className={`relative px-3 py-1.5 text-[13px] font-semibold tracking-wide rounded-full transition-all duration-200 whitespace-nowrap ${
                   isActive
-                    ? (showScrolled ? "bg-white text-stone-900 shadow-sm border border-stone-200/60" : "bg-white/20 text-white shadow-sm")
-                    : (showScrolled ? "text-stone-600 hover:text-stone-950 hover:bg-white/60" : "text-white/90 hover:text-white hover:bg-white/10")
+                    ? showScrolled
+                      ? "text-[#ea580c] bg-orange-50/80 font-bold"
+                      : "text-white bg-white/15 font-bold"
+                    : showScrolled
+                      ? "text-stone-600 hover:text-stone-950 hover:bg-stone-100/80"
+                      : "text-stone-300 hover:text-white hover:bg-white/10"
                 }`}
               >
                 {linkText}
                 {isActive && (
-                  <motion.div
-                    layoutId="activeNav"
-                    className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#ea580c]"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  <motion.span
+                    layoutId="activeNavIndicator"
+                    className="absolute -bottom-0.5 left-3 right-3 h-[2px] bg-[#ea580c] rounded-full"
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
                 )}
               </Link>
@@ -132,21 +128,21 @@ export function Navbar() {
         </nav>
 
         {/* CTA + Language Selector + Mobile Toggle */}
-        <div className="flex items-center gap-2.5 xl:gap-3 shrink-0">
+        <div className="flex items-center gap-2 xl:gap-3 shrink-0">
           
           {/* Desktop Language Selector */}
           <div className="relative hidden lg:block shrink-0">
             <button
               onClick={() => setShowLangMenu(!showLangMenu)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11.5px] font-bold transition-all duration-300 border whitespace-nowrap ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 border whitespace-nowrap ${
                 showScrolled
-                  ? "bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200/80"
+                  ? "bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200"
                   : "bg-white/10 hover:bg-white/20 text-white border-white/15"
               }`}
               aria-label="Select Language"
             >
-              <Globe className="w-3.5 h-3.5" />
-              <span className="uppercase">{locale}</span>
+              <Globe className="w-3.5 h-3.5 text-[#ea580c]" />
+              <span className="uppercase tracking-wider">{locale}</span>
             </button>
             <AnimatePresence>
               {showLangMenu && (
@@ -187,20 +183,21 @@ export function Navbar() {
           {/* Badminton Event Badge */}
           <Link
             href="/events/badminton-championship"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-extrabold bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-xs hover:shadow-orange-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all whitespace-nowrap shrink-0"
+            className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap shrink-0 border ${
+              showScrolled
+                ? "bg-orange-50/90 text-orange-600 border-orange-200 hover:bg-orange-100"
+                : "bg-orange-500/15 text-orange-300 border-orange-500/30 hover:bg-orange-500/25"
+            }`}
           >
-            🏸 Badminton Event
+            <span>🏸</span>
+            <span>Badminton Event</span>
           </Link>
 
           {/* Join Community CTA */}
           <Link
             href="/soloz-community"
             data-testid="nav-join-community"
-            className={`hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full text-[12.5px] font-extrabold transition-all duration-300 hover:shadow-lg whitespace-nowrap shrink-0 ${
-              showScrolled
-                ? "bg-stone-900 text-white hover:bg-stone-800 hover:shadow-stone-900/10"
-                : "bg-white text-stone-900 hover:bg-stone-100 hover:shadow-white/10"
-            }`}
+            className="hidden md:inline-flex items-center justify-center px-4.5 py-2 rounded-full text-xs font-bold tracking-wider uppercase bg-gradient-to-r from-[#ea580c] to-amber-500 hover:from-[#ff7a1a] hover:to-amber-400 text-white shadow-md shadow-orange-600/30 hover:scale-[1.03] active:scale-[0.98] transition-all whitespace-nowrap shrink-0"
           >
             {t("join_community")}
           </Link>
@@ -209,7 +206,7 @@ export function Navbar() {
           <button
             onClick={() => setOpen(!open)}
             data-testid="mobile-menu-toggle"
-            className={`lg:hidden w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 ${
+            className={`lg:hidden w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 ${
               showScrolled
                 ? "bg-stone-100 hover:bg-stone-200 text-stone-700"
                 : "bg-white/10 hover:bg-white/20 text-white"
