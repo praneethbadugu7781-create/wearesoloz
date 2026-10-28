@@ -1109,19 +1109,25 @@ body {
 }
 
 /* ==========================================
-   Trips Hero Slider Height Responsiveness (Emergency Fallbacks)
+   Trips Hero Slider Height Responsiveness & Vertical Balance
    ========================================== */
-@media (max-height: 680px) {
+.trips-slider-details-box {
+  top: 50% !important;
+  transform: translateY(-46%) !important;
+}
+
+@media (max-height: 720px) {
   .trips-slider-details-box {
-    top: 12% !important;
+    top: 52% !important;
+    transform: translateY(-44%) !important;
   }
   .trips-slider-title {
-    font-size: 2.25rem !important; /* ~36px */
+    font-size: 2.75rem !important; /* ~44px */
     margin-bottom: 0.75rem !important;
   }
   @media (max-width: 640px) {
     .trips-slider-title {
-      font-size: 1.5rem !important; /* ~24px */
+      font-size: 1.85rem !important; /* ~30px */
       margin-bottom: 0.75rem !important;
     }
   }
@@ -1133,25 +1139,26 @@ body {
   }
   .trips-slider-description p {
     font-size: 13px !important;
-    line-height: 1.45 !important;
+    line-height: 1.5 !important;
   }
   .trips-slider-actions a {
-    padding: 11px 26px !important;
-    font-size: 10px !important;
+    padding: 10px 24px !important;
+    font-size: 11px !important;
   }
 }
 
 @media (max-height: 580px) {
   .trips-slider-details-box {
-    top: 8% !important;
+    top: 54% !important;
+    transform: translateY(-42%) !important;
   }
   .trips-slider-title {
-    font-size: 1.85rem !important; /* ~30px */
+    font-size: 2rem !important; /* ~32px */
     margin-bottom: 0.5rem !important;
   }
   @media (max-width: 640px) {
     .trips-slider-title {
-      font-size: 1.25rem !important; /* ~20px */
+      font-size: 1.5rem !important; /* ~24px */
       margin-bottom: 0.5rem !important;
     }
   }
@@ -1170,16 +1177,16 @@ body {
     overflow: hidden;
   }
   .trips-slider-actions a {
-    padding: 9px 22px !important;
-    font-size: 9px !important;
+    padding: 8px 20px !important;
+    font-size: 10px !important;
   }
 }
 
 /* General mobile override for slider titles on narrow viewports regardless of height */
 @media (max-width: 640px) {
   .trips-slider-title {
-    font-size: 1.65rem !important; /* ~26px */
-    line-height: 1.25 !important;
+    font-size: 2rem !important;
+    line-height: 1.15 !important;
   }
   .trips-slider-description p {
     font-size: 13px !important;

@@ -87,8 +87,11 @@ export default function AnnouncementTicker() {
         ? `Batch: ${t.batches[0].label || t.batches[0].startDate}`
         : (t.date ? new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Upcoming");
 
+      const destName = t.title || t.destination || "";
+      const cleanDest = destName.replace(/\s*Expedition\s*/gi, "").trim();
+
       return {
-        text: `${t.title || t.destination} Expedition (${dateStr}) — Limited Seats Remaining!`,
+        text: `${cleanDest} Expedition (${dateStr}) — Limited Seats Remaining!`,
         link: `/upcoming-trips/${slug}`,
         badge: "UPCOMING"
       };
@@ -131,8 +134,8 @@ export default function AnnouncementTicker() {
         </div>
 
         {/* Marquee Scrolling Content */}
-        <div className="flex-1 overflow-hidden relative group cursor-pointer py-0.5">
-          <div className="inline-flex gap-10 whitespace-nowrap animate-marquee group-hover:[animation-play-state:paused]">
+        <div className="flex-1 overflow-hidden relative group cursor-pointer py-0.5 [mask-image:linear-gradient(to_right,transparent,black_24px,black_calc(100%-24px),transparent)]">
+          <div className="inline-flex gap-10 whitespace-nowrap animate-marquee group-hover:[animation-play-state:paused] pl-4">
             {[...items, ...items, ...items, ...items].map((item, idx) => (
               <React.Fragment key={idx}>
                 {item.link ? (

@@ -9,6 +9,7 @@ import { getOptimizedImageUrl } from "@/lib/utils";
 interface Trip {
   id?: string;
   _id?: string;
+  title?: string;
   destination: string;
   state: string;
   category: string;
@@ -18,6 +19,7 @@ interface Trip {
   seats: number;
   image: string;
   slug?: string;
+  description?: string;
 }
 
 interface TripsHeroSliderProps {
@@ -70,9 +72,28 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
 
   const tripSlug = activeTrip.slug || activeTrip.destination?.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
+  // Helper to format text with proper Title Case
+  const formatTitleCase = (str: string) => {
+    if (!str) return "";
+    // If str is all upper or all lower, convert words to Capitalized Title Case
+    if (str === str.toUpperCase() || str === str.toLowerCase()) {
+      return str
+        .toLowerCase()
+        .split(" ")
+        .map((w, idx) => {
+          if (idx > 0 && ["to", "and", "in", "the", "of", "for", "&", "a", "an"].includes(w)) {
+            return w;
+          }
+          return w.charAt(0).toUpperCase() + w.slice(1);
+        })
+        .join(" ");
+    }
+    return str;
+  };
+
   // Helper to cleanly break title into primary destination & subtitle/tagline
   const getTitleParts = (dest: string) => {
-    let main = dest;
+    let main = dest || "";
     let subtitle = "";
 
     if (dest.includes(" - ")) {
@@ -86,7 +107,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
     } else if (dest.toLowerCase().includes(" to ")) {
       const parts = dest.split(/ to /i);
       main = parts[0].trim();
-      subtitle = `TO ${parts.slice(1).join(" TO ").trim()}`;
+      subtitle = `to ${parts.slice(1).join(" to ").trim()}`;
     } else if (dest.includes(" & ")) {
       const parts = dest.split(" & ");
       main = parts[0].trim();
@@ -94,8 +115,8 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
     }
 
     return {
-      main: main.toUpperCase(),
-      subtitle: subtitle ? subtitle.toUpperCase() : ""
+      main: formatTitleCase(main),
+      subtitle: subtitle ? formatTitleCase(subtitle) : ""
     };
   };
 
@@ -142,17 +163,19 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
         />
 
         {/* 2. Top Progress Timer Indicator */}
-        <div className="fixed top-0 left-0 right-0 h-1 bg-black/10 z-[9999] pointer-events-none">
-          <motion.div
-            key={activeIndex} // resets the animation on active slide change
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 4, ease: "linear" }}
-            style={{ originX: 0 }}
-            className="h-full bg-[#ea580c]"
-            onAnimationComplete={handleNext}
-          />
-        </div>
+        {featuredTrips.length > 1 && (
+          <div className="fixed top-0 left-0 right-0 h-1 bg-black/10 z-[9999] pointer-events-none">
+            <motion.div
+              key={activeIndex} // resets the animation on active slide change
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 4, ease: "linear" }}
+              style={{ originX: 0 }}
+              className="h-full bg-[#ea580c]"
+              onAnimationComplete={handleNext}
+            />
+          </div>
+        )}
 
         {/* 3a. Active Background Slide with shared LayoutId (Desktop - xl screens) */}
         <div className="absolute inset-0 z-0 hidden xl:block">
@@ -188,8 +211,8 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
           </AnimatePresence>
         </div>
 
-        {/* 4. Details Box (Left Aligned) with stagger text slide reveals */}
-        <div className="trips-slider-details-box absolute left-6 md:left-20 top-20 xl:top-[16%] max-w-md md:max-w-xl xl:max-w-3xl z-20 text-white flex flex-col justify-center">
+        {/* 4. Details Box (Balanced Vertical Center) with stagger text slide reveals */}
+        <div className="trips-slider-details-box absolute left-6 sm:left-12 md:left-16 xl:left-24 top-1/2 -translate-y-[45%] max-w-lg md:max-w-xl xl:max-w-2xl z-20 text-white flex flex-col justify-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeIndex}
@@ -198,26 +221,26 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               animate="visible"
               exit="hidden"
             >
-              {/* Small State Badge (Cropped Reveal) */}
-              <div className="overflow-hidden mb-2 md:mb-3 h-6 flex items-center">
+              {/* Small State Badge */}
+              <div className="overflow-hidden mb-3 h-7 flex items-center">
                 <motion.div
                   variants={textRevealVariants}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2.5"
                 >
-                  <span className="h-[3px] w-8 rounded-full bg-[#ea580c]" />
-                  <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-orange-200">
+                  <span className="h-[2px] w-7 rounded-full bg-gradient-to-r from-orange-500 to-amber-400" />
+                  <span className="text-[11px] sm:text-xs uppercase font-extrabold tracking-[0.22em] text-orange-300 drop-shadow-sm font-sans">
                     {activeTrip.state}
                   </span>
                   {activeTrip.state?.toLowerCase() === "sri lanka" && (
-                    <span className="ml-2 px-2.5 py-0.5 rounded-full bg-[#ea580c] text-white text-[9px] uppercase tracking-widest font-black shadow-sm shadow-orange-500/20 animate-pulse">
+                    <span className="ml-2 px-2.5 py-0.5 rounded-full bg-[#ea580c] text-white text-[9px] uppercase tracking-widest font-black shadow-sm shadow-orange-500/20 animate-pulse font-sans">
                       Budget International
                     </span>
                   )}
                 </motion.div>
               </div>
 
-              {/* Destination Title Block with Modern Typography & Clean Line Height */}
-              <div className="trips-slider-title font-sans font-extrabold tracking-tight uppercase select-text mb-4 md:mb-6 text-3xl sm:text-4xl md:text-5xl lg:text-6xl drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
+              {/* Destination Title Block with Premium Editorial Typography */}
+              <h1 className="trips-slider-title font-display font-medium tracking-tight select-text mb-4 md:mb-5 text-4xl sm:text-5xl md:text-6xl lg:text-7xl drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]">
                 {(() => {
                   const { main, subtitle } = getTitleParts(activeTrip.destination);
                   return (
@@ -229,7 +252,7 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
                       </div>
                       {subtitle && (
                         <div className="overflow-hidden py-1">
-                          <motion.div variants={textRevealVariants} className="text-[#ea580c] leading-[1.08]">
+                          <motion.div variants={textRevealVariants} className="font-display italic font-normal text-[#ff8c38] leading-[1.08]">
                             {subtitle}
                           </motion.div>
                         </div>
@@ -237,32 +260,56 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
                     </div>
                   );
                 })()}
-              </div>
+              </h1>
 
               {/* Trip Specs (Cropped Reveal) */}
-              <div className="trips-slider-specs overflow-hidden mb-3 md:mb-4 py-1">
+              <div className="trips-slider-specs overflow-hidden mb-4 md:mb-5 py-1">
                 <motion.div
                   variants={textRevealVariants}
-                  className="flex flex-wrap gap-2 md:gap-4 text-[10px] md:text-xs font-semibold text-stone-250 uppercase tracking-wider bg-white/5 border border-white/10 backdrop-blur-md px-3 py-1.5 md:px-4 md:py-2.5 rounded-xl w-fit"
+                  className="flex flex-wrap items-center gap-2.5 sm:gap-3.5 text-[11px] sm:text-xs font-semibold text-stone-250 tracking-wider bg-black/40 border border-white/15 backdrop-blur-md px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl w-fit shadow-md font-sans"
                 >
-                  <span className={`flex items-center gap-1.5 ${activeTrip.destination?.toLowerCase().includes("sabarimala") ? "border-r border-white/10 pr-3 md:pr-4" : ""}`}>
-                    <Clock className="w-3.5 h-3.5 text-orange-400 shrink-0" /> {activeTrip.duration}
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                    <span>{activeTrip.duration}</span>
                   </span>
+
+                  {activeTrip.category && (
+                    <>
+                      <span className="text-white/20">•</span>
+                      <span className="text-orange-300 font-bold uppercase text-[10px] sm:text-[11px] tracking-widest">
+                        {activeTrip.category}
+                      </span>
+                    </>
+                  )}
+
+                  {activeTrip.price && (
+                    <>
+                      <span className="text-white/20">•</span>
+                      <span className="text-white font-bold tracking-normal">
+                        {activeTrip.price.startsWith("₹") ? activeTrip.price : `₹${activeTrip.price}`}
+                      </span>
+                    </>
+                  )}
+
                   {activeTrip.destination?.toLowerCase().includes("sabarimala") && (
-                    <span className="flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-orange-400 shrink-0" /> Every Month
-                    </span>
+                    <>
+                      <span className="text-white/20">•</span>
+                      <span className="flex items-center gap-1.5 text-amber-300">
+                        <Calendar className="w-3.5 h-3.5 text-orange-400 shrink-0" /> Every Month
+                      </span>
+                    </>
                   )}
                 </motion.div>
               </div>
 
               {/* Description (Cropped Reveal) */}
-              <div className="trips-slider-description overflow-hidden mb-4 md:mb-5 max-w-lg">
+              <div className="trips-slider-description overflow-hidden mb-5 md:mb-6 max-w-xl">
                 <motion.p
                   variants={textRevealVariants}
-                  className="text-stone-200/90 font-body text-xs sm:text-[13px] md:text-[14px] leading-relaxed select-text font-normal"
+                  className="text-stone-200/90 font-body text-xs sm:text-sm md:text-[15px] leading-relaxed select-text font-normal drop-shadow-sm"
                 >
-                  Explore the untouched beauty of {activeTrip.destination}. This curated solo-friendly journey includes comfortable sharing accommodations, AC or Non-AC transportation, breakfasts and dinners, alongside guidance from Akhil.
+                  {activeTrip.description ||
+                    `Explore the untouched beauty of ${activeTrip.destination}. This curated solo-friendly journey includes comfortable sharing accommodations, AC or Non-AC transportation, breakfasts and dinners, alongside guidance from Akhil.`}
                 </motion.p>
               </div>
 
@@ -270,17 +317,17 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
               <div className="trips-slider-actions overflow-hidden py-1">
                 <motion.div
                   variants={textRevealVariants}
-                  className="flex flex-wrap items-center gap-4"
+                  className="flex flex-wrap items-center gap-3 sm:gap-4"
                 >
                   <Link
                     href={`/upcoming-trips/${tripSlug}`}
-                    className="inline-flex items-center justify-center bg-[#ea580c] hover:bg-[#ff7a1a] text-white px-7 py-3 md:px-9 md:py-3.5 rounded-full font-bold text-[10px] md:text-xs tracking-widest active:scale-95 hover:-translate-y-0.5 transition-all shadow-lg shadow-orange-600/30 duration-200 pointer-events-auto"
+                    className="inline-flex items-center justify-center bg-gradient-to-r from-[#ea580c] to-amber-500 hover:from-[#ff7a1a] hover:to-amber-400 text-white px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-wider active:scale-95 hover:scale-[1.03] transition-all duration-200 shadow-lg shadow-orange-600/35 pointer-events-auto"
                   >
                     Book Now
                   </Link>
                   <Link
                     href="/contact"
-                    className="inline-flex items-center justify-center bg-white text-stone-950 hover:bg-stone-100 px-7 py-3 md:px-9 md:py-3.5 rounded-full font-bold text-[10px] md:text-xs tracking-widest active:scale-95 hover:-translate-y-0.5 transition-all shadow-md duration-200 pointer-events-auto"
+                    className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 text-white border border-white/25 backdrop-blur-md px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-wider active:scale-95 hover:scale-[1.03] transition-all duration-200 shadow-md pointer-events-auto"
                   >
                     Enquire
                   </Link>
@@ -328,92 +375,96 @@ export default function TripsHeroSlider({ trips }: TripsHeroSliderProps) {
         </div>
 
         {/* 6. Pagination Controls (Desktop & Mobile responsive) */}
-        {/* Desktop Controls (Aligned with Thumbnails) */}
-        <div className="absolute bottom-12 right-20 z-30 hidden xl:flex items-center gap-6">
-          <div className="flex gap-3">
-            <button
-              onClick={handlePrev}
-              className="w-12 h-12 rounded-full border border-white/25 hover:border-white text-white flex items-center justify-center hover:bg-white/10 active:scale-90 transition-all pointer-events-auto"
-              aria-label="Previous Trip"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={handleNext}
-              className="w-12 h-12 rounded-full border border-white/25 hover:border-white text-white flex items-center justify-center hover:bg-white/10 active:scale-90 transition-all pointer-events-auto"
-              aria-label="Next Trip"
-            >
-              <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Static Step Progress Bar (represents active slide index) */}
-          <div className="w-[260px] h-1 bg-white/25 rounded-full overflow-hidden relative">
-            <motion.div
-              className="absolute top-0 left-0 h-full bg-[#ea580c] rounded-full"
-              animate={{ width: `${((activeIndex + 1) / featuredTrips.length) * 100}%` }}
-              transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            />
-          </div>
-
-          {/* Sliding Slide Counter */}
-          <div className="flex items-center gap-2 text-white/60 text-xs font-bold uppercase tracking-[0.25em] whitespace-nowrap min-w-[70px]">
-            <div className="relative w-8 h-10 overflow-hidden flex items-center justify-center">
-              <AnimatePresence mode="popLayout">
-                <motion.span
-                  key={activeIndex}
-                  initial={{ x: 20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  exit={{ x: -20, opacity: 0 }}
-                  transition={{ duration: 0.4, ease: "easeInOut" }}
-                  className="absolute text-white text-xl font-extrabold"
+        {featuredTrips.length > 1 && (
+          <>
+            {/* Desktop Controls (Aligned with Thumbnails) */}
+            <div className="absolute bottom-12 right-20 z-30 hidden xl:flex items-center gap-6">
+              <div className="flex gap-3">
+                <button
+                  onClick={handlePrev}
+                  className="w-12 h-12 rounded-full border border-white/25 hover:border-white text-white flex items-center justify-center hover:bg-white/10 active:scale-90 transition-all pointer-events-auto"
+                  aria-label="Previous Trip"
                 >
-                  {activeIndex + 1}
-                </motion.span>
-              </AnimatePresence>
-            </div>
-            <span className="text-white/40 text-sm">/</span>
-            <span className="text-sm font-semibold">{featuredTrips.length}</span>
-          </div>
-        </div>
-
-        {/* Mobile / Tablet Controls (Centered at bottom) */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex xl:hidden items-center gap-6 bg-black/30 backdrop-blur-md px-6 py-3 rounded-full border border-white/10">
-          <button
-            onClick={handlePrev}
-            className="w-10 h-10 rounded-full border border-white/20 text-white flex items-center justify-center active:scale-90 transition-all pointer-events-auto"
-            aria-label="Previous Trip"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          
-          <div className="flex items-center gap-1.5 text-white/60 text-xs font-bold uppercase tracking-wider min-w-[45px] justify-center">
-            <div className="relative w-6 h-8 overflow-hidden flex items-center justify-center">
-              <AnimatePresence mode="popLayout">
-                <motion.span
-                  key={activeIndex}
-                  initial={{ y: 15, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -15, opacity: 0 }}
-                  transition={{ duration: 0.35, ease: "easeInOut" }}
-                  className="absolute text-white text-base font-extrabold"
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="w-12 h-12 rounded-full border border-white/25 hover:border-white text-white flex items-center justify-center hover:bg-white/10 active:scale-90 transition-all pointer-events-auto"
+                  aria-label="Next Trip"
                 >
-                  {activeIndex + 1}
-                </motion.span>
-              </AnimatePresence>
-            </div>
-            <span className="text-white/40 font-semibold">/</span>
-            <span className="font-semibold text-white/85">{featuredTrips.length}</span>
-          </div>
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
 
-          <button
-            onClick={handleNext}
-            className="w-10 h-10 rounded-full border border-white/20 text-white flex items-center justify-center active:scale-90 transition-all pointer-events-auto"
-            aria-label="Next Trip"
-          >
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
+              {/* Static Step Progress Bar (represents active slide index) */}
+              <div className="w-[260px] h-1 bg-white/25 rounded-full overflow-hidden relative">
+                <motion.div
+                  className="absolute top-0 left-0 h-full bg-[#ea580c] rounded-full"
+                  animate={{ width: `${((activeIndex + 1) / featuredTrips.length) * 100}%` }}
+                  transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                />
+              </div>
+
+              {/* Sliding Slide Counter */}
+              <div className="flex items-center gap-2 text-white/60 text-xs font-bold uppercase tracking-[0.25em] whitespace-nowrap min-w-[70px]">
+                <div className="relative w-8 h-10 overflow-hidden flex items-center justify-center">
+                  <AnimatePresence mode="popLayout">
+                    <motion.span
+                      key={activeIndex}
+                      initial={{ x: 20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ x: -20, opacity: 0 }}
+                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                      className="absolute text-white text-xl font-extrabold"
+                    >
+                      {activeIndex + 1}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
+                <span className="text-white/40 text-sm">/</span>
+                <span className="text-sm font-semibold">{featuredTrips.length}</span>
+              </div>
+            </div>
+
+            {/* Mobile / Tablet Controls (Centered at bottom) */}
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex xl:hidden items-center gap-6 bg-black/30 backdrop-blur-md px-6 py-3 rounded-full border border-white/10">
+              <button
+                onClick={handlePrev}
+                className="w-10 h-10 rounded-full border border-white/20 text-white flex items-center justify-center active:scale-90 transition-all pointer-events-auto"
+                aria-label="Previous Trip"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              
+              <div className="flex items-center gap-1.5 text-white/60 text-xs font-bold uppercase tracking-wider min-w-[45px] justify-center">
+                <div className="relative w-6 h-8 overflow-hidden flex items-center justify-center">
+                  <AnimatePresence mode="popLayout">
+                    <motion.span
+                      key={activeIndex}
+                      initial={{ y: 15, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -15, opacity: 0 }}
+                      transition={{ duration: 0.35, ease: "easeInOut" }}
+                      className="absolute text-white text-base font-extrabold"
+                    >
+                      {activeIndex + 1}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
+                <span className="text-white/40 font-semibold">/</span>
+                <span className="font-semibold text-white/85">{featuredTrips.length}</span>
+              </div>
+
+              <button
+                onClick={handleNext}
+                className="w-10 h-10 rounded-full border border-white/20 text-white flex items-center justify-center active:scale-90 transition-all pointer-events-auto"
+                aria-label="Next Trip"
+              >
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </>
+        )}
 
       </section>
     </LayoutGroup>
