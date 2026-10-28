@@ -28,10 +28,11 @@ const config: Config = {
         }
       },
       fontFamily: {
-        sans: ["var(--font-plus-jakarta)", "Plus Jakarta Sans", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
-        brand: ["var(--font-urbanist)", "Urbanist", "sans-serif"],
+        sans: ["var(--font-geist)", "Geist", "var(--font-plus-jakarta)", "Plus Jakarta Sans", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        geist: ["var(--font-geist)", "Geist", "sans-serif"],
+        brand: ["var(--font-geist)", "Geist", "var(--font-urbanist)", "Urbanist", "sans-serif"],
         display: ["var(--font-playfair)", "Georgia", "serif"],
-        body: ["var(--font-plus-jakarta)", "Plus Jakarta Sans", "sans-serif"]
+        body: ["var(--font-geist)", "Geist", "var(--font-plus-jakarta)", "Plus Jakarta Sans", "sans-serif"]
       },
       boxShadow: {
         glow: "0 20px 70px rgba(255, 122, 26, 0.22)"
