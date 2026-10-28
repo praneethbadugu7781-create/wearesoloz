@@ -28,10 +28,10 @@ const config: Config = {
         }
       },
       fontFamily: {
-        sans: ["var(--font-outfit)", "Plus Jakarta Sans", "Montserrat", "-apple-system", "sans-serif"],
+        sans: ["var(--font-plus-jakarta)", "Plus Jakarta Sans", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        brand: ["var(--font-urbanist)", "Urbanist", "sans-serif"],
         display: ["var(--font-playfair)", "Georgia", "serif"],
-        body: ["var(--font-dm-sans)", "DM Sans", "sans-serif"],
-        brand: ["var(--font-montserrat)", "Montserrat", "sans-serif"]
+        body: ["var(--font-plus-jakarta)", "Plus Jakarta Sans", "sans-serif"]
       },
       boxShadow: {
         glow: "0 20px 70px rgba(255, 122, 26, 0.22)"

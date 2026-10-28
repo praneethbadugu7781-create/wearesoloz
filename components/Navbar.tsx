@@ -67,35 +67,35 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between pt-2">
         
         {/* Logo */}
-        <Link href="/" data-testid="logo-link" className="flex items-center gap-2.5 md:gap-3 group shrink-0">
+        <Link href="/" data-testid="logo-link" className="flex items-center gap-3 group shrink-0">
           <div className="relative shrink-0">
             <img
               src="/logo.png"
               alt="WeAreSoloz"
-              width={44}
-              height={44}
-              className={`rounded-full object-cover shrink-0 transition-all duration-300 ring-2 ring-orange-500/40 group-hover:ring-orange-500 shadow-sm ${
-                showScrolled ? "h-9 w-9 md:h-10 md:w-10" : "h-10 w-10 md:h-11 md:w-11"
+              width={46}
+              height={46}
+              className={`rounded-full object-cover shrink-0 transition-all duration-300 ring-2 ring-orange-500/40 group-hover:ring-orange-500 shadow-md ${
+                showScrolled ? "h-10 w-10 md:h-11 md:w-11" : "h-11 w-11 md:h-12 md:w-12"
               }`}
             />
-            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white animate-pulse" />
+            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-stone-900 shadow-xs" />
           </div>
-          <div className="leading-none shrink-0">
+          <div className="leading-tight shrink-0">
             <div className={`font-sans font-black tracking-tight transition-all duration-300 ${
-              showScrolled ? "text-base md:text-lg text-stone-900" : "text-lg md:text-xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]"
+              showScrolled ? "text-lg md:text-[21px] text-stone-900" : "text-xl md:text-[22px] text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]"
             }`}>
-              We<span className="text-[#ea580c]">Are</span>Soloz
+              We<span className="text-[#ea580c]">Are</span>SoloZ
             </div>
-            <div className={`text-[8px] md:text-[8.5px] uppercase tracking-[0.22em] transition-all duration-300 ${
-              showScrolled ? "text-stone-400" : "text-stone-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]"
-            } font-semibold mt-0.5 whitespace-nowrap hidden sm:block`}>
+            <div className={`text-[8.5px] md:text-[9.5px] uppercase tracking-[0.22em] font-bold transition-all duration-300 ${
+              showScrolled ? "text-stone-400" : "text-stone-300 drop-shadow-sm"
+            } mt-0.5 whitespace-nowrap hidden sm:block`}>
               Travel Solo · You're Not Alone
             </div>
           </div>
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1.5 shrink-0">
+        <nav className="hidden lg:flex items-center gap-1 xl:gap-2 shrink-0">
           {localizedLinks.map((l: any) => {
             const isActive = pathname === l.href;
             const linkText = l.isCustom ? l.label : t(l.labelKey);
@@ -104,21 +104,21 @@ export function Navbar() {
                 key={l.href}
                 href={l.href}
                 data-testid={`nav-${linkText.toLowerCase().replace(/\s+/g, "-")}`}
-                className={`relative px-2.5 xl:px-3 py-1.5 text-[11px] xl:text-[11.5px] font-semibold uppercase tracking-[0.14em] xl:tracking-[0.18em] rounded-lg transition-all duration-200 whitespace-nowrap ${
+                className={`relative px-3 py-1.5 text-[13.5px] xl:text-[14px] font-medium tracking-[-0.01em] rounded-lg transition-all duration-200 whitespace-nowrap ${
                   isActive
                     ? showScrolled
                       ? "text-[#ea580c] font-bold"
                       : "text-white font-bold"
                     : showScrolled
                       ? "text-stone-600 hover:text-stone-950 hover:bg-stone-100/70"
-                      : "text-white/75 hover:text-white hover:bg-white/10"
+                      : "text-white/80 hover:text-white hover:bg-white/10"
                 }`}
               >
                 {linkText}
                 {isActive && (
                   <motion.span
                     layoutId="activeNavIndicator"
-                    className="absolute -bottom-0.5 left-2.5 right-2.5 h-[2px] bg-gradient-to-r from-orange-500 to-amber-400 rounded-full"
+                    className="absolute -bottom-0.5 left-2.5 right-2.5 h-[2px] bg-gradient-to-r from-orange-500 to-amber-400 rounded-full shadow-[0_0_8px_rgba(234,88,12,0.9)]"
                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
                 )}
@@ -128,21 +128,21 @@ export function Navbar() {
         </nav>
 
         {/* CTA + Language Selector + Mobile Toggle */}
-        <div className="flex items-center gap-2 xl:gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 xl:gap-3.5 shrink-0">
           
           {/* Desktop Language Selector */}
           <div className="relative hidden lg:block shrink-0">
             <button
               onClick={() => setShowLangMenu(!showLangMenu)}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-200 border whitespace-nowrap ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 border whitespace-nowrap ${
                 showScrolled
                   ? "bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200"
                   : "bg-white/10 hover:bg-white/20 text-white border-white/15"
               }`}
               aria-label="Select Language"
             >
-              <Globe className="w-3 h-3 text-[#ea580c]" />
-              <span>{locale}</span>
+              <Globe className="w-3.5 h-3.5 text-[#ea580c]" />
+              <span className="uppercase font-bold tracking-wider">{locale}</span>
             </button>
             <AnimatePresence>
               {showLangMenu && (
@@ -183,21 +183,21 @@ export function Navbar() {
           {/* Badminton Event Badge */}
           <Link
             href="/events/badminton-championship"
-            className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 border ${
+            className={`hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap shrink-0 border ${
               showScrolled
-                ? "bg-orange-50/90 text-orange-600 border-orange-200 hover:bg-orange-100"
+                ? "bg-orange-50 text-orange-600 border-orange-200/90 hover:bg-orange-100 shadow-2xs"
                 : "bg-orange-500/15 text-orange-300 border-orange-500/30 hover:bg-orange-500/25"
             }`}
           >
             <span>🏸</span>
-            <span>Badminton</span>
+            <span>Badminton Event</span>
           </Link>
 
           {/* Join Community CTA */}
           <Link
             href="/soloz-community"
             data-testid="nav-join-community"
-            className="hidden md:inline-flex items-center justify-center px-4.5 py-2 rounded-full text-[11px] font-extrabold tracking-[0.14em] uppercase bg-gradient-to-r from-[#ea580c] to-amber-500 hover:from-[#ff7a1a] hover:to-amber-400 text-white shadow-md shadow-orange-600/30 hover:scale-[1.03] active:scale-[0.98] transition-all whitespace-nowrap shrink-0"
+            className="hidden md:inline-flex items-center justify-center px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white shadow-md shadow-orange-600/30 hover:scale-[1.03] active:scale-[0.98] transition-all whitespace-nowrap shrink-0"
           >
             {t("join_community")}
           </Link>
